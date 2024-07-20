@@ -1,6 +1,8 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
-
+use lightyear::prelude::client::*;
+use shared::player::bike::BikeMarker;
 use crate::assets::{AssetKey, HandleMap};
 
 pub(crate) struct PlayerRenderPlugin;
@@ -16,6 +18,20 @@ impl Plugin for PlayerRenderPlugin {
     }
 }
 
+
+fn draw_bike(
+    mut gizmos: Gizmos,
+    query: Query<(Position, Rotation), (With<BikeMarker>, With<Predicted>)>
+) {
+    for (pos, rotation) in query.iter() {
+        gizmos.rounded_rect_2d(
+            pos.0,
+            rotation.as_radians(),
+            10.0,
+            Color::WHITE,
+        )
+    }
+}
 
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]

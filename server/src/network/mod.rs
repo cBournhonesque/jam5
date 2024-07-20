@@ -1,5 +1,6 @@
 /// Server networking related plugins
 mod config;
+mod connections;
 
 use bevy::prelude::*;
 use lightyear::prelude::server::*;

@@ -2,6 +2,10 @@ pub mod debug;
 pub mod map;
 pub mod network;
 
+pub mod player;
+
+pub mod physics;
+
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
@@ -60,5 +64,6 @@ impl Plugin for SharedPlugin {
 
         // Add shared game logic plugins
         app.add_plugins(map::MapPlugin);
+        app.add_plugins(physics::PhysicsPlugin);
     }
 }
