@@ -1,0 +1,12 @@
+[package]
+name = "server"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+shared = { path = "../shared" }
+bevy.workspace = true
+lightyear.workspace = true
+clap.workspace = true
+
+async-compat = "0.2.4"
