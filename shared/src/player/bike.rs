@@ -1,11 +1,12 @@
 use avian2d::math::Vector;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use lightyear::prelude::*;
 
 pub const BIKE_VELOCITY: f32 = 10.0;
 
 
-#[derive(Component, Default)]
+#[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct BikeMarker;
 
 #[derive(Bundle, Default)]

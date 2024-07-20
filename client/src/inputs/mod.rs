@@ -11,12 +11,12 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(PreUpdate,
+        app.add_systems(PreUpdate,
             // make sure this runs after the other leafwing systems
             mouse_to_world_space.in_set(InputManagerSystem::ManualControl)
         );
         // TODO: ideally use an observer? this should only run once
-        app.add_system(Update, add_input_map);
+        app.add_systems(Update, add_input_map);
     }
 }
 

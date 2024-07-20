@@ -265,6 +265,9 @@ name = "arrayvec"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "as-raw-xcb-connection"
@@ -425,6 +428,7 @@ dependencies = [
  "nalgebra",
  "parry2d",
  "parry2d-f64",
+ "serde",
 ]
 
 [[package]]
@@ -2253,6 +2257,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "flo_curves"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efed4b2727dbd91aa8ff68b52209a954197d8c9c8517c2a59fc4630c479db18d"
+dependencies = [
+ "itertools 0.10.5",
+ "roots",
+ "smallvec",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2894,6 +2909,15 @@ checksum = "f8478577c03552c21db0e2724ffb8986a5ce7af88107e6be5d2ee6e158c12800"
 
 [[package]]
 name = "itertools"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
@@ -3110,6 +3134,7 @@ source = "git+https://github.com/cBournhonesque/lightyear?branch=main#0471d84da6
 dependencies = [
  "async-channel",
  "async-compat",
+ "avian2d",
  "bevy",
  "bevy_web_keepalive",
  "bincode",
@@ -3331,6 +3356,7 @@ dependencies = [
  "num-complex",
  "num-rational",
  "num-traits",
+ "serde",
  "simba",
  "typenum",
 ]
@@ -3508,6 +3534,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73f88a1307638156682bada9d7604135552957b7818057dcef22705b4d509495"
 dependencies = [
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -3933,6 +3960,7 @@ dependencies = [
  "num-traits",
  "rayon",
  "rustc-hash",
+ "serde",
  "simba",
  "slab",
  "smallvec",
@@ -3956,6 +3984,7 @@ dependencies = [
  "num-traits",
  "rayon",
  "rustc-hash",
+ "serde",
  "simba",
  "slab",
  "smallvec",
@@ -4449,6 +4478,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "roots"
+version = "0.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "082f11ffa03bbef6c2c6ea6bea1acafaade2fd9050ae0234ab44a2153742b058"
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4737,6 +4772,8 @@ dependencies = [
  "bevy",
  "bevy_turborand",
  "clap",
+ "flo_curves",
+ "leafwing-input-manager",
  "lightyear",
  "serde",
 ]

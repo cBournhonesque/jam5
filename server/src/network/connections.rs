@@ -8,7 +8,8 @@ use shared::player::bike::BikeBundle;
 
 
 /// Spawn a new bike when a player connects
-fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands) {
+pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands) {
+    info!("Spawning bike for client {}", trigger.event().client_id);
     let client_id = trigger.event().client_id;
     commands.spawn((
         BikeBundle::new_at(Vec2::new(0.0, 0.0)),

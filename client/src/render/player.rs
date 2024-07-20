@@ -15,21 +15,24 @@ impl Plugin for PlayerRenderPlugin {
         app.init_resource::<HandleMap<ImageKey>>();
 
         // TODO: draw player
+        // TODO: should we worry about transform propagate?
+        app.add_systems(PostUpdate, draw_bike);
     }
 }
 
 
 fn draw_bike(
     mut gizmos: Gizmos,
-    query: Query<(Position, Rotation), (With<BikeMarker>, With<Predicted>)>
+    query: Query<(&Position, &Rotation), (With<BikeMarker>, With<Predicted>)>
 ) {
     for (pos, rotation) in query.iter() {
+        trace!("Drawing bike at {:?}", pos.0);
         gizmos.rounded_rect_2d(
             pos.0,
             rotation.as_radians(),
-            10.0,
+            Vec2::new(2.0, 10.0),
             Color::WHITE,
-        )
+        );
     }
 }
 

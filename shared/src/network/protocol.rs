@@ -6,6 +6,7 @@ use lightyear::prelude::*;
 use lightyear::prelude::client::*;
 use lightyear::utils::avian2d::*;
 use crate::network::inputs::PlayerMovement;
+use crate::player::bike::BikeMarker;
 use crate::player::Player;
 
 pub struct ProtocolPlugin;
@@ -21,6 +22,10 @@ impl Plugin for ProtocolPlugin {
 
         // Components
         app.register_component::<Player>(ChannelDirection::ServerToClient);
+
+        app.register_component::<BikeMarker>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once)
+            .add_interpolation(ComponentSyncMode::Once);
 
         app.register_component::<Position>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)
