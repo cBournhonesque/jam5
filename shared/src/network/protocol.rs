@@ -5,7 +5,7 @@ use bevy::app::{App, Plugin};
 pub struct ProtocolPlugin;
 
 impl Plugin for ProtocolPlugin {
-    fn build(&self, app: &mut App) {
+    fn build(&self, _app: &mut App) {
         // Channels
 
         // Messages

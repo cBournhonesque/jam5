@@ -5,9 +5,12 @@ use bevy::prelude::*;
 
 use super::Screen;
 use crate::{
-    game::assets::{HandleMap, ImageKey, SfxKey, SoundtrackKey},
     ui::prelude::*,
 };
+use crate::assets::HandleMap;
+use crate::audio::sfx::SfxKey;
+use crate::audio::soundtrack::SoundtrackKey;
+use crate::render::player::ImageKey;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Loading), enter_loading);

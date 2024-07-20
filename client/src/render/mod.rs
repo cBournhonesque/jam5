@@ -1,7 +1,6 @@
 use bevy::app::{App, Plugin};
 
-mod animation;
-mod player;
+pub mod player;
 
 pub(crate) struct RenderPlugin;
 

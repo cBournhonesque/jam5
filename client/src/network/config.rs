@@ -7,7 +7,7 @@ use lightyear::prelude::client::*;
 
 use shared::network::config::{KEY, PROTOCOL_ID, shared_config, Transports};
 
-pub(crate) fn build_lightyear_plugins(
+pub(crate) fn build_lightyear_client(
     client_id: u64,
     client_port: u16,
     server_addr: SocketAddr,
@@ -27,7 +27,7 @@ pub(crate) fn build_lightyear_plugins(
             client_addr,
             server_addr,
             #[cfg(target_family = "wasm")]
-            certificate_digest,
+            certificate_digest: "d9:b3:06:2d:31:b1:21:6d:c9:8b:24:e6:9f:12:59:23:4d:e2:35:84:4e:b0:cf:2e:ac:4e:b6:ea:ce:56:03:3b".to_string().replace(":", ""),
         },
         Transports::WebSocket => ClientTransport::WebSocketClient { server_addr },
     };

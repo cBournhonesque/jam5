@@ -16,6 +16,7 @@ bevy_turborand = "0.9.0"
 lightyear = { git = "https://github.com/cBournhonesque/lightyear", branch = "main", features = [
     "leafwing",
     "webtransport",
+    "websocket",
 ] }
 avian2d = { version = "0.1.1" }
 leafwing-input-manager = "0.14"

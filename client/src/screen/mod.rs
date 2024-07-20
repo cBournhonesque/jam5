@@ -6,6 +6,8 @@ mod playing;
 mod splash;
 mod title;
 
+#[cfg(feature = "dev")]
+use bevy::dev_tools::states::log_transitions;
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
@@ -19,6 +21,9 @@ pub fn plugin(app: &mut App) {
         credits::plugin,
         playing::plugin,
     ));
+
+    #[cfg(feature = "dev")]
+    app.add_systems(Update, log_transitions::<Screen>);
 }
 
 /// The game's main screen states.

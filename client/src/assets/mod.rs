@@ -1,5 +1,5 @@
 use bevy::asset::{Asset, AssetServer, Handle};
-use bevy::prelude::{Deref, DerefMut, Reflect, Resource};
+use bevy::prelude::*;
 use bevy::utils::HashMap;
 
 pub trait AssetKey: Sized {

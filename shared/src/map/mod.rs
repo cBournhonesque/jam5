@@ -20,9 +20,16 @@ impl MapPlugin {
 
     /// Spawn the map when we receive the SpawnMap Trigger.
     pub fn spawn_map(_trigger: Trigger<SpawnMap>, mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
-        commands.spawn((MapRadius {
-            radius: MAP_SIZE,
-        }, MapMarker, RngComponent::from(&mut global_rng)));
+        commands.spawn(
+            (
+            MapRadius {
+                radius: MAP_SIZE,
+            },
+            MapMarker,
+            Name::new("Map"),
+            RngComponent::from(&mut global_rng)
+            )
+        );
     }
 }
 
