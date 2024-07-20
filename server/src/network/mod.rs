@@ -1,5 +1,6 @@
 /// Server networking related plugins
 mod config;
+mod connections;
 
 use bevy::prelude::*;
 use lightyear::prelude::server::*;
@@ -21,6 +22,8 @@ impl Plugin for NetworkPlugin {
 
         // systems
         app.add_systems(Startup, start_server);
+        app.observe(connections::spawn_bike);
+
     }
 }
 

@@ -16,6 +16,7 @@ mod ui;
 pub mod screen;
 mod network;
 pub mod assets;
+mod inputs;
 
 // Use a port of 0 to automatically select a port
 pub const CLIENT_PORT: u16 = 0;
@@ -54,8 +55,9 @@ pub fn app(cli: Cli) -> App {
         transport: cli.transport,
     });
     app.add_plugins(audio::plugin);
-    app.add_plugins(screen::plugin);
     app.add_plugins(camera::CameraPlugin);
+    app.add_plugins(inputs::InputPlugin);
+    app.add_plugins(screen::plugin);
     app.add_plugins(render::RenderPlugin);
     app
 }

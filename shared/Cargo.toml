@@ -8,9 +8,11 @@ license.workspace = true
 avian2d.workspace = true
 bevy.workspace = true
 bevy_turborand.workspace = true
+leafwing-input-manager.workspace = true
 lightyear.workspace = true
 clap.workspace = true
 serde.workspace = true
+flo_curves.workspace = true
 
 
 
