@@ -1,8 +1,9 @@
 use bevy::{audio::PlaybackMode, prelude::*};
-
-use crate::game::assets::{HandleMap, SoundtrackKey};
+use crate::assets::{AssetKey, HandleMap};
 
 pub(super) fn plugin(app: &mut App) {
+    app.register_type::<HandleMap<SoundtrackKey>>();
+    app.init_resource::<HandleMap<SoundtrackKey>>();
     app.register_type::<IsSoundtrack>();
     app.observe(play_soundtrack);
 }
@@ -46,3 +47,30 @@ pub enum PlaySoundtrack {
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 struct IsSoundtrack;
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
+pub enum SoundtrackKey {
+    Credits,
+    Gameplay,
+}
+
+impl AssetKey for SoundtrackKey {
+    type Asset = AudioSource;
+}
+
+impl FromWorld for HandleMap<SoundtrackKey> {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+        [
+            (
+                SoundtrackKey::Credits,
+                asset_server.load("audio/soundtracks/Monkeys Spinning Monkeys.ogg"),
+            ),
+            (
+                SoundtrackKey::Gameplay,
+                asset_server.load("audio/soundtracks/Fluffing A Duck.ogg"),
+            ),
+        ]
+            .into()
+    }
+}

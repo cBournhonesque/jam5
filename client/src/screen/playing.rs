@@ -1,8 +1,9 @@
 //! The screen state for the main game loop.
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
-
+use shared::map::SpawnMap;
 use super::Screen;
+use crate::audio::soundtrack::PlaySoundtrack;
 use crate::game::{
     assets::SoundtrackKey, audio::soundtrack::PlaySoundtrack, spawn::level::SpawnLevel,
 };
@@ -19,7 +20,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 fn enter_playing(mut commands: Commands) {
-    commands.trigger(SpawnLevel);
+    commands.trigger(SpawnMap);
     commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Gameplay));
 }
 

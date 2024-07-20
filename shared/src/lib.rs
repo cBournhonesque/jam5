@@ -3,6 +3,8 @@ mod dev_tools;
 mod game;
 mod screen;
 mod ui;
+pub mod map;
+pub mod network;
 
 use bevy::{
     asset::AssetMetaCheck,

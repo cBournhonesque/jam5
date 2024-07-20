@@ -7,9 +7,11 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-
-use super::{audio::sfx::PlaySfx, movement::MovementController};
+use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
+use crate::{audio::sfx::PlaySfx};
+            // movement::MovementController};
 use crate::AppSet;
+use crate::assets::{AssetKey, HandleMap};
 
 pub(super) fn plugin(app: &mut App) {
     // Animate and play sound effects based on controls.
@@ -28,6 +30,7 @@ pub(super) fn plugin(app: &mut App) {
         ),
     );
 }
+
 
 /// Update the sprite direction and animation state (idling/walking).
 fn update_animation_movement(
