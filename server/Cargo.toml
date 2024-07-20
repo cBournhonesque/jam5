@@ -5,6 +5,7 @@ edition.workspace = true
 
 [dependencies]
 shared = { path = "../shared" }
+avian2d.workspace = true
 bevy.workspace = true
 lightyear.workspace = true
 clap.workspace = true

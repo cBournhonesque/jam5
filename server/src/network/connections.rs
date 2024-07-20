@@ -1,5 +1,6 @@
 //! Handle client connections
 
+use avian2d::prelude::RigidBody;
 use bevy::prelude::*;
 use bevy::reflect::ApplyError;
 use lightyear::prelude::*;
@@ -13,6 +14,7 @@ pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands)
     let client_id = trigger.event().client_id;
     commands.spawn((
         BikeBundle::new_at(Vec2::new(0.0, 0.0)),
+        RigidBody::Kinematic,
         Replicate {
             sync: SyncTarget {
                 prediction: NetworkTarget::Single(client_id),
