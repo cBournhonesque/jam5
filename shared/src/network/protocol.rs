@@ -1,7 +1,7 @@
 //! Defines the shared network protocol between the client and server
 
 use crate::network::inputs::PlayerMovement;
-use crate::player::bike::BikeMarker;
+use crate::player::bike::{BikeMarker, ColorComponent};
 use crate::player::trail::Trail;
 use crate::player::zone::Zone;
 use crate::player::Player;
@@ -24,6 +24,10 @@ impl Plugin for ProtocolPlugin {
 
         // Components
         app.register_component::<Player>(ChannelDirection::ServerToClient);
+
+        app.register_component::<ColorComponent>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once)
+            .add_interpolation(ComponentSyncMode::Once);
 
         app.register_component::<BikeMarker>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
