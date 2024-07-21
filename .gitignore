@@ -5,4 +5,9 @@
 /web/dist/
 
 # This file contains environment-specific configuration like linker settings
-.cargo/config.toml
+.cargo/config_fast_builds.toml
+
+# Local development files
+.envrc
+rust-toolchain.toml
+.direnv
