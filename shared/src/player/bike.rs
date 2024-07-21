@@ -3,8 +3,11 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use lightyear::prelude::*;
 
-pub const BIKE_VELOCITY: f32 = 30.0;
-
+pub const BASE_SPEED: f32 = 200.0;
+pub const FAST_SPEED: f32 = 600.0;
+pub const DRAG: f32 = 10.0;
+pub const ACCEL: f32 = 300.0;
+pub const FAST_SPEED_MAX_SPEED_DISTANCE: f32 = 500.0; // we lerp from BASE_SPEED to FAST_SPEED based on this mouse distance
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct BikeMarker;
@@ -12,7 +15,7 @@ pub struct BikeMarker;
 #[derive(Bundle, Default)]
 pub struct BikeBundle {
     pub marker: BikeMarker,
-    pub position : Position,
+    pub position: Position,
     pub rotation: Rotation,
     pub linear_velocity: LinearVelocity,
     pub angular_velocity: AngularVelocity,
@@ -24,19 +27,14 @@ impl BikeBundle {
         // TODO: spawn at a random position on the map
         Self {
             position: Position(position),
-            linear_velocity: LinearVelocity(Vector::new(0.0, BIKE_VELOCITY)),
+            linear_velocity: LinearVelocity(Vector::new(0.0, 0.0)),
             ..default()
         }
     }
 }
 
-
 pub struct BikePlugin;
 
 impl Plugin for BikePlugin {
-    fn build(&self, app: &mut App) {
-    }
+    fn build(&self, app: &mut App) {}
 }
-
-
-
