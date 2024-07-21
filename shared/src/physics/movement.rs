@@ -1,7 +1,8 @@
 use crate::network::inputs::PlayerMovement;
 use crate::physics::FixedSet;
 use crate::player::bike::{
-    ACCEL, BASE_SPEED, DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE, MAX_ROTATION_SPEED,
+    ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE,
+    MAX_ROTATION_SPEED,
 };
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -54,11 +55,11 @@ fn move_bike_system(
         if let Some(relative_mouse_pos) =
             action_state.axis_pair(&PlayerMovement::MousePositionRelative)
         {
-
             let wish_dir = relative_mouse_pos.xy().normalize_or_zero();
             let normalized_mouse_distance =
                 (relative_mouse_pos.length() / FAST_SPEED_MAX_SPEED_DISTANCE).clamp(0.0, 1.0);
             let wish_speed = BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance);
+            let wish_drag = DRAG.lerp(FAST_DRAG, normalized_mouse_distance);
 
             // limit the rotation
             let current_dir = Vec2::new(rotation.cos, rotation.sin);
@@ -70,17 +71,22 @@ fn move_bike_system(
             let mut current_velocity = linear.0;
 
             // for simplicity, use a constant speed for now
-            current_velocity = actual_dir * BASE_SPEED;
+            //current_velocity = actual_dir * BASE_SPEED;
 
             // TODO: maybe add drag/acceleration/speed based on mouse distance?
-            // current_velocity = apply_drag(current_velocity, current_velocity.length(), DRAG, delta);
-            // current_velocity += accelerate(
-            //     actual_dir,
-            //     wish_speed,
-            //     current_velocity.dot(actual_dir),
-            //     ACCEL,
-            //     delta,
-            // );
+            current_velocity = apply_drag(
+                current_velocity,
+                current_velocity.length(),
+                wish_drag,
+                delta,
+            );
+            current_velocity += accelerate(
+                actual_dir,
+                wish_speed,
+                current_velocity.dot(actual_dir),
+                ACCEL,
+                delta,
+            );
 
             linear.0 = current_velocity;
 
@@ -89,7 +95,14 @@ fn move_bike_system(
             rotation.sin = new_rotation.sin();
             rotation.cos = new_rotation.cos();
 
-            trace!(?tick, ?delta, ?relative_mouse_pos, ?linear, ?rotation, "Moving bike from input");
+            trace!(
+                ?tick,
+                ?delta,
+                ?relative_mouse_pos,
+                ?linear,
+                ?rotation,
+                "Moving bike from input"
+            );
         }
     }
 }
