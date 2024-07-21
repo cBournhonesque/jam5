@@ -5,7 +5,7 @@ use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use lightyear::prelude::client::*;
 use lightyear::utils::avian2d::linear_velocity;
-use shared::player::bike::BikeMarker;
+use shared::player::bike::{BikeMarker, ColorComponent};
 use shared::player::trail::Trail;
 use shared::player::zone::Zone;
 
@@ -31,30 +31,33 @@ impl Plugin for PlayerRenderPlugin {
 }
 
 fn draw_bike(
-    fixed_time: Res<Time<Fixed>>,
     mut gizmos: Gizmos,
-    query: Query<(&Position, &Rotation, &LinearVelocity), (With<BikeMarker>, With<Predicted>)>,
+    query: Query<(&Position, &Rotation, &ColorComponent), (With<BikeMarker>, With<Predicted>)>,
 ) {
-    for (pos, rotation, linear_velocity) in query.iter() {
+    for (pos, rotation, color) in query.iter() {
         trace!("Drawing bike at {:?}", pos.0);
         gizmos.rounded_rect_2d(
             pos.0,
             rotation.as_radians(),
             Vec2::new(50.0, 10.0),
-            Color::WHITE,
+            color.0,
         );
     }
 }
 
-fn draw_trail(mut gizmos: Gizmos, query: Query<&Trail, With<BikeMarker>>) {
-    for trail in query.iter() {
+fn draw_trail(mut gizmos: Gizmos, query: Query<(&Trail, &ColorComponent), With<BikeMarker>>) {
+    for (trail, color) in query.iter() {
+        let trail_color = Color::Hsva(Hsva {
+            saturation: 0.4,
+            ..Hsva::from(color.0)
+        });
         if trail.line.len() < 2 {
             continue;
         }
         for i in 0..trail.line.len() - 1 {
             let start = trail.line[i];
             let end = trail.line[i + 1];
-            gizmos.line_2d(start, end, Color::WHITE);
+            gizmos.line_2d(start, end, trail_color);
         }
     }
 }
