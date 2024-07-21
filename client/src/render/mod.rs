@@ -1,4 +1,4 @@
-use avian2d::prelude::Position;
+use avian2d::prelude::{Position, Rotation};
 use bevy::app::{App, Plugin};
 use lightyear::prelude::client::*;
 
@@ -11,6 +11,7 @@ impl Plugin for RenderPlugin {
         // add visual interpolation to Position, so that position in Update is interpolated
         // between two FixedUpdate values
         app.add_plugins(VisualInterpolationPlugin::<Position>::default());
+        app.add_plugins(VisualInterpolationPlugin::<Rotation>::default());
         app.add_plugins(player::PlayerRenderPlugin);
     }
 }

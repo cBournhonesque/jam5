@@ -29,20 +29,19 @@ impl Plugin for ProtocolPlugin {
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 
-        app.register_component::<RigidBody>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once);
-
         app.register_component::<Position>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation(ComponentSyncMode::Full)
-            .add_interpolation_fn(position::lerp)
-            .add_correction_fn(position::lerp);
+            .add_interpolation_fn(position::lerp);
+            // TODO: remove correction for now to make rollbacks more obvious
+            // .add_correction_fn(position::lerp);
 
         app.register_component::<Rotation>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation(ComponentSyncMode::Full)
-            .add_interpolation_fn(rotation::lerp)
-            .add_correction_fn(rotation::lerp);
+            .add_interpolation_fn(rotation::lerp);
+            // TODO: remove correction for now to make rollbacks more obvious
+            // .add_correction_fn(rotation::lerp);
 
         // NOTE: interpolation/correction is only needed for components that are visually displayed!
         // we still need prediction to be able to correctly predict the physics on the client
