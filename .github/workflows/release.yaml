@@ -113,6 +113,7 @@ jobs:
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
 
       - name: Prepare output directories
+        working-directory: client
         run: rm -rf tmp; mkdir -p tmp/binary '${{ env.OUT_DIR }}'
 
       - name: Install cargo-binstall (Web)
@@ -120,12 +121,14 @@ jobs:
         uses: cargo-bins/cargo-binstall@v1.7.4
 
       - name: Install and run trunk (Web)
+        working-directory: client
         if: ${{ matrix.platform == 'web' }}
         run: |
           cargo binstall trunk --no-confirm
           trunk build --release --dist '${{ env.OUT_DIR }}'
 
       - name: Build binaries (non-Web)
+        working-directory: client
         if: ${{ matrix.platform != 'web' }}
         run: |
           for target in ${{ matrix.targets }}; do
@@ -134,6 +137,7 @@ jobs:
           done
 
       - name: Add binaries to package (non-Web)
+        working-directory: client
         if: ${{ matrix.platform != 'web' }}
         run: |
           if [ '${{ matrix.platform }}' == 'macos' ]; then
@@ -143,10 +147,12 @@ jobs:
           fi
 
       - name: Add assets to package (non-Web)
+        working-directory: client
         if: ${{ matrix.platform != 'web' }}
-        run: cp -r '${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true # Ignore error if assets folder does not exist
+        run: cp -r '../${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true # Ignore error if assets folder does not exist
 
       - name: Add app metadata to package (MacOS)
+        working-directory: client
         if: ${{ matrix.platform == 'macos' }}
         run: |
           cat > '${{ env.OUT_DIR }}/../Info.plist' << EOF
