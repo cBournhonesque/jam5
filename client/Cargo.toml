@@ -3,6 +3,9 @@ name = "client"
 version.workspace = true
 edition.workspace = true
 
+[[bin]]
+name = "client"
+
 [features]
 default = [
     # Default to a native dev build.

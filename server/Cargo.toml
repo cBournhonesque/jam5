@@ -3,6 +3,9 @@ name = "server"
 version.workspace = true
 edition.workspace = true
 
+[[bin]]
+name = "server"
+
 [dependencies]
 shared = { path = "../shared" }
 avian2d.workspace = true
