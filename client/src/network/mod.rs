@@ -6,6 +6,7 @@ use lightyear::prelude::client::*;
 use shared::network::config::Transports;
 
 pub(crate) mod config;
+mod bike;
 
 /// Plugin that handles networking
 pub(crate) struct NetworkPlugin {
@@ -26,8 +27,8 @@ impl Plugin for NetworkPlugin {
         ));
 
         app.add_plugins(shared::network::protocol::ProtocolPlugin);
-        // app.add_plugins(NetworkInputsPlugin);
-        // app.add_plugins(InterpolationPlugin);
+
+        app.add_plugins(bike::BikeNetworkPlugin);
 
         // TODO: make this state-scoped
         app.add_systems(Startup, connect);
