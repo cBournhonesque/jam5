@@ -7,6 +7,7 @@ edition.workspace = true
 default = [
     # Default to a native dev build.
     "dev_native",
+    "shared/dev_native",
 ]
 dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
@@ -22,7 +23,7 @@ dev_native = [
 ]
 
 [dependencies]
-shared = { path = "../shared" }
+shared = { path = "../shared", default-features = false }
 avian2d.workspace = true
 bevy.workspace = true
 bevy_turborand.workspace = true
