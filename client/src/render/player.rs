@@ -30,7 +30,7 @@ fn draw_bike(
         gizmos.rounded_rect_2d(
             pos.0,
             rotation.as_radians(),
-            Vec2::new(2.0, 10.0),
+            Vec2::new(50.0, 10.0),
             Color::WHITE,
         );
     }

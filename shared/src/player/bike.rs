@@ -3,7 +3,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use lightyear::prelude::*;
 
-pub const BIKE_VELOCITY: f32 = 10.0;
+pub const BIKE_VELOCITY: f32 = 30.0;
 
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
@@ -15,6 +15,7 @@ pub struct BikeBundle {
     pub position : Position,
     pub rotation: Rotation,
     pub linear_velocity: LinearVelocity,
+    pub angular_velocity: AngularVelocity,
     // TODO: collision? friction?
 }
 
