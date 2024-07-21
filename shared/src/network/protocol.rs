@@ -1,13 +1,14 @@
 //! Defines the shared network protocol between the client and server
 
-use avian2d::prelude::*;
-use bevy::app::{App, Plugin};
-use lightyear::prelude::*;
-use lightyear::prelude::client::*;
-use lightyear::utils::avian2d::*;
 use crate::network::inputs::PlayerMovement;
 use crate::player::bike::BikeMarker;
+use crate::player::trail::Trail;
 use crate::player::Player;
+use avian2d::prelude::*;
+use bevy::app::{App, Plugin};
+use lightyear::prelude::client::*;
+use lightyear::prelude::*;
+use lightyear::utils::avian2d::*;
 
 pub struct ProtocolPlugin;
 
@@ -42,9 +43,6 @@ impl Plugin for ProtocolPlugin {
         // NOTE: interpolation/correction is only needed for components that are visually displayed!
         // we still need prediction to be able to correctly predict the physics on the client
         app.register_component::<LinearVelocity>(ChannelDirection::Bidirectional)
-            .add_prediction(ComponentSyncMode::Full);
-
-        app.register_component::<AngularVelocity>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full);
     }
 }

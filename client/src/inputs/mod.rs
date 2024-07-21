@@ -61,19 +61,12 @@ fn capture_input(
         .map(|ray| ray.origin.truncate())
     {
         if let Ok((bike_pos, mut action_state)) = action_state_query.get_single_mut() {
-            let wish_dir = world_position - bike_pos.0;
-            action_state.press(&PlayerMovement::WishDir);
+            let mouse_position_relative = world_position - bike_pos.0;
+            action_state.press(&PlayerMovement::MousePositionRelative);
             action_state
-                .action_data_mut(&PlayerMovement::WishDir)
+                .action_data_mut(&PlayerMovement::MousePositionRelative)
                 .unwrap()
-                .axis_pair = Some(DualAxisData::from_xy(wish_dir));
-
-            let mouse_distance = bike_pos.0.distance(world_position);
-            action_state.press(&PlayerMovement::MouseDistance);
-            action_state
-                .action_data_mut(&PlayerMovement::MouseDistance)
-                .unwrap()
-                .value = mouse_distance;
+                .axis_pair = Some(DualAxisData::from_xy(mouse_position_relative));
         }
     }
 }

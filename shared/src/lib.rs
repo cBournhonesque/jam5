@@ -6,13 +6,13 @@ pub mod player;
 
 pub mod physics;
 
+use bevy::log::{Level, LogPlugin};
+use bevy::state::app::StatesPlugin;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
-use bevy::log::{Level, LogPlugin};
-use bevy::state::app::StatesPlugin;
 
 pub struct SharedPlugin {
     pub headless: bool,
@@ -29,7 +29,7 @@ impl Plugin for SharedPlugin {
                     level: Level::INFO,
                     filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
                     ..default()
-                }
+                },
             ));
         } else {
             app.add_plugins(
@@ -50,7 +50,7 @@ impl Plugin for SharedPlugin {
                             prevent_default_event_handling: true,
                             ..default()
                         }
-                            .into(),
+                        .into(),
                         ..default()
                     })
                     .set(AudioPlugin {
@@ -65,5 +65,6 @@ impl Plugin for SharedPlugin {
         // Add shared game logic plugins
         app.add_plugins(map::MapPlugin);
         app.add_plugins(physics::PhysicsPlugin);
+        app.add_plugins(player::bike::BikePlugin);
     }
 }

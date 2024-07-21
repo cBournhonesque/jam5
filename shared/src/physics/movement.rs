@@ -1,6 +1,8 @@
 use crate::network::inputs::PlayerMovement;
 use crate::physics::FixedSet;
-use crate::player::bike::{ACCEL, BASE_SPEED, DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE};
+use crate::player::bike::{
+    ACCEL, BASE_SPEED, DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE, MAX_ROTATION_SPEED,
+};
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
@@ -8,7 +10,6 @@ use lightyear::client::prediction::Predicted;
 use lightyear::prelude::*;
 
 pub struct MovementPlugin;
-
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
@@ -31,7 +32,6 @@ impl Plugin for MovementPlugin {
         );
     }
 }
-
 /// System that takes the 'rotation' from the input and uses it to turn the bikes
 fn move_bike_system(
     fixed_time: Res<Time<Fixed>>,
@@ -46,43 +46,40 @@ fn move_bike_system(
     >,
 ) {
     for (mut rotation, mut linear, action_state) in query.iter_mut() {
-        // the wish_dir is the direction we wish to move in
-        let wish_dir = action_state
-            .axis_pair(&PlayerMovement::WishDir)
-            .unwrap_or_default()
-            .xy()
-            .normalize_or_zero();
+        let delta = fixed_time.delta_seconds();
 
         // speed we wish to move at is based on mouse distance
-        let mouse_distance = action_state.value(&PlayerMovement::MouseDistance);
-        let normalized_mouse_distance =
-            (mouse_distance / FAST_SPEED_MAX_SPEED_DISTANCE).clamp(0.0, 1.0);
-        let wish_speed = BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance);
+        if let Some(relative_mouse_pos) =
+            action_state.axis_pair(&PlayerMovement::MousePositionRelative)
+        {
+            let wish_dir = relative_mouse_pos.xy().normalize_or_zero();
+            let normalized_mouse_distance =
+                (relative_mouse_pos.length() / FAST_SPEED_MAX_SPEED_DISTANCE).clamp(0.0, 1.0);
+            let wish_speed = BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance);
 
-        let mut current_velocity = linear.0;
+            // limit the rotation
+            let current_dir = Vec2::new(rotation.cos, rotation.sin);
+            let angle_diff = current_dir.angle_between(wish_dir);
+            let max_rotation = MAX_ROTATION_SPEED * delta;
+            let limited_rotation = angle_diff.clamp(-max_rotation, max_rotation);
+            let actual_dir = current_dir.rotate(Vec2::from_angle(limited_rotation));
 
-        current_velocity = apply_drag(
-            current_velocity,
-            current_velocity.length(),
-            DRAG,
-            fixed_time.delta_seconds(),
-        );
+            let mut current_velocity = linear.0;
+            current_velocity = apply_drag(current_velocity, current_velocity.length(), DRAG, delta);
+            current_velocity += accelerate(
+                actual_dir,
+                wish_speed,
+                current_velocity.dot(actual_dir),
+                ACCEL,
+                delta,
+            );
 
-        current_velocity += accelerate(
-            wish_dir,
-            wish_speed,
-            current_velocity.dot(wish_dir),
-            ACCEL,
-            fixed_time.delta_seconds(),
-        );
+            linear.0 = current_velocity;
 
-        linear.0 = current_velocity;
-
-        // rotate towards the velocity
-        if current_velocity.length_squared() > 0.01 {
-            let target_rotation = current_velocity.y.atan2(current_velocity.x);
-            rotation.sin = target_rotation.sin();
-            rotation.cos = target_rotation.cos();
+            // rotate towards the direction of movement
+            let new_rotation = actual_dir.y.atan2(actual_dir.x);
+            rotation.sin = new_rotation.sin();
+            rotation.cos = new_rotation.cos();
         }
     }
 }

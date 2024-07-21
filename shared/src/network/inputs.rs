@@ -8,6 +8,5 @@ use lightyear::prelude::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy, Hash, Reflect, Actionlike)]
 pub enum PlayerMovement {
-    WishDir,
-    MouseDistance,
+    MousePositionRelative,
 }
