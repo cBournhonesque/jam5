@@ -3,6 +3,7 @@
 use crate::network::inputs::PlayerMovement;
 use crate::player::bike::BikeMarker;
 use crate::player::trail::Trail;
+use crate::player::zone::Zone;
 use crate::player::Player;
 use avian2d::prelude::*;
 use bevy::app::{App, Plugin};
@@ -46,5 +47,6 @@ impl Plugin for ProtocolPlugin {
             .add_prediction(ComponentSyncMode::Full);
 
         app.register_component::<Trail>(ChannelDirection::ServerToClient);
+        app.register_component::<Zone>(ChannelDirection::ServerToClient);
     }
 }

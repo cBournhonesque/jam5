@@ -35,6 +35,9 @@ pub fn app(cli: Cli) -> App {
         headless: cli.headless,
     });
 
+    // game
+    app.add_plugins(game::start::GamePlugin);
+
     // networking
     app.add_plugins(network::NetworkPlugin {
         server_port: cli.port,

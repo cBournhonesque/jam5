@@ -9,7 +9,7 @@ pub const MAP_SIZE: f32 = 2000.0;
 pub struct MapMarker;
 
 #[derive(Component)]
-pub struct MapRadius{
+pub struct MapRadius {
     pub radius: f32,
 }
 
@@ -17,25 +17,23 @@ pub struct MapRadius{
 pub struct SpawnMap;
 
 impl MapPlugin {
-
     /// Spawn the map when we receive the SpawnMap Trigger.
-    pub fn spawn_map(_trigger: Trigger<SpawnMap>, mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
-        commands.spawn(
-            (
-            MapRadius {
-                radius: MAP_SIZE,
-            },
+    pub fn spawn_map(
+        _trigger: Trigger<SpawnMap>,
+        mut commands: Commands,
+        mut global_rng: ResMut<GlobalRng>,
+    ) {
+        commands.spawn((
+            MapRadius { radius: MAP_SIZE },
             MapMarker,
             Name::new("Map"),
-            RngComponent::from(&mut global_rng)
-            )
-        );
+            RngComponent::from(&mut global_rng),
+        ));
     }
 }
 
-
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.observe(Self::spawn_map);
+        //app.observe(Self::spawn_map);
     }
 }
