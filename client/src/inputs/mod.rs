@@ -4,7 +4,9 @@ use bevy::window::PrimaryWindow;
 use leafwing_input_manager::axislike::DualAxisData;
 use leafwing_input_manager::plugin::InputManagerSystem;
 use leafwing_input_manager::prelude::*;
+use lightyear::client::input::leafwing::InputSystemSet;
 use lightyear::prelude::client::*;
+use lightyear::prelude::TickManager;
 use shared::network::inputs::PlayerMovement;
 use shared::player::bike::BikeMarker;
 
@@ -13,10 +15,15 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            PreUpdate,
+            FixedPreUpdate,
             // make sure this runs after the other leafwing systems
             // mouse_to_world_space.in_set(InputManagerSystem::ManualControl),
-            capture_input.in_set(InputManagerSystem::ManualControl),
+
+            // make sure we update the ActionState before buffering them
+            capture_input
+                .before(InputSystemSet::BufferClientInputs)
+                .run_if(not(is_in_rollback))
+                // .in_set(InputManagerSystem::ManualControl),
         );
         // TODO: ideally use an observer? this should only run once
         app.add_systems(Update, add_input_map);
@@ -43,6 +50,7 @@ fn add_input_map(
 }
 
 fn capture_input(
+    tick_manager: Res<TickManager>,
     mut action_state_query: Query<(&Position, &mut ActionState<PlayerMovement>), With<Predicted>>,
     // query to get the window (so we can read the current cursor position)
     q_window: Query<&Window, With<PrimaryWindow>>,
@@ -67,6 +75,7 @@ fn capture_input(
                 .action_data_mut(&PlayerMovement::MousePositionRelative)
                 .unwrap()
                 .axis_pair = Some(DualAxisData::from_xy(mouse_position_relative));
+            info!(tick = ?tick_manager.tick(), ?mouse_position_relative, "Relative mouse position");
         }
     }
 }

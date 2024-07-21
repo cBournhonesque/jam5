@@ -1,6 +1,8 @@
 use avian2d::position::Position;
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::TransformSystem::TransformPropagate;
 use lightyear::client::prediction::Predicted;
+use lightyear::prelude::client::InterpolationSet;
 use shared::player::bike::BikeMarker;
 
 pub const FOLLOW_CAMERA_Z: f32 = 2.0;
@@ -20,7 +22,7 @@ pub enum CameraState {
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, init_camera);
-        app.add_systems(Update, update_camera);
+        app.add_systems(PostUpdate, update_camera.after(TransformPropagate));
     }
 }
 
@@ -34,21 +36,21 @@ fn update_camera(
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_player: Query<&Position, (With<BikeMarker>, With<Predicted>)>,
 ) {
-    let window = q_window.single();
-
-    if let Ok((camera, mut cam_xform, cam_gxform)) = q_camera.get_single_mut() {
-        if let Some(world_position) = window
-            .cursor_position()
-            .and_then(|cursor| camera.viewport_to_world(cam_gxform, cursor))
-            .map(|ray| ray.origin.truncate())
-        {
-            if let Some(player_pos) = q_player.iter().next() {
-                let target = (player_pos.0 + world_position) * 0.5;
-                let current_pos = cam_xform.translation.truncate();
-                let new_pos = current_pos.lerp(target, CAMERA_FOLLOW_SPEED * time.delta_seconds());
-                let new_pos_3d = Vec3::new(new_pos.x, new_pos.y, FOLLOW_CAMERA_Z);
-                cam_xform.translation = new_pos_3d;
-            }
-        }
-    }
+    // let window = q_window.single();
+    //
+    // if let Ok((camera, mut cam_xform, cam_gxform)) = q_camera.get_single_mut() {
+    //     if let Some(world_position) = window
+    //         .cursor_position()
+    //         .and_then(|cursor| camera.viewport_to_world(cam_gxform, cursor))
+    //         .map(|ray| ray.origin.truncate())
+    //     {
+    //         if let Some(player_pos) = q_player.iter().next() {
+    //             let target = (player_pos.0 + world_position) * 0.5;
+    //             let current_pos = cam_xform.translation.truncate();
+    //             let new_pos = current_pos.lerp(target, CAMERA_FOLLOW_SPEED * time.delta_seconds());
+    //             let new_pos_3d = Vec3::new(new_pos.x, new_pos.y, FOLLOW_CAMERA_Z);
+    //             cam_xform.translation = new_pos_3d;
+    //         }
+    //     }
+    // }
 }

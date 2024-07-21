@@ -13,6 +13,7 @@ lightyear.workspace = true
 clap.workspace = true
 serde.workspace = true
 flo_curves.workspace = true
+bevy-inspector-egui = { version = "0.25.1", optional = true }
 
 
 
@@ -25,6 +26,7 @@ dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/dynamic_linking",
     "bevy/bevy_dev_tools",
+    "dep:bevy-inspector-egui",
 ]
 dev_native = [
     "dev",

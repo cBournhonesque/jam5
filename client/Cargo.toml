@@ -16,6 +16,7 @@ dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/dynamic_linking",
     "bevy/bevy_dev_tools",
+    "shared/dev",
 ]
 dev_native = [
     "dev",
