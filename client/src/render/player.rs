@@ -7,6 +7,7 @@ use lightyear::prelude::client::*;
 use lightyear::utils::avian2d::linear_velocity;
 use shared::player::bike::BikeMarker;
 use shared::player::trail::Trail;
+use shared::player::zone::Zone;
 
 const GRID_SIZE: i32 = 100;
 const CELL_SIZE: f32 = 50.0;
@@ -25,7 +26,7 @@ impl Plugin for PlayerRenderPlugin {
         // TODO: should we worry about transform propagate?
         app.add_systems(Startup, spawn_grid);
         // Draw after TransformPropagate and VisualInterpolation
-        app.add_systems(PostUpdate, (draw_bike, draw_trail).after(TransformPropagate));
+        app.add_systems(PostUpdate, (draw_bike, draw_trail, draw_zones).after(TransformPropagate));
     }
 }
 
@@ -54,6 +55,20 @@ fn draw_trail(mut gizmos: Gizmos, query: Query<&Trail, With<BikeMarker>>) {
             let start = trail.line[i];
             let end = trail.line[i + 1];
             gizmos.line_2d(start, end, Color::WHITE);
+        }
+    }
+}
+
+fn draw_zones(mut gizmos: Gizmos, query: Query<&Zone>) {
+    for zone in query.iter() {
+        println!("Drawing zone: {:?}", zone);
+        if zone.points.len() < 2 {
+            continue;
+        }
+        for i in 0..zone.points.len() - 1 {
+            let start = zone.points[i];
+            let end = zone.points[i + 1];
+            gizmos.line_2d(start, end, zone.color);
         }
     }
 }
