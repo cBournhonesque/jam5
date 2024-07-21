@@ -35,6 +35,7 @@ impl Plugin for MovementPlugin {
 fn turn_from_inputs(
     mut query: Query<
         (
+            &mut Rotation,
             &mut LinearVelocity,
             &mut AngularVelocity,
             &ActionState<PlayerMovement>,
@@ -43,7 +44,7 @@ fn turn_from_inputs(
         Or<(With<Predicted>, With<Replicating>)>,
     >,
 ) {
-    for (mut linear, mut angular, mut action_state) in query.iter_mut() {
+    for (mut rotation, mut linear, mut angular, mut action_state) in query.iter_mut() {
         // angle in radians between the cursor and the bike
         let angle = action_state.value(&PlayerMovement::Rotate);
 
@@ -51,8 +52,12 @@ fn turn_from_inputs(
         if degrees.abs() > 10.0 {
             angular.0 = -TURN_SPEED * angle.signum();
         } else {
-            angular.0 = -TURN_SPEED * angle.signum() * (degrees.abs() / 30.0);
+            // directly set the rotation to the cursor angle
+            // the next cursor angle should be 0.0
+            angular.0 = 0.0;
+            *rotation = Rotation::radians(rotation.as_radians() + angle);
         }
+
         info!("Turning the bike as cursor is  {degrees:?} degrees from bike rotation. Turn speed: {angular:?}");
 
 
