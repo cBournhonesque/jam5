@@ -38,16 +38,5 @@ impl BikeBundle {
 pub struct BikePlugin;
 
 impl Plugin for BikePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(FixedUpdate, mark_trail_system);
-    }
-}
-
-fn mark_trail_system(mut query: Query<(&Position, &mut Trail), With<BikeMarker>>) {
-    println!("marking trail");
-    for (position, mut trail) in query.iter_mut() {
-        println!("marking trail at {:?}", position.0);
-        let point = position.0;
-        trail.add_point(point);
-    }
+    fn build(&self, app: &mut App) {}
 }

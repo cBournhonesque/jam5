@@ -1,73 +1,98 @@
-use avian2d::{
-    parry::{na::Point2, shape::Polyline},
-    position::Position,
-};
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
+
+const MIN_POINT_DISTANCE: f32 = 50.0;
+const MAX_LINE_POINTS: usize = 200;
 
 pub struct TrailPlugin;
 
 impl Plugin for TrailPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(FixedUpdate, mark_trail_system);
-    }
+    fn build(&self, app: &mut App) {}
 }
 
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct Trail {
-    first_point: Option<Point2<f32>>,
-    pub line: Option<Polyline>,
-}
-
-impl Default for Trail {
-    fn default() -> Self {
-        Self {
-            first_point: None,
-            line: None,
-        }
-    }
+    pub line: Vec<Vec2>,
 }
 
 impl Trail {
-    pub fn add_point(&mut self, point: Vec2) {
-        let new_point = Point2::new(point.x, point.y);
-
-        match (&self.first_point, &mut self.line) {
-            // first point
-            (None, _) => {
-                println!("first point");
-                self.first_point = Some(new_point);
-            }
-            // second point, create a line
-            (Some(first), None) => {
-                println!("second point");
-                let points = vec![*first, new_point];
-                let indices = vec![[0, 1]];
-                self.line = Some(Polyline::new(points, Some(indices)));
-                self.first_point = None;
-            }
-            // add to existing line
-            (_, Some(line)) => {
-                println!("adding point to line");
-                let mut points = line.vertices().to_vec();
-                points.push(new_point);
-                let indices = Self::compute_indices(&points);
-                *line = Polyline::new(points, Some(indices));
+    pub fn try_add_point(&mut self, point: Vec2) -> Option<Vec<Vec2>> {
+        // don't place near the last point
+        if let Some(last) = self.line.last() {
+            if (*last - point).length() < MIN_POINT_DISTANCE {
+                return None;
             }
         }
+
+        // limit the length of the trail
+        if self.line.len() > MAX_LINE_POINTS {
+            self.line.remove(0);
+        }
+
+        if self.line.len() >= 3 {
+            let last_point = *self.line.last().unwrap();
+            if let Some(shape) = self.detect_intersection(last_point, point) {
+                self.line = shape;
+                return Some(self.line.clone());
+            }
+        }
+
+        self.line.push(point);
+        None
     }
 
-    fn compute_indices(points: &[Point2<f32>]) -> Vec<[u32; 2]> {
-        (0..points.len().saturating_sub(1))
-            .map(|i| [i as u32, (i + 1) as u32])
-            .collect()
+    pub fn detect_intersection(&self, point_a: Vec2, point_b: Vec2) -> Option<Vec<Vec2>> {
+        if self.line.len() < 3 {
+            return None;
+        }
+        // check all segments except the last one
+        for i in 0..self.line.len() - 2 {
+            let line_a = self.line[i];
+            let line_b = self.line[i + 1];
+
+            if let Some(intersection) = line_segments_intersect(point_a, point_b, line_a, line_b) {
+                // found an intersection, now form the shape
+                let mut shape = Vec::new();
+
+                // add the intersection point
+                shape.push(intersection);
+
+                // add points from the intersection to the end of the trail
+                shape.extend_from_slice(&self.line[i + 1..]);
+
+                // add the intersection point to close off the shape (DO WE NEED THIS?)
+                shape.push(intersection);
+
+                // add the new point
+                shape.push(point_b);
+
+                return Some(shape);
+            }
+        }
+
+        None
     }
 }
 
-fn mark_trail_system(mut query: Query<(&Position, &mut Trail)>) {
-    println!("marking trail");
-    for (position, mut trail) in query.iter_mut() {
-        println!("adding point to trail");
-        trail.add_point(position.0);
+fn line_segments_intersect(a1: Vec2, a2: Vec2, b1: Vec2, b2: Vec2) -> Option<Vec2> {
+    let da = a2 - a1;
+    let db = b2 - b1;
+    let dab = a1 - b1;
+
+    let denominator = da.perp_dot(db);
+
+    if denominator.abs() < 0.000001 {
+        // lines are parallel
+        return None;
+    }
+
+    let t = db.perp_dot(dab) / denominator;
+    let u = da.perp_dot(dab) / denominator;
+
+    if (0.0..=1.0).contains(&t) && (0.0..=1.0).contains(&u) {
+        // intersection point
+        Some(a1 + da * t)
+    } else {
+        None
     }
 }

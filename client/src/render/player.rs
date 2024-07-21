@@ -3,7 +3,9 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use lightyear::prelude::client::*;
+use lightyear::utils::avian2d::linear_velocity;
 use shared::player::bike::BikeMarker;
+use shared::player::trail::Trail;
 
 const GRID_SIZE: i32 = 100;
 const CELL_SIZE: f32 = 50.0;
@@ -21,15 +23,16 @@ impl Plugin for PlayerRenderPlugin {
         // TODO: draw player
         // TODO: should we worry about transform propagate?
         app.add_systems(Startup, spawn_grid);
-        app.add_systems(PostUpdate, draw_bike);
+        app.add_systems(PostUpdate, (draw_bike, draw_trail));
     }
 }
 
 fn draw_bike(
+    fixed_time: Res<Time<Fixed>>,
     mut gizmos: Gizmos,
-    query: Query<(&Position, &Rotation), (With<BikeMarker>, With<Predicted>)>,
+    query: Query<(&Position, &Rotation, &LinearVelocity), (With<BikeMarker>, With<Predicted>)>,
 ) {
-    for (pos, rotation) in query.iter() {
+    for (pos, rotation, linear_velocity) in query.iter() {
         trace!("Drawing bike at {:?}", pos.0);
         gizmos.rounded_rect_2d(
             pos.0,
@@ -37,6 +40,19 @@ fn draw_bike(
             Vec2::new(50.0, 10.0),
             Color::WHITE,
         );
+    }
+}
+
+fn draw_trail(mut gizmos: Gizmos, query: Query<&Trail, With<BikeMarker>>) {
+    for trail in query.iter() {
+        if trail.line.len() < 2 {
+            continue;
+        }
+        for i in 0..trail.line.len() - 1 {
+            let start = trail.line[i];
+            let end = trail.line[i + 1];
+            gizmos.line_2d(start, end, Color::WHITE);
+        }
     }
 }
 

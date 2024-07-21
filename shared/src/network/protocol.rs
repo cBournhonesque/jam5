@@ -44,5 +44,7 @@ impl Plugin for ProtocolPlugin {
         // we still need prediction to be able to correctly predict the physics on the client
         app.register_component::<LinearVelocity>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full);
+
+        app.register_component::<Trail>(ChannelDirection::ServerToClient);
     }
 }
