@@ -34,7 +34,7 @@ tracing = "0.1"
 tracing-subscriber = "0.3.17"
 bevy = { version = "0.14"}
 clap = { version = "4.5", features = ["derive"] }
-bevy-inspector-egui = "0.25.1"
+
 
 
 # Idiomatic Bevy code often triggers these lints, and the CI workflow treats them as errors.

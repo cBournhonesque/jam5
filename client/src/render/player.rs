@@ -1,6 +1,7 @@
 use crate::assets::{AssetKey, HandleMap};
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use lightyear::prelude::client::*;
 use lightyear::utils::avian2d::linear_velocity;
@@ -23,7 +24,8 @@ impl Plugin for PlayerRenderPlugin {
         // TODO: draw player
         // TODO: should we worry about transform propagate?
         app.add_systems(Startup, spawn_grid);
-        app.add_systems(PostUpdate, (draw_bike, draw_trail));
+        // Draw after TransformPropagate and VisualInterpolation
+        app.add_systems(PostUpdate, (draw_bike, draw_trail).after(TransformPropagate));
     }
 }
 

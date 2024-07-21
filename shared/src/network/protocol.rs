@@ -28,6 +28,9 @@ impl Plugin for ProtocolPlugin {
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 
+        app.register_component::<RigidBody>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once);
+
         app.register_component::<Position>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation(ComponentSyncMode::Full)

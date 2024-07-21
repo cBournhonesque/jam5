@@ -1,3 +1,4 @@
+#[cfg(feature = "dev")]
 pub mod debug;
 pub mod map;
 pub mod network;
@@ -27,13 +28,18 @@ impl Plugin for SharedPlugin {
                 StatesPlugin,
                 LogPlugin {
                     level: Level::INFO,
-                    filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
+                    filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
                     ..default()
                 },
             ));
         } else {
             app.add_plugins(
                 DefaultPlugins
+                    .set(LogPlugin {
+                        level: Level::INFO,
+                        filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
+                        ..default()
+                    })
                     .set(AssetPlugin {
                         file_path: "../assets".to_string(),
                         // Wasm builds will check for meta files (that don't exist) if this isn't set.
@@ -61,6 +67,9 @@ impl Plugin for SharedPlugin {
                     }),
             );
         }
+
+        #[cfg(feature = "dev")]
+        app.add_plugins(debug::DebugPlugin);
 
         // Add shared game logic plugins
         app.add_plugins(map::MapPlugin);

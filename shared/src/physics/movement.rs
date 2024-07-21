@@ -34,6 +34,7 @@ impl Plugin for MovementPlugin {
 }
 /// System that takes the 'rotation' from the input and uses it to turn the bikes
 fn move_bike_system(
+    tick_manager: Res<TickManager>,
     fixed_time: Res<Time<Fixed>>,
     mut query: Query<
         (
@@ -47,11 +48,13 @@ fn move_bike_system(
 ) {
     for (mut rotation, mut linear, action_state) in query.iter_mut() {
         let delta = fixed_time.delta_seconds();
+        let tick = tick_manager.tick();
 
         // speed we wish to move at is based on mouse distance
         if let Some(relative_mouse_pos) =
             action_state.axis_pair(&PlayerMovement::MousePositionRelative)
         {
+
             let wish_dir = relative_mouse_pos.xy().normalize_or_zero();
             let normalized_mouse_distance =
                 (relative_mouse_pos.length() / FAST_SPEED_MAX_SPEED_DISTANCE).clamp(0.0, 1.0);
@@ -65,14 +68,19 @@ fn move_bike_system(
             let actual_dir = current_dir.rotate(Vec2::from_angle(limited_rotation));
 
             let mut current_velocity = linear.0;
-            current_velocity = apply_drag(current_velocity, current_velocity.length(), DRAG, delta);
-            current_velocity += accelerate(
-                actual_dir,
-                wish_speed,
-                current_velocity.dot(actual_dir),
-                ACCEL,
-                delta,
-            );
+
+            // for simplicity, use a constant speed for now
+            current_velocity = actual_dir * BASE_SPEED;
+
+            // TODO: maybe add drag/acceleration/speed based on mouse distance?
+            // current_velocity = apply_drag(current_velocity, current_velocity.length(), DRAG, delta);
+            // current_velocity += accelerate(
+            //     actual_dir,
+            //     wish_speed,
+            //     current_velocity.dot(actual_dir),
+            //     ACCEL,
+            //     delta,
+            // );
 
             linear.0 = current_velocity;
 
@@ -80,6 +88,8 @@ fn move_bike_system(
             let new_rotation = actual_dir.y.atan2(actual_dir.x);
             rotation.sin = new_rotation.sin();
             rotation.cos = new_rotation.cos();
+
+            trace!(?tick, ?delta, ?relative_mouse_pos, ?linear, ?rotation, "Moving bike from input");
         }
     }
 }
