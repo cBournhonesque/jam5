@@ -13,6 +13,10 @@ pub const FAST_SPEED_MAX_SPEED_DISTANCE: f32 = 500.0; // we lerp from BASE_SPEED
 pub const MAX_ROTATION_SPEED: f32 = 6.0;
 pub const FAST_DRAG: f32 = 2.0;
 
+
+#[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
+pub struct ColorComponent(pub Color);
+
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct BikeMarker;
 
@@ -22,14 +26,16 @@ pub struct BikeBundle {
     pub position: Position,
     pub rotation: Rotation,
     pub linear_velocity: LinearVelocity,
+    pub color: ColorComponent,
     pub trail: Trail,
 }
 
 impl BikeBundle {
-    pub fn new_at(position: Vec2) -> Self {
+    pub fn new_at(position: Vec2, color: Color) -> Self {
         // TODO: spawn at a random position on the map
         Self {
             position: Position(position),
+            color: ColorComponent(color),
             linear_velocity: LinearVelocity(Vector::new(0.0, 0.0)),
             ..default()
         }
