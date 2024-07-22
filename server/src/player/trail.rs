@@ -39,6 +39,7 @@ impl Plugin for TrailPlugin {
 pub(crate) struct SelfLoopContactEvent {
     // trail_entity: Entity,
     pub(crate) contact_point: Vector,
+    pub(crate) bike_point: Vector,
 }
 
 /// Detect if a bike will collide with its own trail
@@ -66,6 +67,7 @@ fn detect_self_loop_contact(
                     commands.trigger_targets(SelfLoopContactEvent {
                         // trail_entity,
                         contact_point: impact.point2,
+                        bike_point: pos.0,
                     }, trail_entity);
                 }
             } else {

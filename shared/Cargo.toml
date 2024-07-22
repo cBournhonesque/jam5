@@ -16,6 +16,7 @@ lightyear.workspace = true
 clap.workspace = true
 serde.workspace = true
 flo_curves.workspace = true
+geo.workspace = true
 bevy-inspector-egui = { version = "0.25.1", optional = true }
 
 

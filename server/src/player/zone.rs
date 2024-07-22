@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use avian2d::collision::Collider;
 use avian2d::parry::shape::Polyline;
 use avian2d::parry::transformation::vhacd::VHACDParameters;
@@ -27,6 +28,10 @@ fn handle_self_loop_contact(
 ) {
     if let Ok((parent, mut trail, mut collider)) = trail.get_mut(trigger.entity()) {
         info!("Self loop contact! Generate zone");
+        // cut the trail before the intersection point
+        // NOTE: cannot use the contact_point directly because of numerical instabilities
+        trail.cut_trail_before_intersection_point(trigger.event().bike_point);
+
         // add the point to the trail, and update the collider
         trail.add_point(trigger.event().contact_point);
 
@@ -41,7 +46,8 @@ fn handle_self_loop_contact(
         }
 
         // reset the line and collider
-        trail.line = vec![trigger.event().contact_point];
+        trail.line = VecDeque::default();
+        trail.add_point(trigger.event().contact_point);
         *collider = Collider::circle(0.0);
     }
 }
