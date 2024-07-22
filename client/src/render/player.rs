@@ -8,10 +8,8 @@ use shared::player::bike::{BikeMarker, ColorComponent};
 use shared::player::trail::Trail;
 use shared::player::zone::{ZoneManager, Zones};
 
-const GRID_SIZE: i32 = 100;
-const CELL_SIZE: f32 = 50.0;
-const GRID_COLOR: Color = Color::srgb(0.5, 0.5, 0.5);
-const LINE_THICKNESS: f32 = 2.0;
+
+
 
 pub(crate) struct PlayerRenderPlugin;
 
@@ -21,16 +19,11 @@ impl Plugin for PlayerRenderPlugin {
         app.register_type::<HandleMap<ImageKey>>();
         app.init_resource::<HandleMap<ImageKey>>();
 
-        // TODO: draw player
-        // TODO: should we worry about transform propagate?
-        app.add_systems(Startup, spawn_grid);
         // Draw after TransformPropagate and VisualInterpolation
         app.add_systems(
             PostUpdate,
             (
                 draw_bike,
-                // draw_trail,
-                // draw_zones
             )
                 .after(TransformPropagate),
         );
@@ -47,76 +40,7 @@ fn draw_bike(
     }
 }
 
-// fn draw_trail(mut gizmos: Gizmos, query: Query<(&Trail, &ColorComponent), With<BikeMarker>>) {
-//     for (trail, color) in query.iter() {
-//         let trail_color = Color::Hsva(Hsva {
-//             saturation: 0.4,
-//             ..Hsva::from(color.0)
-//         });
-//         if trail.line.len() < 2 {
-//             continue;
-//         }
-//         for i in 0..trail.line.len() - 1 {
-//             let start = trail.line[i];
-//             let end = trail.line[i + 1];
-//             gizmos.line_2d(start, end, trail_color);
-//         }
-//     }
-// }
 
-// fn draw_zones(mut gizmos: Gizmos, query: Query<(&Zones, &ColorComponent), With<BikeMarker>>) {
-//     for (zones, color) in query.iter() {
-//         let zone_color = Color::Hsva(Hsva {
-//             saturation: 0.2,
-//             ..Hsva::from(color.0)
-//         });
-//         for zone in zones.zones.iter() {
-//             if zone.points.len() < 3 {
-//                 // Changed from 2 to 3 for closed polygons
-//                 continue;
-//             }
-//             for i in 0..zone.points.len() {
-//                 let start = zone.points[i];
-//                 let end = zone.points[(i + 1) % zone.points.len()]; // Use modulo to close the polygon
-//                 gizmos.line_2d(start, end, zone_color);
-//             }
-//         }
-//     }
-// }
-
-fn spawn_grid(mut commands: Commands) {
-    let total_width = GRID_SIZE as f32 * CELL_SIZE;
-    let total_height = GRID_SIZE as f32 * CELL_SIZE;
-    let offset = Vec3::new(-total_width / 2.0, -total_height / 2.0, 0.0);
-
-    // Spawn horizontal lines
-    for i in 0..=GRID_SIZE {
-        let position = Vec3::new(total_width / 2.0, i as f32 * CELL_SIZE, 0.0) + offset;
-        commands.spawn(SpriteBundle {
-            sprite: Sprite {
-                color: GRID_COLOR,
-                custom_size: Some(Vec2::new(total_width, LINE_THICKNESS)),
-                ..default()
-            },
-            transform: Transform::from_translation(position),
-            ..default()
-        });
-    }
-
-    // Spawn vertical lines
-    for i in 0..=GRID_SIZE {
-        let position = Vec3::new(i as f32 * CELL_SIZE, total_height / 2.0, 0.0) + offset;
-        commands.spawn(SpriteBundle {
-            sprite: Sprite {
-                color: GRID_COLOR,
-                custom_size: Some(Vec2::new(LINE_THICKNESS, total_height)),
-                ..default()
-            },
-            transform: Transform::from_translation(position),
-            ..default()
-        });
-    }
-}
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum ImageKey {

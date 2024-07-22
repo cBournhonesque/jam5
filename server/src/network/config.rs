@@ -50,8 +50,10 @@ pub(crate) fn build_lightyear_server(port: u16, transport: Transports) -> Server
     };
     // Step 2: define the server configuration
     let shared_config = shared_config();
-    let mut replication_config = ReplicationConfig::default();
-    replication_config.send_interval = shared_config.server_replication_send_interval;
+    let replication_config = ReplicationConfig {
+        send_updates_mode: SendUpdatesMode::SinceLastAck,
+        send_interval: shared_config.server_replication_send_interval,
+    };
     let config = ServerConfig {
         shared: shared_config,
         net: vec![NetConfig::Netcode {

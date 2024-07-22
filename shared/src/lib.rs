@@ -29,6 +29,7 @@ impl Plugin for SharedPlugin {
                 LogPlugin {
                     level: Level::INFO,
                     filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
+                    // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=trace,lightyear::protocol::component=trace".to_string(),
                     ..default()
                 },
             ));
@@ -38,6 +39,7 @@ impl Plugin for SharedPlugin {
                     .set(LogPlugin {
                         level: Level::INFO,
                         filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
+                        // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=trace,lightyear::protocol::component=trace".to_string(),
                         ..default()
                     })
                     .set(AssetPlugin {
@@ -75,6 +77,7 @@ impl Plugin for SharedPlugin {
         app.add_plugins(map::MapPlugin);
         app.add_plugins(physics::PhysicsPlugin);
         app.add_plugins(player::bike::BikePlugin);
+        app.add_plugins(player::trail::TrailPlugin);
         app.add_plugins(player::zone::ZonePlugin);
     }
 }
