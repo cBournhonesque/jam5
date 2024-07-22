@@ -32,7 +32,8 @@ pub struct Cli {
 pub fn app(cli: Cli) -> App {
     let mut app = App::new();
     app.add_plugins(SharedPlugin {
-        headless: cli.headless,
+        headless: false,
+        // headless: cli.headless,
     });
 
     // game

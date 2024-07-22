@@ -3,6 +3,9 @@ name = "server"
 version.workspace = true
 edition.workspace = true
 
+[lints]
+workspace = true
+
 [[bin]]
 name = "server"
 
@@ -32,5 +35,8 @@ avian2d.workspace = true
 bevy.workspace = true
 lightyear.workspace = true
 clap.workspace = true
+geo.workspace = true
 
 async-compat = "0.2.4"
+
+

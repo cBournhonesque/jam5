@@ -3,6 +3,7 @@ use bevy::app::{App, Plugin};
 use lightyear::prelude::client::*;
 
 pub mod player;
+mod gizmos;
 
 pub(crate) struct RenderPlugin;
 

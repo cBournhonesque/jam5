@@ -4,6 +4,9 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 avian2d.workspace = true
 bevy.workspace = true
@@ -13,6 +16,7 @@ lightyear.workspace = true
 clap.workspace = true
 serde.workspace = true
 flo_curves.workspace = true
+geo.workspace = true
 bevy-inspector-egui = { version = "0.25.1", optional = true }
 
 

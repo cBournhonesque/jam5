@@ -1,3 +1,4 @@
+
 #[cfg(feature = "dev")]
 pub mod debug;
 pub mod map;
@@ -37,7 +38,8 @@ impl Plugin for SharedPlugin {
                 DefaultPlugins
                     .set(LogPlugin {
                         level: Level::INFO,
-                        filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
+                        filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
+                        // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
                         ..default()
                     })
                     .set(AssetPlugin {
@@ -75,5 +77,6 @@ impl Plugin for SharedPlugin {
         app.add_plugins(map::MapPlugin);
         app.add_plugins(physics::PhysicsPlugin);
         app.add_plugins(player::bike::BikePlugin);
+        app.add_plugins(player::trail::TrailPlugin);
     }
 }
