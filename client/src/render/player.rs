@@ -80,11 +80,17 @@ fn draw_zones(
                 ..Hsva::from(color.0)
             });
             zone.compound.shapes().iter().for_each(|(_, shape)| {
-                let polygon = shape.as_round_convex_polygon().unwrap();
-                let line = polygon.to_polyline(10);
-                line.chunks_exact(2).for_each(|pair| {
+                let polygon = shape.as_convex_polygon().unwrap();
+                polygon.points().chunks_exact(2).for_each(|pair| {
                     gizmos.line_2d(Vec2::from(pair[0]), Vec2::from(pair[1]), zone_color);
                 });
+
+                // ROUND POLYLINES
+                // let polygon = shape.as_round_convex_polygon().unwrap();
+                // let line = polygon.to_polyline(100);
+                // line.chunks_exact(2).for_each(|pair| {
+                //     gizmos.line_2d(Vec2::from(pair[0]), Vec2::from(pair[1]), zone_color);
+                // });
             })
         }
     }

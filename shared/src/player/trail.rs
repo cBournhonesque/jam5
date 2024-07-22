@@ -4,6 +4,7 @@ use avian2d::parry::math::{Isometry, Point};
 use avian2d::parry::na::Point2;
 use avian2d::parry::shape::{Compound, Polyline, SharedShape};
 use avian2d::parry::transformation::vhacd::{VHACD, VHACDParameters};
+use avian2d::parry::transformation::voxelization::FillMode;
 use avian2d::prelude::{Collider, ColliderConstructor, CollisionLayers, LinearVelocity, Position};
 use crate::physics::util::line_segments_intersect;
 use bevy::prelude::*;
@@ -113,14 +114,23 @@ impl Trail {
         let mut parts = vec![];
         let polyline = Polyline::from(self);
         let decomp = VHACD::decompose(
-            &VHACDParameters::default(),
+            &VHACDParameters {
+                fill_mode: FillMode::FloodFill {
+                    detect_cavities: false,
+                    detect_self_intersections: true,
+                },
+                ..default()
+            },
             polyline.vertices(),
             polyline.indices(),
              true);
         for vertices in decomp.compute_exact_convex_hulls(polyline.vertices(), polyline.indices()) {
-            if let Some(convex) = SharedShape::round_convex_polyline(vertices, ZONE_CORNER_RADIUS) {
+            if let Some(convex) = SharedShape::convex_polyline(vertices) {
                 parts.push((Isometry::identity(), convex));
             }
+            // if let Some(convex) = SharedShape::round_convex_polyline(vertices, ZONE_CORNER_RADIUS) {
+            //     parts.push((Isometry::identity(), convex));
+            // }
         }
         let raw_shapes = parts.into_iter().map(|s| (s.0, s.1)).collect();
         let compound = Compound::new(raw_shapes);
