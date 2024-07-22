@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 const MIN_POINT_DISTANCE: f32 = 50.0;
 
-pub const ADD_POINT_INTERVAL: Duration = Duration::from_millis(50);
+pub const ADD_POINT_INTERVAL: Duration = Duration::from_millis(10);
 const MAX_LINE_POINTS: usize = 200;
 
 pub struct TrailPlugin;
