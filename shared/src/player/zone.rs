@@ -4,6 +4,7 @@ use geo_types::{Coord, LineString, MultiPolygon, Polygon};
 use lightyear::connection::netcode::ClientId;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use bevy_prototype_lyon::prelude::*;
 
 const CLIPPER_SCALE: f64 = 1_000_000.0;
 
@@ -22,10 +23,45 @@ pub struct Zone {
     pub points: Vec<Vec2>,
 }
 
+
 #[derive(Reflect, Component, Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct Zones {
     pub zones: Vec<Zone>,
 }
+
+impl From<&Zones> for Path {
+    fn from(zones: &Zones) -> Self {
+        let mut path = PathBuilder::new();
+        for zone in zones.zones.iter() {
+            if zone.points.len() < 3 {
+                return path.build();
+            }
+            path.move_to(zone.points[0]);
+            for point in zone.points.iter().skip(1) {
+                path.line_to(*point);
+            }
+        }
+        path.build()
+    }
+}
+
+
+// Convert a Zone to a Path.
+impl From<&Zone> for Path {
+    fn from(value: &Zone) -> Self {
+        let mut path = PathBuilder::new();
+        if value.points.len() < 3 {
+            return path.build();
+        }
+        path.move_to(value.points[0]);
+        for point in value.points.iter().skip(1) {
+            path.line_to(*point);
+        }
+        // TODO: do i need to close?
+        path.build()
+    }
+}
+
 
 impl Zone {
     pub fn new(points: Vec<Vec2>) -> Self {
