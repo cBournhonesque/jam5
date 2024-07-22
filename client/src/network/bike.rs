@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use lightyear::prelude::client::*;
 use shared::player::bike::{BikeMarker, ColorComponent};
+use crate::render::trail::TrailRenderMarker;
 use crate::render::zones::ZoneRenderMarker;
 
 pub struct BikeNetworkPlugin;
@@ -43,17 +44,27 @@ fn handle_new_confirmed_bike(
     confirmed_bikes: Query<(Entity, &ColorComponent), (With<BikeMarker>, Added<Confirmed>)>,
 ) {
     for (entity, color) in confirmed_bikes.iter() {
-        let zone_color = Color::Hsva(Hsva {
-            saturation: 0.2,
+        // color values above 1.0 enable bloom
+        let zone_color: Color = (Color::Hsva(Hsva {
+            // saturation: 0.2,
             ..Hsva::from(color.0)
-        });
+        }).to_linear() * 3.0).into();
+        let trail_color: Color = (color.0.to_linear() * 10.0).into();
+
         commands.entity(entity)
             .with_children(|parent| {
+                // add the entity that will hold the zone mesh
                 parent.spawn((
                     ShapeBundle::default(),
                     ZoneRenderMarker,
                     Fill::color(zone_color),
                     Stroke::new(Color::WHITE, 5.0),
+                ));
+                // add the entity that will hold the trail mesh
+                parent.spawn((
+                    ShapeBundle::default(),
+                    TrailRenderMarker,
+                    Stroke::new(trail_color, 1.0),
                 ));
             });
     }

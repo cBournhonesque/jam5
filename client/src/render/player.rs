@@ -29,8 +29,8 @@ impl Plugin for PlayerRenderPlugin {
             PostUpdate,
             (
                 draw_bike,
-                draw_trail,
-                draw_zones
+                // draw_trail,
+                // draw_zones
             )
                 .after(TransformPropagate),
         );
@@ -47,42 +47,42 @@ fn draw_bike(
     }
 }
 
-fn draw_trail(mut gizmos: Gizmos, query: Query<(&Trail, &ColorComponent), With<BikeMarker>>) {
-    for (trail, color) in query.iter() {
-        let trail_color = Color::Hsva(Hsva {
-            saturation: 0.4,
-            ..Hsva::from(color.0)
-        });
-        if trail.line.len() < 2 {
-            continue;
-        }
-        for i in 0..trail.line.len() - 1 {
-            let start = trail.line[i];
-            let end = trail.line[i + 1];
-            gizmos.line_2d(start, end, trail_color);
-        }
-    }
-}
+// fn draw_trail(mut gizmos: Gizmos, query: Query<(&Trail, &ColorComponent), With<BikeMarker>>) {
+//     for (trail, color) in query.iter() {
+//         let trail_color = Color::Hsva(Hsva {
+//             saturation: 0.4,
+//             ..Hsva::from(color.0)
+//         });
+//         if trail.line.len() < 2 {
+//             continue;
+//         }
+//         for i in 0..trail.line.len() - 1 {
+//             let start = trail.line[i];
+//             let end = trail.line[i + 1];
+//             gizmos.line_2d(start, end, trail_color);
+//         }
+//     }
+// }
 
-fn draw_zones(mut gizmos: Gizmos, query: Query<(&Zones, &ColorComponent), With<BikeMarker>>) {
-    for (zones, color) in query.iter() {
-        let zone_color = Color::Hsva(Hsva {
-            saturation: 0.2,
-            ..Hsva::from(color.0)
-        });
-        for zone in zones.zones.iter() {
-            if zone.points.len() < 3 {
-                // Changed from 2 to 3 for closed polygons
-                continue;
-            }
-            for i in 0..zone.points.len() {
-                let start = zone.points[i];
-                let end = zone.points[(i + 1) % zone.points.len()]; // Use modulo to close the polygon
-                gizmos.line_2d(start, end, zone_color);
-            }
-        }
-    }
-}
+// fn draw_zones(mut gizmos: Gizmos, query: Query<(&Zones, &ColorComponent), With<BikeMarker>>) {
+//     for (zones, color) in query.iter() {
+//         let zone_color = Color::Hsva(Hsva {
+//             saturation: 0.2,
+//             ..Hsva::from(color.0)
+//         });
+//         for zone in zones.zones.iter() {
+//             if zone.points.len() < 3 {
+//                 // Changed from 2 to 3 for closed polygons
+//                 continue;
+//             }
+//             for i in 0..zone.points.len() {
+//                 let start = zone.points[i];
+//                 let end = zone.points[(i + 1) % zone.points.len()]; // Use modulo to close the polygon
+//                 gizmos.line_2d(start, end, zone_color);
+//             }
+//         }
+//     }
+// }
 
 fn spawn_grid(mut commands: Commands) {
     let total_width = GRID_SIZE as f32 * CELL_SIZE;

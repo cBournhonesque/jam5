@@ -1,6 +1,8 @@
 use bevy::utils::Duration;
 use crate::physics::util::line_segments_intersect;
 use bevy::prelude::*;
+use bevy_prototype_lyon::prelude::{GeometryBuilder, Path, PathBuilder};
+use bevy_prototype_lyon::shapes;
 use serde::{Deserialize, Serialize};
 
 const MIN_POINT_DISTANCE: f32 = 50.0;
@@ -17,6 +19,21 @@ impl Plugin for TrailPlugin {
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct Trail {
     pub line: Vec<Vec2>,
+}
+
+impl From<&Trail> for Path {
+    fn from(value: &Trail) -> Self {
+        // GeometryBuilder::new().add(lin
+        let mut path = PathBuilder::new();
+        if value.line.len() < 2 {
+            return path.build();
+        }
+        path.move_to(value.line[0]);
+        for point in value.line.iter().skip(1) {
+            path.line_to(*point);
+        }
+        path.build()
+    }
 }
 
 impl Trail {
