@@ -1,75 +1,99 @@
-//! The 'zone' of the map that is controlled by a player
-//! Can be computed with round_convex_decomposition?
-
-use std::collections::VecDeque;
-
 use bevy::prelude::*;
+use geo_clipper::Clipper;
+use geo_types::{Coord, LineString, MultiPolygon, Polygon};
+use lightyear::connection::netcode::ClientId;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-use crate::physics::util::line_segments_intersect;
+const CLIPPER_SCALE: f64 = 1_000_000.0;
 
-#[derive(Component, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Zone {
     pub points: Vec<Vec2>,
     pub color: Color,
 }
 
 impl Zone {
-    pub fn new(points: Vec<Vec2>) -> Self {
-        Zone {
-            points,
-            color: Color::WHITE,
+    pub fn new(points: Vec<Vec2>, color: Color) -> Self {
+        Zone { points, color }
+    }
+
+    fn to_geo_polygon(&self) -> Polygon {
+        let exterior: Vec<Coord> = self
+            .points
+            .iter()
+            .map(|p| Coord {
+                x: p.x as f64,
+                y: p.y as f64,
+            })
+            .collect();
+        Polygon::new(LineString(exterior), vec![])
+    }
+
+    fn from_geo_polygon(poly: Polygon, color: Color) -> Self {
+        let points: Vec<Vec2> = poly
+            .exterior()
+            .0
+            .iter()
+            .map(|p| Vec2::new(p.x as f32, p.y as f32))
+            .collect();
+        Zone::new(points, color)
+    }
+}
+
+#[derive(Resource, Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+pub struct ZoneManager {
+    zones: HashMap<ClientId, Vec<Zone>>,
+}
+
+impl ZoneManager {
+    pub fn new() -> Self {
+        ZoneManager {
+            zones: HashMap::new(),
         }
     }
 
-    pub fn cut(&self, old: &Zone) -> Vec<Zone> {
-        let mut result = Vec::new();
-        let mut current_zone = VecDeque::new();
-        let mut is_inside = false;
-
-        for i in 0..self.points.len() {
-            let p1 = self.points[i];
-            let p2 = self.points[(i + 1) % self.points.len()];
-
-            let intersections = Self::find_intersections(&p1, &p2, old);
-
-            if !intersections.is_empty() {
-                for intersection in intersections {
-                    if is_inside {
-                        current_zone.push_back(intersection);
-                        result.push(Zone::new(current_zone.drain(..).collect()));
-                    } else {
-                        current_zone.push_back(p1);
-                        current_zone.push_back(intersection);
-                    }
-                    is_inside = !is_inside;
-                }
+    pub fn add_zone(&mut self, client_id: ClientId, new_zone: Zone) {
+        let zones = self.zones.entry(client_id).or_insert_with(Vec::new);
+        let mut merged_zone = new_zone;
+        zones.retain(|zone| {
+            if Self::zones_overlap(zone, &merged_zone) {
+                merged_zone = Self::union_zones(merged_zone.clone(), zone.clone());
+                false
+            } else {
+                true
             }
-
-            if !is_inside {
-                current_zone.push_back(p2);
-            }
-        }
-
-        if !current_zone.is_empty() {
-            result.push(Zone::new(current_zone.drain(..).collect()));
-        }
-
-        result
+        });
+        zones.push(merged_zone);
     }
 
-    fn find_intersections(p1: &Vec2, p2: &Vec2, zone: &Zone) -> Vec<Vec2> {
-        let mut intersections = Vec::new();
+    fn union_zones(zone1: Zone, zone2: Zone) -> Zone {
+        let poly1 = zone1.to_geo_polygon();
+        let poly2 = zone2.to_geo_polygon();
 
-        for i in 0..zone.points.len() {
-            let q1 = zone.points[i];
-            let q2 = zone.points[(i + 1) % zone.points.len()];
-
-            if let Some(intersection) = line_segments_intersect(*p1, *p2, q1, q2) {
-                intersections.push(intersection);
+        match poly1.union(&poly2, CLIPPER_SCALE) {
+            MultiPolygon(mut polys) if !polys.is_empty() => {
+                polys.sort_by_key(|p| std::cmp::Reverse(p.exterior().0.len()));
+                Zone::from_geo_polygon(polys.remove(0), zone1.color)
             }
+            _ => zone1,
         }
+    }
 
-        intersections
+    fn zones_overlap(zone1: &Zone, zone2: &Zone) -> bool {
+        let poly1 = zone1.to_geo_polygon();
+        let poly2 = zone2.to_geo_polygon();
+
+        match poly1.intersection(&poly2, CLIPPER_SCALE) {
+            MultiPolygon(polys) => !polys.is_empty(),
+        }
+    }
+
+    pub fn get_all_zones(&self) -> Vec<&Zone> {
+        self.zones.values().flat_map(|v| v.iter()).collect()
+    }
+
+    pub fn get_zones_for_client(&self, client_id: &ClientId) -> Option<&Vec<Zone>> {
+        self.zones.get(client_id)
     }
 }

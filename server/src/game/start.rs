@@ -1,6 +1,12 @@
 use bevy::prelude::*;
-use lightyear::prelude::server::Replicate;
-use shared::{map::SpawnMap, player::zone::Zone};
+use lightyear::prelude::{
+    server::Replicate, Channel, ChannelKind, NetworkTarget, ReplicateResourceExt,
+};
+use shared::{
+    map::SpawnMap,
+    network::protocol::Channel1,
+    player::zone::{Zone, ZoneManager},
+};
 
 pub struct GamePlugin;
 
@@ -14,26 +20,37 @@ fn game_start(mut commands: Commands) {
     println!("Game starting!");
     // spawn the map
     commands.trigger(SpawnMap);
-
+    commands.replicate_resource::<ZoneManager, Channel1>(NetworkTarget::All);
     // testing
-    let mut old_zone = Zone::new(vec![
-        Vec2::new(50.0, 50.0),
-        Vec2::new(150.0, 50.0),
-        Vec2::new(150.0, 150.0),
-        Vec2::new(50.0, 150.0),
-    ]);
-    old_zone.color = Color::srgb(0.0, 0.0, 1.0);
+    // let blue_zone = Zone::new(
+    //     vec![
+    //         Vec2::new(50.0, 50.0),
+    //         Vec2::new(150.0, 50.0),
+    //         Vec2::new(150.0, 150.0),
+    //         Vec2::new(50.0, 150.0),
+    //         Vec2::new(50.0, 50.0),
+    //     ],
+    //     Color::srgb(0.0, 0.0, 1.0),
+    // );
 
-    let mut new_zone = Zone::new(vec![
-        Vec2::new(0.0, 0.0),
-        Vec2::new(100.0, 0.0),
-        Vec2::new(100.0, 100.0),
-        Vec2::new(0.0, 100.0),
-    ]);
-    new_zone.color = Color::srgb(1.0, 0.0, 0.0);
+    // let red_zone = Zone::new(
+    //     vec![
+    //         Vec2::new(0.0, 0.0),
+    //         Vec2::new(100.0, 0.0),
+    //         Vec2::new(100.0, 100.0),
+    //         Vec2::new(0.0, 100.0),
+    //         Vec2::new(0.0, 0.0),
+    //     ],
+    //     Color::srgb(1.0, 0.0, 0.0),
+    // );
 
-    let cut_zones = new_zone.cut(&old_zone);
-    for zone in cut_zones {
-        commands.spawn((zone, Replicate::default()));
-    }
+    // // commands.spawn((blue_zone.clone(), Replicate::default()));
+    // // commands.spawn((red_zone.clone(), Replicate::default()));
+
+    // let cut_zones = red_zone.cut(&blue_zone);
+    // println!("Number of cut zones: {}", cut_zones.len());
+    // for (i, zone) in cut_zones.iter().enumerate() {
+    //     println!("Zone {}: {:?}", i, zone.points);
+    //     commands.spawn((zone.clone(), Replicate::default()));
+    // }
 }

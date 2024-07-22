@@ -1,10 +1,10 @@
 use avian2d::position::Position;
 use bevy::prelude::*;
-use lightyear::{
-    prelude::{server::Replicate, server::SyncTarget},
-    shared::replication::network_target::NetworkTarget,
+use shared::player::{
+    bike::{BikeMarker, ColorComponent},
+    trail::Trail,
+    zone::{Zone, ZoneManager},
 };
-use shared::player::{bike::BikeMarker, trail::Trail, zone::Zone};
 pub struct TrailPlugin;
 
 impl Plugin for TrailPlugin {
@@ -14,16 +14,16 @@ impl Plugin for TrailPlugin {
 }
 
 fn mark_trail_system(
-    mut commands: Commands,
-    mut query: Query<(&Position, &mut Trail), With<BikeMarker>>,
+    mut zone_manager: ResMut<ZoneManager>,
+    mut q_bikes: Query<(&BikeMarker, &Position, &mut Trail, &ColorComponent)>,
 ) {
-    for (position, mut trail) in query.iter_mut() {
+    for (bike, position, mut trail, color) in q_bikes.iter_mut() {
         let point = position.0;
         if let Some(shape) = trail.try_add_point(point) {
-            commands.spawn((Zone::new(shape), Replicate::default()));
-            // TODO: spawn the shape https://docs.rs/parry2d/latest/parry2d/shape/struct.SharedShape.html#method.round_convex_decomposition_with_params
-            // TODO: temporarily disable the trail?
-            // TODO: total up surface area and increment score based on that?
+            trail.line.clear();
+
+            let new_zone = Zone::new(shape, Color::WHITE);
+            zone_manager.add_zone(bike.client_id, new_zone.clone());
         }
     }
 }
