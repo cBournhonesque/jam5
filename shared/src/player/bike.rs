@@ -26,16 +26,21 @@ pub struct BikeBundle {
     pub rotation: Rotation,
     pub linear_velocity: LinearVelocity,
     pub color: ColorComponent,
-    pub trail: Trail,
+    pub name: Name,
+    pub collider: Collider,
+    // pub trail: Trail,
 }
 
 impl BikeBundle {
-    pub fn new_at(position: Vec2, color: Color) -> Self {
+    pub fn new_at(position: Vector, color: Color) -> Self {
         // TODO: spawn at a random position on the map
         Self {
             position: Position(position),
             color: ColorComponent(color),
-            linear_velocity: LinearVelocity(Vector::new(0.0, 0.0)),
+            // non-zero velocity to avoid self-collisions
+            linear_velocity: LinearVelocity(Vector::new(0.1, 0.1)),
+            name: Name::from("Bike"),
+            collider: Collider::circle(0.0),
             ..default()
         }
     }

@@ -6,7 +6,7 @@ use crate::player::trail::Trail;
 use crate::player::zone::Zone;
 use crate::player::Player;
 use avian2d::prelude::*;
-use bevy::app::{App, Plugin};
+use bevy::prelude::*;
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 use lightyear::utils::avian2d::*;
@@ -26,6 +26,10 @@ impl Plugin for ProtocolPlugin {
         app.register_component::<Player>(ChannelDirection::ServerToClient);
 
         app.register_component::<ColorComponent>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once)
+            .add_interpolation(ComponentSyncMode::Once);
+
+        app.register_component::<Name>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 

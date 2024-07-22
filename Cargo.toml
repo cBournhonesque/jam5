@@ -46,6 +46,12 @@ too_many_arguments = "allow"
 # Queries that access many components may trigger this lint.
 type_complexity = "allow"
 
+[workspace.lints.rust]
+unused_variables = "allow"
+unused_mut = "allow"
+dead_code = "allow"
+unused_imports = "allow"
+
 # Compile with Performance Optimizations:
 # https://bevyengine.org/learn/quick-start/getting-started/setup/#compile-with-performance-optimizations
 

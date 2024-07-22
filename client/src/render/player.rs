@@ -45,36 +45,64 @@ fn draw_bike(
     }
 }
 
-fn draw_trail(mut gizmos: Gizmos, query: Query<(&Trail, &ColorComponent), With<BikeMarker>>) {
-    for (trail, color) in query.iter() {
-        let trail_color = Color::Hsva(Hsva {
-            saturation: 0.4,
-            ..Hsva::from(color.0)
-        });
-        if trail.line.len() < 2 {
-            continue;
-        }
-        for i in 0..trail.line.len() - 1 {
-            let start = trail.line[i];
-            let end = trail.line[i + 1];
-            gizmos.line_2d(start, end, trail_color);
+fn draw_trail(
+    mut gizmos: Gizmos,
+    bike_query: Query<&ColorComponent>,
+    trail_query: Query<(&Parent, &Trail)>
+) {
+    for (parent, trail) in trail_query.iter() {
+        if let Ok(color) = bike_query.get(parent.get()) {
+            let trail_color = Color::Hsva(Hsva {
+                saturation: 0.4,
+                ..Hsva::from(color.0)
+            });
+            if trail.line.len() < 2 {
+                continue;
+            }
+            for i in 0..trail.line.len() - 1 {
+                let start = trail.line[i];
+                let end = trail.line[i + 1];
+                gizmos.line_2d(start, end, trail_color);
+            }
         }
     }
 }
 
-fn draw_zones(mut gizmos: Gizmos, query: Query<&Zone>) {
-    for zone in query.iter() {
-        println!("Drawing zone: {:?}", zone);
-        if zone.points.len() < 2 {
-            continue;
-        }
-        for i in 0..zone.points.len() - 1 {
-            let start = zone.points[i];
-            let end = zone.points[i + 1];
-            gizmos.line_2d(start, end, zone.color);
+fn draw_zones(
+    mut gizmos: Gizmos,
+    bike_query: Query<&ColorComponent>,
+    zone_query: Query<(&Parent, &Zone)>
+) {
+    for (parent, zone) in zone_query.iter() {
+        if let Ok(color) = bike_query.get(parent.get()) {
+            let zone_color = Color::Hsva(Hsva {
+                saturation: 0.2,
+                ..Hsva::from(color.0)
+            });
+            zone.compound.shapes().iter().for_each(|(_, shape)| {
+                let polygon = shape.as_round_convex_polygon().unwrap();
+                let line = polygon.to_polyline(10);
+                line.chunks_exact(2).for_each(|pair| {
+                    gizmos.line_2d(Vec2::from(pair[0]), Vec2::from(pair[1]), zone_color);
+                });
+            })
         }
     }
 }
+
+// fn draw_zones(mut gizmos: Gizmos, query: Query<&Zone>) {
+//     for zone in query.iter() {
+//         println!("Drawing zone: {:?}", zone);
+//         if zone.points.len() < 2 {
+//             continue;
+//         }
+//         for i in 0..zone.points.len() - 1 {
+//             let start = zone.points[i];
+//             let end = zone.points[i + 1];
+//             gizmos.line_2d(start, end, zone.color);
+//         }
+//     }
+// }
 
 fn spawn_grid(mut commands: Commands) {
     let total_width = GRID_SIZE as f32 * CELL_SIZE;

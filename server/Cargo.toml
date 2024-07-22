@@ -3,6 +3,9 @@ name = "server"
 version.workspace = true
 edition.workspace = true
 
+[lints]
+workspace = true
+
 [[bin]]
 name = "server"
 
@@ -34,3 +37,5 @@ lightyear.workspace = true
 clap.workspace = true
 
 async-compat = "0.2.4"
+
+
