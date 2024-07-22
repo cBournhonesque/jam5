@@ -26,12 +26,21 @@ impl Plugin for TrailPlugin {
 }
 
 fn mark_trail_system(
-    mut q_bikes: Query<(&Position, &mut Trail, &mut Zones), With<BikeMarker>>,
+    mut q_bikes: Query<(&Position, &mut Zones), With<BikeMarker>>,
+    mut trails: Query<(&Parent, &mut Trail)>
 ) {
-    for (position, mut trail, mut zones) in q_bikes.iter_mut() {
-        if let Some(shape) = trail.try_add_point(position.0) {
-            trail.line.clear();
-            zones.add_zone(Zone::new(shape));
+    for (parent, mut trail) in trails.iter_mut() {
+        if let Ok((position, mut zones)) = q_bikes.get_mut(parent.get()) {
+            if let Some(shape) = trail.try_add_point(position.0) {
+                trail.line.clear();
+                zones.add_zone(Zone::new(shape));
+            }
         }
     }
+    // for (position, mut trail, mut zones) in q_bikes.iter_mut() {
+    //     if let Some(shape) = trail.try_add_point(position.0) {
+    //         trail.line.clear();
+    //         zones.add_zone(Zone::new(shape));
+    //     }
+    // }
 }

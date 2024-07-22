@@ -7,6 +7,8 @@ use lightyear::prelude::client::*;
 pub mod player;
 pub mod trail;
 pub mod zones;
+mod grid;
+mod diagnostics;
 
 pub(crate) struct RenderPlugin;
 
@@ -20,6 +22,8 @@ impl Plugin for RenderPlugin {
                             VisualInterpolationPlugin::<Rotation>::default()
                         ));
         app.add_plugins( (
+            diagnostics::DiagnosticsPlugin,
+            // grid::GridPlugin;
             player::PlayerRenderPlugin,
             trail::TrailRenderPlugin,
             zones::ZoneRenderPlugin,
