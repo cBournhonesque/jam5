@@ -3,11 +3,11 @@
 use crate::network::inputs::PlayerMovement;
 use crate::player::bike::{BikeMarker, ColorComponent};
 use crate::player::trail::Trail;
-use crate::player::zone::ZoneManager;
+use crate::player::zone::{ZoneManager, Zones};
 use crate::player::Player;
 use avian2d::prelude::*;
 use bevy::app::{App, Plugin};
-use bevy::prelude::default;
+use bevy::prelude::{default, Name};
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 use lightyear::utils::avian2d::*;
@@ -56,8 +56,12 @@ impl Plugin for ProtocolPlugin {
         app.register_component::<LinearVelocity>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full);
 
+        app.register_component::<Name>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once)
+            .add_interpolation(ComponentSyncMode::Once);
+
         app.register_component::<Trail>(ChannelDirection::ServerToClient);
-        app.register_resource::<ZoneManager>(ChannelDirection::ServerToClient);
+        app.register_component::<Zones>(ChannelDirection::ServerToClient);
 
         // channels
         app.add_channel::<Channel1>(ChannelSettings {

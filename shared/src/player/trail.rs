@@ -1,8 +1,11 @@
+use bevy::utils::Duration;
 use crate::physics::util::line_segments_intersect;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 const MIN_POINT_DISTANCE: f32 = 50.0;
+
+pub const ADD_POINT_INTERVAL: Duration = Duration::from_millis(50);
 const MAX_LINE_POINTS: usize = 200;
 
 pub struct TrailPlugin;

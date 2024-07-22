@@ -7,15 +7,29 @@ use std::collections::HashMap;
 
 const CLIPPER_SCALE: f64 = 1_000_000.0;
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct ZonePlugin;
+
+impl Plugin for ZonePlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<Zone>();
+        app.register_type::<Zones>();
+
+    }
+}
+
+#[derive(Reflect, Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct Zone {
     pub points: Vec<Vec2>,
-    pub color: Color,
+}
+
+#[derive(Reflect, Component, Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+pub struct Zones {
+    pub zones: Vec<Zone>,
 }
 
 impl Zone {
-    pub fn new(points: Vec<Vec2>, color: Color) -> Self {
-        Zone { points, color }
+    pub fn new(points: Vec<Vec2>) -> Self {
+        Zone { points }
     }
 
     fn to_geo_polygon(&self) -> Polygon {
@@ -30,14 +44,14 @@ impl Zone {
         Polygon::new(LineString(exterior), vec![])
     }
 
-    fn from_geo_polygon(poly: Polygon, color: Color) -> Self {
+    fn from_geo_polygon(poly: Polygon) -> Self {
         let points: Vec<Vec2> = poly
             .exterior()
             .0
             .iter()
             .map(|p| Vec2::new(p.x as f32, p.y as f32))
             .collect();
-        Zone::new(points, color)
+        Zone::new(points)
     }
 }
 
@@ -46,17 +60,11 @@ pub struct ZoneManager {
     zones: HashMap<ClientId, Vec<Zone>>,
 }
 
-impl ZoneManager {
-    pub fn new() -> Self {
-        ZoneManager {
-            zones: HashMap::new(),
-        }
-    }
+impl Zones {
 
-    pub fn add_zone(&mut self, client_id: ClientId, new_zone: Zone) {
-        let zones = self.zones.entry(client_id).or_insert_with(Vec::new);
+    pub fn add_zone(&mut self, new_zone: Zone) {
         let mut merged_zone = new_zone;
-        zones.retain(|zone| {
+        self.zones.retain(|zone| {
             if Self::zones_overlap(zone, &merged_zone) {
                 merged_zone = Self::union_zones(merged_zone.clone(), zone.clone());
                 false
@@ -64,7 +72,8 @@ impl ZoneManager {
                 true
             }
         });
-        zones.push(merged_zone);
+        trace!(?merged_zone);
+        self.zones.push(merged_zone);
     }
 
     fn union_zones(zone1: Zone, zone2: Zone) -> Zone {
@@ -74,7 +83,7 @@ impl ZoneManager {
         match poly1.union(&poly2, CLIPPER_SCALE) {
             MultiPolygon(mut polys) if !polys.is_empty() => {
                 polys.sort_by_key(|p| std::cmp::Reverse(p.exterior().0.len()));
-                Zone::from_geo_polygon(polys.remove(0), zone1.color)
+                Zone::from_geo_polygon(polys.remove(0))
             }
             _ => zone1,
         }
@@ -87,13 +96,5 @@ impl ZoneManager {
         match poly1.intersection(&poly2, CLIPPER_SCALE) {
             MultiPolygon(polys) => !polys.is_empty(),
         }
-    }
-
-    pub fn get_all_zones(&self) -> Vec<&Zone> {
-        self.zones.values().flat_map(|v| v.iter()).collect()
-    }
-
-    pub fn get_zones_for_client(&self, client_id: &ClientId) -> Option<&Vec<Zone>> {
-        self.zones.get(client_id)
     }
 }

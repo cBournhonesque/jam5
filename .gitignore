@@ -6,6 +6,7 @@
 
 # This file contains environment-specific configuration like linker settings
 .cargo/config.toml
+**/Cargo.lock
 
 # Local development files
 .envrc

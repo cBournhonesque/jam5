@@ -75,7 +75,7 @@ fn capture_input(
                 .action_data_mut(&PlayerMovement::MousePositionRelative)
                 .unwrap()
                 .axis_pair = Some(DualAxisData::from_xy(mouse_position_relative));
-            info!(tick = ?tick_manager.tick(), ?mouse_position_relative, "Relative mouse position");
+            trace!(tick = ?tick_manager.tick(), ?mouse_position_relative, "Relative mouse position");
         }
     }
 }
