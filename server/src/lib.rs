@@ -6,6 +6,7 @@ use lightyear::shared::replication::components::Replicated;
 use shared::network::config::Transports;
 use shared::player::bike::BikeMarker;
 use shared::player::trail::Trail;
+use shared::player::zone::ZoneManager;
 use shared::SharedPlugin;
 
 mod game;
@@ -46,5 +47,6 @@ pub fn app(cli: Cli) -> App {
 
     // player
     app.add_plugins(player::PlayerPlugin);
+    app.init_resource::<ZoneManager>();
     app
 }

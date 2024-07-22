@@ -1,13 +1,12 @@
 use crate::assets::{AssetKey, HandleMap};
 use avian2d::prelude::*;
-use bevy::prelude::*;
 use bevy::prelude::TransformSystem::TransformPropagate;
+use bevy::prelude::*;
 use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use lightyear::prelude::client::*;
-use lightyear::utils::avian2d::linear_velocity;
 use shared::player::bike::{BikeMarker, ColorComponent};
 use shared::player::trail::Trail;
-use shared::player::zone::Zone;
+use shared::player::zone::ZoneManager;
 
 const GRID_SIZE: i32 = 100;
 const CELL_SIZE: f32 = 50.0;
@@ -26,7 +25,15 @@ impl Plugin for PlayerRenderPlugin {
         // TODO: should we worry about transform propagate?
         app.add_systems(Startup, spawn_grid);
         // Draw after TransformPropagate and VisualInterpolation
-        app.add_systems(PostUpdate, (draw_bike, draw_trail, draw_zones).after(TransformPropagate));
+        app.add_systems(
+            PostUpdate,
+            (
+                draw_bike,
+                draw_trail,
+                draw_zones.run_if(resource_exists::<ZoneManager>),
+            )
+                .after(TransformPropagate),
+        );
     }
 }
 
@@ -36,12 +43,7 @@ fn draw_bike(
 ) {
     for (pos, rotation, color) in query.iter() {
         trace!("Drawing bike at {:?}", pos.0);
-        gizmos.rounded_rect_2d(
-            pos.0,
-            rotation.as_radians(),
-            Vec2::new(50.0, 10.0),
-            color.0,
-        );
+        gizmos.rounded_rect_2d(pos.0, rotation.as_radians(), Vec2::new(50.0, 10.0), color.0);
     }
 }
 
@@ -62,15 +64,17 @@ fn draw_trail(mut gizmos: Gizmos, query: Query<(&Trail, &ColorComponent), With<B
     }
 }
 
-fn draw_zones(mut gizmos: Gizmos, query: Query<&Zone>) {
-    for zone in query.iter() {
+fn draw_zones(mut gizmos: Gizmos, zone_manager: Res<ZoneManager>) {
+    println!("Drawing zones");
+    for zone in zone_manager.get_all_zones() {
         println!("Drawing zone: {:?}", zone);
-        if zone.points.len() < 2 {
+        if zone.points.len() < 3 {
+            // Changed from 2 to 3 for closed polygons
             continue;
         }
-        for i in 0..zone.points.len() - 1 {
+        for i in 0..zone.points.len() {
             let start = zone.points[i];
-            let end = zone.points[i + 1];
+            let end = zone.points[(i + 1) % zone.points.len()]; // Use modulo to close the polygon
             gizmos.line_2d(start, end, zone.color);
         }
     }
