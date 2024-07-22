@@ -6,7 +6,7 @@ use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use lightyear::prelude::client::*;
 use shared::player::bike::{BikeMarker, ColorComponent};
 use shared::player::trail::Trail;
-use shared::player::zone::ZoneManager;
+use shared::player::zone::{ZoneManager, Zones};
 
 const GRID_SIZE: i32 = 100;
 const CELL_SIZE: f32 = 50.0;
@@ -30,7 +30,7 @@ impl Plugin for PlayerRenderPlugin {
             (
                 draw_bike,
                 draw_trail,
-                draw_zones.run_if(resource_exists::<ZoneManager>),
+                draw_zones
             )
                 .after(TransformPropagate),
         );
@@ -64,18 +64,22 @@ fn draw_trail(mut gizmos: Gizmos, query: Query<(&Trail, &ColorComponent), With<B
     }
 }
 
-fn draw_zones(mut gizmos: Gizmos, zone_manager: Res<ZoneManager>) {
-    println!("Drawing zones");
-    for zone in zone_manager.get_all_zones() {
-        println!("Drawing zone: {:?}", zone);
-        if zone.points.len() < 3 {
-            // Changed from 2 to 3 for closed polygons
-            continue;
-        }
-        for i in 0..zone.points.len() {
-            let start = zone.points[i];
-            let end = zone.points[(i + 1) % zone.points.len()]; // Use modulo to close the polygon
-            gizmos.line_2d(start, end, zone.color);
+fn draw_zones(mut gizmos: Gizmos, query: Query<(&Zones, &ColorComponent), With<BikeMarker>>) {
+    for (zones, color) in query.iter() {
+        let zone_color = Color::Hsva(Hsva {
+            saturation: 0.2,
+            ..Hsva::from(color.0)
+        });
+        for zone in zones.zones.iter() {
+            if zone.points.len() < 3 {
+                // Changed from 2 to 3 for closed polygons
+                continue;
+            }
+            for i in 0..zone.points.len() {
+                let start = zone.points[i];
+                let end = zone.points[(i + 1) % zone.points.len()]; // Use modulo to close the polygon
+                gizmos.line_2d(start, end, zone_color);
+            }
         }
     }
 }

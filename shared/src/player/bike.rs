@@ -3,7 +3,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use lightyear::connection::netcode::ClientId;
 use lightyear::prelude::*;
-
+use crate::player::zone::Zones;
 use super::trail::Trail;
 
 pub const BASE_SPEED: f32 = 200.0;
@@ -30,6 +30,8 @@ pub struct BikeBundle {
     pub linear_velocity: LinearVelocity,
     pub color: ColorComponent,
     pub trail: Trail,
+    pub zones: Zones,
+    pub name: Name,
 }
 
 impl BikeBundle {
@@ -40,6 +42,7 @@ impl BikeBundle {
             position: Position(position),
             color: ColorComponent(color),
             linear_velocity: LinearVelocity(Vector::new(0.0, 0.0)),
+            name: Name::from("Bike"),
             ..default()
         }
     }
