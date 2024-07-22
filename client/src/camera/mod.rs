@@ -1,6 +1,8 @@
 use avian2d::position::Position;
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::TransformSystem::TransformPropagate;
+use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::core_pipeline::bloom::BloomSettings;
 use lightyear::client::prediction::Predicted;
 use lightyear::prelude::client::InterpolationSet;
 use shared::player::bike::BikeMarker;
@@ -30,7 +32,18 @@ impl Plugin for CameraPlugin {
 }
 
 fn init_camera(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), Name::new("Camera")));
+    commands.spawn((
+        Camera2dBundle {
+            camera: Camera {
+                hdr: true, // 1. HDR is required for bloom
+                ..default()
+            },
+            tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
+            ..default()
+        },
+        Name::new("Camera"),
+        BloomSettings::default(), // 3. Enable bloom for the camera
+    ));
 }
 
 fn update_camera(

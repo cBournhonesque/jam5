@@ -1,5 +1,6 @@
 use avian2d::prelude::{Position, Rotation};
 use bevy::app::{App, Plugin};
+use bevy::color::Color;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use lightyear::prelude::client::*;
 
@@ -20,7 +21,8 @@ impl Plugin for RenderPlugin {
                         ));
         app.add_plugins( (
             player::PlayerRenderPlugin,
-                zones::ZoneRenderPlugin
+            trail::TrailRenderPlugin,
+            zones::ZoneRenderPlugin,
         ));
     }
 }
