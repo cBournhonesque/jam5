@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use lightyear::prelude::client::*;
 
 use shared::network::config::Transports;
+use crate::screen::Screen::Playing;
 
 pub(crate) mod config;
 mod bike;
@@ -30,8 +31,7 @@ impl Plugin for NetworkPlugin {
 
         app.add_plugins(bike::BikeNetworkPlugin);
 
-        // TODO: make this state-scoped
-        app.add_systems(Startup, connect);
+        app.add_systems(OnEnter(Playing), connect.run_if(not(is_connected)));
 
         #[cfg(feature = "dev")]
         app.observe(debug_connect);

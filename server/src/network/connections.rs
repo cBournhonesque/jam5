@@ -78,12 +78,13 @@ pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands)
     )).id();
     commands
         .entity(bike)
-        .insert(BikeMarker {
-            client_id,
-            stopped: false,
-            trail,
-            zones,
-        })
+        // .insert(BikeMarker {
+        //     client_id,
+        //     stopped: false,
+        //     ..default()
+        //     // trail,
+        //     // zones,
+        // })
         .add_child(trail)
         .add_child(zones);
 }
