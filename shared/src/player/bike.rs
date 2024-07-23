@@ -4,7 +4,6 @@ use avian2d::math::Vector;
 use avian2d::prelude::*;
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::*;
-use lightyear::connection::netcode::ClientId;
 use lightyear::prelude::*;
 
 pub const BASE_SPEED: f32 = 200.0;
@@ -22,6 +21,7 @@ pub struct ColorComponent(pub Color);
 pub struct BikeMarker {
     pub client_id: ClientId,
     pub stopped: bool, // for testing
+    // TODO: these are unused right now!
     // The trail entity associated with the bike
     pub trail: Entity,
     // The zones entity associated with the bike
@@ -38,7 +38,7 @@ impl MapEntities for BikeMarker {
 impl Default for BikeMarker {
     fn default() -> Self {
         Self {
-            client_id: 0,
+            client_id: ClientId::Netcode(0),
             stopped: false,
             trail: Entity::PLACEHOLDER,
             zones: Entity::PLACEHOLDER,
@@ -58,14 +58,14 @@ pub struct BikeBundle {
 }
 
 impl BikeBundle {
-    pub fn new_at(client_id: ClientId, position: Vec2, color: Color, trail: Entity, zones: Entity) -> Self {
+    pub fn new_at(client_id: ClientId, position: Vec2, color: Color) -> Self {
         // TODO: spawn at a random position on the map
         Self {
             marker: BikeMarker {
                 client_id,
                 stopped: false,
-                trail,
-                zones,
+                trail: Entity::PLACEHOLDER,
+                zones: Entity::PLACEHOLDER,
             },
             position: Position(position),
             color: ColorComponent(color),
