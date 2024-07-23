@@ -7,7 +7,7 @@ pub struct Score {
     pub score: u32,
 }
 
-/// Stats of a player
+/// Stats of a player (shown when they die)
 #[derive(Reflect, Component, Serialize, Deserialize, Default, PartialEq, Debug, Clone)]
 pub struct Stats {
     pub kills: u32,

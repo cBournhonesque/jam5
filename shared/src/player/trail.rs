@@ -113,6 +113,16 @@ impl From<&Trail> for Path {
 }
 
 impl Trail {
+
+    /// Size of the trail
+    pub fn len(&self) -> f32 {
+        let mut length = 0.0;
+        for i in 0..self.line.len() - 1 {
+            length += (self.line[i] - self.line[i + 1]).length();
+        }
+        length
+    }
+
     pub fn try_add_point(&mut self, point: Vec2) -> Option<Vec<Vec2>> {
         // // don't place near the last point
         // if let Some(last) = self.line.last() {

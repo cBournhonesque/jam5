@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 use bevy_prototype_lyon::prelude::*;
+use geo::area::Area;
 use geo_clipper::Clipper;
 use geo_types::{Coord, LineString, MultiPolygon, Polygon};
 use lightyear::shared::replication::delta::Diffable;
@@ -144,6 +145,11 @@ impl Zone {
         }
     }
 
+    pub fn area(&self) -> f32 {
+        let poly = self.to_geo_polygon();
+        poly.unsigned_area() as f32
+    }
+
     fn to_geo_polygon(&self) -> Polygon {
         let exterior: Vec<Coord> = self
             .exterior
@@ -199,6 +205,11 @@ impl Zone {
 }
 
 impl Zones {
+
+    pub fn area(&self) -> f32 {
+        self.zones.iter().map(|zone| zone.area()).sum()
+    }
+
     pub fn add_zone(&mut self, new_zone: Zone) {
         let mut merged_zone = new_zone;
         self.zones.retain(|zone| {
