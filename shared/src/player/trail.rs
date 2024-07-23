@@ -88,7 +88,7 @@ impl Diffable for Trail {
     }
 
     fn apply_diff(&mut self, delta: &Self::Delta) {
-        info!("Apply trail diff: {delta:?}. Self: {self:?}");
+        trace!("Apply trail diff: {delta:?}. Self: {self:?}");
         if delta.new_line {
             self.line = delta.line_diff.clone();
         } else {
