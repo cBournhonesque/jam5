@@ -5,14 +5,12 @@ use crate::render::zones::ZoneRenderMarker;
 use avian2d::prelude::{Position, RigidBody, Rotation};
 use bevy::prelude::*;
 use bevy::render::view::NoFrustumCulling;
-use bevy::sprite::MaterialMesh2dBundle;
 use bevy_prototype_lyon::prelude::*;
-use lightyear::client;
-use lightyear::connection::netcode::Client;
-use lightyear::prelude::{client::*, ClientId, MainSet};
+use lightyear::prelude::{client::*, MainSet};
 use shared::player::bike::{BikeMarker, ColorComponent};
 use shared::player::trail::Trail;
-use shared::player::zone::{self, Zone, Zones};
+use shared::player::zone::{Zones};
+use crate::render::label::EntityLabel;
 
 pub struct BikeNetworkPlugin;
 
@@ -31,6 +29,7 @@ impl Plugin for BikeNetworkPlugin {
 /// - add VisualInterpolateStatus component to visually interpolate the bike's Position/Rotation in Update
 /// between two FixedUpdate values
 /// - add RigidBody::Kinematic component so that the bike is affected by physics
+/// - add a Player Label
 fn handle_new_predicted_bike(
     mut commands: Commands,
     predicted_bikes: Query<
@@ -47,6 +46,11 @@ fn handle_new_predicted_bike(
             VisualInterpolateStatus::<Position>::default(),
             VisualInterpolateStatus::<Rotation>::default(),
             RigidBody::Kinematic,
+            EntityLabel {
+                text: "Player".to_owned(),
+                sub_text: "".to_owned(),
+                ..default()
+            },
         ));
     }
 }
