@@ -25,6 +25,7 @@ impl Plugin for TrailPlugin {
     }
 }
 
+/// Add a new point to the trail and update the zones accordingly
 fn mark_trail_system(
     mut q_bikes: Query<(&Position, &mut Zones), With<BikeMarker>>,
     mut trails: Query<(&Parent, &mut Trail)>
@@ -37,10 +38,4 @@ fn mark_trail_system(
             }
         }
     }
-    // for (position, mut trail, mut zones) in q_bikes.iter_mut() {
-    //     if let Some(shape) = trail.try_add_point(position.0) {
-    //         trail.line.clear();
-    //         zones.add_zone(Zone::new(shape));
-    //     }
-    // }
 }
