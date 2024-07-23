@@ -30,7 +30,7 @@ pub struct BikeBundle {
     pub rotation: Rotation,
     pub linear_velocity: LinearVelocity,
     pub color: ColorComponent,
-    pub trail: Trail,
+    // pub trail: Trail,
     pub zones: Zones,
     pub name: Name,
 }

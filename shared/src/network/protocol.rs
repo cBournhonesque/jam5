@@ -60,7 +60,8 @@ impl Plugin for ProtocolPlugin {
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 
-        app.register_component::<Trail>(ChannelDirection::ServerToClient);
+        app.register_component::<Trail>(ChannelDirection::ServerToClient)
+            .add_delta_compression();
         app.register_component::<Zones>(ChannelDirection::ServerToClient);
 
         // channels

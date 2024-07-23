@@ -11,6 +11,7 @@ use lightyear::client;
 use lightyear::connection::netcode::Client;
 use lightyear::prelude::{client::*, ClientId, MainSet};
 use shared::player::bike::{BikeMarker, ColorComponent};
+use shared::player::trail::Trail;
 use shared::player::zone::{self, Zone, Zones};
 
 pub struct BikeNetworkPlugin;
@@ -23,6 +24,7 @@ impl Plugin for BikeNetworkPlugin {
             handle_new_predicted_bike.after(PredictionSet::SpawnHistory),
         );
         app.add_systems(PreUpdate, handle_new_confirmed_bike.after(MainSet::Receive));
+        app.add_systems(PreUpdate, handle_new_trail.after(MainSet::Receive));
     }
 }
 
@@ -50,6 +52,26 @@ fn handle_new_predicted_bike(
     }
 }
 
+/// When a trail is replicated, add the render-related components
+fn handle_new_trail(
+    mut commands: Commands,
+    bike: Query<&ColorComponent, With<BikeMarker>>,
+    new_trails: Query<(&Parent, Entity), (With<Trail>, Without<TrailRenderMarker>)>,
+) {
+    for (parent, entity) in new_trails.iter() {
+        if let Ok(color) = bike.get(parent.get()) {
+            let trail_color: Color = (color.0.to_linear() * 10.0).into();
+            commands.entity(entity)
+                .insert((
+                        ShapeBundle::default(),
+                        TrailRenderMarker,
+                        NoFrustumCulling,
+                        Stroke::new(trail_color, 1.0),
+                ));
+        }
+    }
+}
+
 /// When a confirmed bike gets created, we want to:
 /// - create a new entity that will hold the zone mesh to render
 fn handle_new_confirmed_bike(
@@ -64,7 +86,6 @@ fn handle_new_confirmed_bike(
         let c = color.0.to_linear();
         let zone_fill_color: Color = Color::srgba(c.red, c.green, c.blue, 0.15);
         let zone_border_color: Color = (c * 2.0).into();
-        let trail_color: Color = (c * 10.0).into();
         let zone_z_order = -(bike.client_id as f32) * 100.0;
 
         commands.entity(entity).with_children(|parent| {
@@ -83,14 +104,6 @@ fn handle_new_confirmed_bike(
                     -zone_z_order,
                 )))
                 .insert(Path::from(zones));
-
-            // add the entity that will hold the trail mesh
-            parent.spawn((
-                ShapeBundle::default(),
-                TrailRenderMarker,
-                NoFrustumCulling,
-                Stroke::new(trail_color, 2.0),
-            ));
         });
     }
 }
