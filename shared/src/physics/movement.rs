@@ -1,7 +1,8 @@
+use crate::map::MAP_SIZE;
 use crate::network::inputs::PlayerMovement;
 use crate::physics::FixedSet;
 use crate::player::bike::{
-    ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE,
+    BikeMarker, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE,
     MAX_ROTATION_SPEED,
 };
 use avian2d::prelude::*;
@@ -39,6 +40,8 @@ fn move_bike_system(
     fixed_time: Res<Time<Fixed>>,
     mut query: Query<
         (
+            &mut BikeMarker,
+            &mut Position,
             &mut Rotation,
             &mut LinearVelocity,
             &ActionState<PlayerMovement>,
@@ -47,9 +50,15 @@ fn move_bike_system(
         Or<(With<Predicted>, With<Replicating>)>,
     >,
 ) {
-    for (mut rotation, mut linear, action_state) in query.iter_mut() {
+    for (mut bike, mut position, mut rotation, mut linear, action_state) in query.iter_mut() {
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
+
+        // should we stop?
+        if action_state.value(&PlayerMovement::ToggleStop) > 0.0 {
+            linear.0 = Vec2::ZERO;
+            continue;
+        }
 
         // speed we wish to move at is based on mouse distance
         if let Some(relative_mouse_pos) =
@@ -88,12 +97,44 @@ fn move_bike_system(
                 delta,
             );
 
-            linear.0 = current_velocity;
-
             // rotate towards the direction of movement
             let new_rotation = actual_dir.y.atan2(actual_dir.x);
             rotation.sin = new_rotation.sin();
             rotation.cos = new_rotation.cos();
+
+            // map bounds
+            let deproject_padding = 10.0;
+            let iso_ratio = 0.866;
+            let a = MAP_SIZE;
+            let b = MAP_SIZE * iso_ratio;
+
+            if (position.0.x.powi(2) / a.powi(2)) + (position.0.y.powi(2) / b.powi(2)) > 1.0 {
+                // deproject
+                let scale = ((position.0.x.powi(2) / a.powi(2))
+                    + (position.0.y.powi(2) / b.powi(2)))
+                .sqrt();
+                position.0 = Vec2::new((position.0.x / scale), (position.0.y / scale));
+
+                // calculate normal and tangent
+                let normal =
+                    Vec2::new(position.0.x / a.powi(2), position.0.y / b.powi(2)).normalize();
+                let tangent = Vec2::new(-normal.y, normal.x);
+
+                // slide
+                let slide_velocity = tangent * current_velocity.dot(tangent);
+                let normal_velocity = normal * current_velocity.dot(normal);
+                current_velocity = slide_velocity - normal_velocity * 0.75;
+
+                // inward facing rotation so we dont get stuck along the wall
+                let inward_factor = 1.5; // how much we're facing inward
+                let target_direction = (tangent - normal * inward_factor).normalize();
+                let new_rotation = target_direction.y.atan2(target_direction.x);
+
+                rotation.cos = new_rotation.cos();
+                rotation.sin = new_rotation.sin();
+            }
+
+            linear.0 = current_velocity;
 
             trace!(
                 ?tick,

@@ -1,14 +1,13 @@
 use avian2d::position::Position;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
+use bevy::utils::hashbrown::HashMap;
+use lightyear::connection::netcode::ClientId;
+use lightyear::prelude::client::Predicted;
 use shared::physics::FixedSet;
-use shared::player::{
-    bike::{BikeMarker},
-    trail::Trail,
-    zone::{Zone},
-};
 use shared::player::trail::ADD_POINT_INTERVAL;
 use shared::player::zone::Zones;
+use shared::player::{bike::BikeMarker, trail::Trail, zone::Zone};
 
 pub struct TrailPlugin;
 
@@ -17,9 +16,10 @@ impl Plugin for TrailPlugin {
         app.add_systems(
             FixedUpdate,
             // after we have advanced objects with physics, maybe add a point
-            mark_trail_system.run_if(on_timer(ADD_POINT_INTERVAL))
+            mark_trail_system
+                .run_if(on_timer(ADD_POINT_INTERVAL))
                 .chain()
-                .after(FixedSet::Physics)
+                .after(FixedSet::Physics),
         );
         // app.add_systems(FixedUpdate, mark_trail_system);
     }
@@ -38,4 +38,14 @@ fn mark_trail_system(
             }
         }
     }
+
+    // // cut out all other zones
+    // for (bike, _, _, mut zones) in bikes.iter_mut() {
+    //     for (client_id, zone) in cut_zones.iter() {
+    //         // we don't cut our own zones
+    //         if bike.client_id != *client_id {
+    //             zones.cut_out_zones(zone);
+    //         }
+    //     }
+    // }
 }

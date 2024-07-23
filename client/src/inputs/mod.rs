@@ -1,4 +1,5 @@
 use avian2d::prelude::*;
+use bevy::input::keyboard;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use leafwing_input_manager::axislike::DualAxisData;
@@ -22,8 +23,7 @@ impl Plugin for InputPlugin {
             // make sure we update the ActionState before buffering them
             capture_input
                 .before(InputSystemSet::BufferClientInputs)
-                .run_if(not(is_in_rollback))
-                // .in_set(InputManagerSystem::ManualControl),
+                .run_if(not(is_in_rollback)), // .in_set(InputManagerSystem::ManualControl),
         );
         // TODO: ideally use an observer? this should only run once
         app.add_systems(Update, add_input_map);
@@ -51,7 +51,11 @@ fn add_input_map(
 
 fn capture_input(
     tick_manager: Res<TickManager>,
-    mut action_state_query: Query<(&Position, &mut ActionState<PlayerMovement>), With<Predicted>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut action_state_query: Query<
+        (&BikeMarker, &Position, &mut ActionState<PlayerMovement>),
+        With<Predicted>,
+    >,
     // query to get the window (so we can read the current cursor position)
     q_window: Query<&Window, With<PrimaryWindow>>,
     // query to get camera transform
@@ -68,13 +72,29 @@ fn capture_input(
         .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
         .map(|ray| ray.origin.truncate())
     {
-        if let Ok((bike_pos, mut action_state)) = action_state_query.get_single_mut() {
+        if let Ok((bike, bike_pos, mut action_state)) = action_state_query.get_single_mut() {
             let mouse_position_relative = world_position - bike_pos.0;
             action_state.press(&PlayerMovement::MousePositionRelative);
             action_state
                 .action_data_mut(&PlayerMovement::MousePositionRelative)
                 .unwrap()
                 .axis_pair = Some(DualAxisData::from_xy(mouse_position_relative));
+            if keyboard_input.just_pressed(KeyCode::Space) {
+                if bike.stopped {
+                    action_state.release(&PlayerMovement::ToggleStop);
+                    action_state
+                        .action_data_mut(&PlayerMovement::ToggleStop)
+                        .unwrap()
+                        .value = 0.0;
+                } else {
+                    action_state.press(&PlayerMovement::ToggleStop);
+                    action_state
+                        .action_data_mut(&PlayerMovement::ToggleStop)
+                        .unwrap()
+                        .value = 1.0;
+                }
+            }
+
             trace!(tick = ?tick_manager.tick(), ?mouse_position_relative, "Relative mouse position");
         }
     }

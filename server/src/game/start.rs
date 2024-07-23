@@ -1,12 +1,22 @@
+use avian2d::prelude::RigidBody;
 use bevy::prelude::*;
-use lightyear::prelude::{
-    server::Replicate, Channel, ChannelKind, NetworkTarget, ReplicateResourceExt,
+use lightyear::{
+    connection::netcode::ClientId,
+    prelude::{
+        server::{ControlledBy, Replicate, SyncTarget},
+        Channel, ChannelKind, NetworkTarget, ReplicateResourceExt,
+    },
 };
 use shared::{
     map::SpawnMap,
     network::protocol::Channel1,
-    player::zone::{Zone, ZoneManager},
+    player::{
+        bike::{BikeBundle, BikeMarker, ColorComponent},
+        zone::{Zone, Zones},
+    },
 };
+
+use crate::network::connections::color_from_client_id;
 
 pub struct GamePlugin;
 
@@ -20,37 +30,23 @@ fn game_start(mut commands: Commands) {
     println!("Game starting!");
     // spawn the map
     commands.trigger(SpawnMap);
-    commands.replicate_resource::<ZoneManager, Channel1>(NetworkTarget::All);
-    // testing
-    // let blue_zone = Zone::new(
-    //     vec![
-    //         Vec2::new(50.0, 50.0),
-    //         Vec2::new(150.0, 50.0),
-    //         Vec2::new(150.0, 150.0),
-    //         Vec2::new(50.0, 150.0),
-    //         Vec2::new(50.0, 50.0),
-    //     ],
-    //     Color::srgb(0.0, 0.0, 1.0),
-    // );
 
-    // let red_zone = Zone::new(
-    //     vec![
-    //         Vec2::new(0.0, 0.0),
-    //         Vec2::new(100.0, 0.0),
-    //         Vec2::new(100.0, 100.0),
-    //         Vec2::new(0.0, 100.0),
-    //         Vec2::new(0.0, 0.0),
-    //     ],
-    //     Color::srgb(1.0, 0.0, 0.0),
-    // );
-
-    // // commands.spawn((blue_zone.clone(), Replicate::default()));
-    // // commands.spawn((red_zone.clone(), Replicate::default()));
-
-    // let cut_zones = red_zone.cut(&blue_zone);
-    // println!("Number of cut zones: {}", cut_zones.len());
-    // for (i, zone) in cut_zones.iter().enumerate() {
-    //     println!("Zone {}: {:?}", i, zone.points);
-    //     commands.spawn((zone.clone(), Replicate::default()));
-    // }
+    // Testing
+    // commands
+    //     .spawn((
+    //         BikeBundle::new_at(3, Vec2::new(0.0, 0.0), color_from_client_id(3)),
+    //         Replicate::default(),
+    //     ))
+    //     .insert(Zones {
+    //         zones: vec![Zone {
+    //             exterior: vec![
+    //                 Vec2::new(-1000.0, -1000.0),
+    //                 Vec2::new(1000.0, -1000.0),
+    //                 Vec2::new(1000.0, 1000.0),
+    //                 Vec2::new(-1000.0, 1000.0),
+    //                 Vec2::new(-1000.0, -1000.0),
+    //             ],
+    //             interiors: vec![],
+    //         }],
+    //     });
 }

@@ -1,12 +1,12 @@
+use crate::player::bike::BikeMarker;
+use crate::player::trail::Trail;
 use avian2d::position::{Position, Rotation};
 use bevy::prelude::*;
 use bevy::render::RenderPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use lightyear::prelude::*;
 use lightyear::prelude::client::*;
+use lightyear::prelude::*;
 use lightyear::shared::replication::delta::{DeltaComponentHistory, DeltaManager};
-use crate::player::bike::BikeMarker;
-use crate::player::trail::Trail;
 
 pub struct DebugPlugin;
 
@@ -23,11 +23,9 @@ impl Plugin for DebugPlugin {
     }
 }
 
-fn delta_manager_log(
-    manager: Option<Res<ServerConnectionManager>>,
-) {
+fn delta_manager_log(manager: Option<Res<ServerConnectionManager>>) {
     if let Some(manager) = manager {
-        info!(?manager.delta_manager, "Delta Manager");
+        //info!(?manager.delta_manager, "Delta Manager");
     }
 }
 
@@ -75,13 +73,7 @@ pub(crate) fn last_bike_log(
 
 pub(crate) fn fixed_update_trail_log(
     tick_manager: Res<TickManager>,
-    trails: Query<
-        (
-            Entity,
-            &Trail,
-            Option<&DeltaComponentHistory<Trail>>,
-        ),
-    >,
+    trails: Query<(Entity, &Trail, Option<&DeltaComponentHistory<Trail>>)>,
 ) {
     let tick = tick_manager.tick();
     for (entity, trail, trail_history) in trails.iter() {
