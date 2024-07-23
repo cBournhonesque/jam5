@@ -9,4 +9,5 @@ use lightyear::prelude::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy, Hash, Reflect, Actionlike)]
 pub enum PlayerMovement {
     MousePositionRelative,
+    ToggleStop,
 }

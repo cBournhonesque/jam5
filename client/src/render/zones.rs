@@ -1,6 +1,10 @@
 //! How to render zones
 
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    render::render_resource::{AsBindGroup, ShaderRef},
+    sprite::{Material2d, Material2dPlugin},
+};
 use bevy_prototype_lyon::prelude::Path;
 use lightyear::prelude::MainSet;
 use shared::player::zone::{Zone, Zones};
@@ -13,6 +17,7 @@ pub struct ZoneRenderMarker;
 impl Plugin for ZoneRenderPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreUpdate, update_zone_path.after(MainSet::Receive));
+        app.add_plugins(Material2dPlugin::<ZoneMaterial>::default());
     }
 }
 
@@ -25,5 +30,30 @@ fn update_zone_path(
         if let Ok(zones) = zone_query.get(parent.get()) {
             *path = zones.into();
         }
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Clone)]
+pub struct ZoneMaterial {
+    #[uniform(100)]
+    pub color: Vec4,
+    #[texture(1)]
+    #[sampler(2)]
+    pub texture: Option<Handle<Image>>,
+}
+
+impl ZoneMaterial {
+    pub fn new(color: Color, texture: Option<Handle<Image>>) -> Self {
+        let color = color.to_srgba();
+        Self {
+            color: Vec4::new(color.red, color.green, color.blue, color.alpha),
+            texture,
+        }
+    }
+}
+
+impl Material2d for ZoneMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/zone_material.wgsl".into()
     }
 }

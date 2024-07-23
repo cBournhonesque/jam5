@@ -30,7 +30,7 @@ pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands)
     ));
 }
 
-fn color_from_client_id(client_id: u64) -> Color {
+pub fn color_from_client_id(client_id: u64) -> Color {
     let available_colors = [
         css::LIMEGREEN,
         css::PINK,

@@ -1,7 +1,7 @@
 use crate::network::inputs::PlayerMovement;
 use crate::physics::FixedSet;
 use crate::player::bike::{
-    ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE,
+    BikeMarker, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE,
     MAX_ROTATION_SPEED,
 };
 use avian2d::prelude::*;
@@ -39,6 +39,7 @@ fn move_bike_system(
     fixed_time: Res<Time<Fixed>>,
     mut query: Query<
         (
+            &mut BikeMarker,
             &mut Rotation,
             &mut LinearVelocity,
             &ActionState<PlayerMovement>,
@@ -47,9 +48,15 @@ fn move_bike_system(
         Or<(With<Predicted>, With<Replicating>)>,
     >,
 ) {
-    for (mut rotation, mut linear, action_state) in query.iter_mut() {
+    for (mut bike, mut rotation, mut linear, action_state) in query.iter_mut() {
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
+
+        // should we stop?
+        if action_state.value(&PlayerMovement::ToggleStop) > 0.0 {
+            linear.0 = Vec2::ZERO;
+            continue;
+        }
 
         // speed we wish to move at is based on mouse distance
         if let Some(relative_mouse_pos) =

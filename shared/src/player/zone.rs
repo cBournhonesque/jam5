@@ -1,10 +1,10 @@
 use bevy::prelude::*;
+use bevy_prototype_lyon::prelude::*;
 use geo_clipper::Clipper;
 use geo_types::{Coord, LineString, MultiPolygon, Polygon};
 use lightyear::connection::netcode::ClientId;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use bevy_prototype_lyon::prelude::*;
 
 const CLIPPER_SCALE: f64 = 1_000_000.0;
 
@@ -14,7 +14,6 @@ impl Plugin for ZonePlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<Zone>();
         app.register_type::<Zones>();
-
     }
 }
 
@@ -22,7 +21,6 @@ impl Plugin for ZonePlugin {
 pub struct Zone {
     pub points: Vec<Vec2>,
 }
-
 
 #[derive(Reflect, Component, Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct Zones {
@@ -45,7 +43,6 @@ impl From<&Zones> for Path {
     }
 }
 
-
 // Convert a Zone to a Path.
 impl From<&Zone> for Path {
     fn from(value: &Zone) -> Self {
@@ -61,7 +58,6 @@ impl From<&Zone> for Path {
         path.build()
     }
 }
-
 
 impl Zone {
     pub fn new(points: Vec<Vec2>) -> Self {
@@ -91,13 +87,7 @@ impl Zone {
     }
 }
 
-#[derive(Resource, Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-pub struct ZoneManager {
-    zones: HashMap<ClientId, Vec<Zone>>,
-}
-
 impl Zones {
-
     pub fn add_zone(&mut self, new_zone: Zone) {
         let mut merged_zone = new_zone;
         self.zones.retain(|zone| {

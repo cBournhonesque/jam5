@@ -3,7 +3,7 @@
 use crate::network::inputs::PlayerMovement;
 use crate::player::bike::{BikeMarker, ColorComponent};
 use crate::player::trail::Trail;
-use crate::player::zone::{ZoneManager, Zones};
+use crate::player::zone::Zones;
 use crate::player::Player;
 use avian2d::prelude::*;
 use bevy::app::{App, Plugin};
