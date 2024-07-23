@@ -41,10 +41,12 @@ impl Default for TrailBundle {
 pub struct TrailPlugin;
 
 impl Plugin for TrailPlugin {
-    fn build(&self, app: &mut App) {}
+    fn build(&self, app: &mut App) {
+        app.register_type::<Trail>();
+    }
 }
 
-#[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
+#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct Trail {
     pub line: Vec<Vec2>,
 }

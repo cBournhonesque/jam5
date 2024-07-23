@@ -14,7 +14,7 @@ impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
         // app.add_systems(FixedPostUpdate, post_fixed_update_bike_log);
         // app.add_systems(Last, last_bike_log);
-        app.add_systems(FixedUpdate, fixed_update_trail_log);
+        // app.add_systems(FixedUpdate, fixed_update_trail_log);
         // app.add_systems(FixedUpdate, delta_manager_log);
 
         if app.is_plugin_added::<RenderPlugin>() {
