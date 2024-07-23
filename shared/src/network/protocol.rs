@@ -34,6 +34,7 @@ impl Plugin for ProtocolPlugin {
             .add_interpolation(ComponentSyncMode::Once);
 
         app.register_component::<BikeMarker>(ChannelDirection::ServerToClient)
+            .add_map_entities()
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 
@@ -62,7 +63,8 @@ impl Plugin for ProtocolPlugin {
 
         app.register_component::<Trail>(ChannelDirection::ServerToClient)
             .add_delta_compression();
-        app.register_component::<Zones>(ChannelDirection::ServerToClient);
+        app.register_component::<Zones>(ChannelDirection::ServerToClient)
+            .add_delta_compression();
 
         // channels
         app.add_channel::<Channel1>(ChannelSettings {

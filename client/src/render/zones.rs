@@ -5,12 +5,15 @@ use bevy::{
     render::render_resource::{AsBindGroup, ShaderRef},
     sprite::{Material2d, Material2dPlugin},
 };
+use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy_prototype_lyon::prelude::Path;
 use lightyear::prelude::MainSet;
 use shared::player::{
     bike::ColorComponent,
     zone::{Zone, Zones},
 };
+use shared::player::trail::Trail;
+use crate::render::trail::TrailRenderMarker;
 
 pub struct ZoneRenderPlugin;
 
@@ -19,10 +22,20 @@ pub struct ZoneRenderMarker;
 
 impl Plugin for ZoneRenderPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            PreUpdate,
-            (update_zone_path.after(MainSet::Receive), draw_zone_outlines),
-        );
+        // update the trail path after Receive, but before rendering
+        app.add_systems(Update, update_zones_path);
+        // Draw after TransformPropagate and VisualInterpolation
+        app.add_systems(PostUpdate, (draw_zone_outlines).after(TransformPropagate));
+    }
+}
+
+/// Update the lyon_path (used to filling the zone) of a zone when the zone gets updated
+fn update_zones_path(
+    mut zones_query: Query<(&Zones, &mut Path), (Changed<Zones>, With<ZoneRenderMarker>)>,
+) {
+    for (zones, mut path) in zones_query.iter_mut() {
+        // info!(?trail);
+        *path = zones.into();
     }
 }
 

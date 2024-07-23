@@ -1,7 +1,7 @@
 use avian2d::position::Position;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
-use bevy::utils::hashbrown::HashMap;
+use bevy::utils::HashMap;
 use lightyear::connection::netcode::ClientId;
 use lightyear::prelude::client::Predicted;
 use shared::physics::FixedSet;
@@ -27,25 +27,33 @@ impl Plugin for TrailPlugin {
 
 /// Add a new point to the trail and update the zones accordingly
 fn mark_trail_system(
-    mut q_bikes: Query<(&Position, &mut Zones), With<BikeMarker>>,
-    mut trails: Query<(&Parent, &mut Trail)>
+    mut bikes: Query<(&Position, &BikeMarker)>,
+    mut trails: Query<(&Parent, &mut Trail)>,
+    mut zones_query: Query<&mut Zones>,
 ) {
+    let mut cut_zones = HashMap::<ClientId, Zone>::new();
     for (parent, mut trail) in trails.iter_mut() {
-        if let Ok((position, mut zones)) = q_bikes.get_mut(parent.get()) {
+        if let Ok((position, bike_marker)) = bikes.get_mut(parent.get()) {
             if let Some(shape) = trail.try_add_point(position.0) {
                 trail.line.clear();
-                zones.add_zone(Zone::new(shape));
+                if let Ok(mut zones) = zones_query.get_mut(bike_marker.zones) {
+                    let new_zone = Zone::new(shape);
+                    zones.add_zone(new_zone.clone());
+                    cut_zones.insert(bike_marker.client_id, new_zone);
+                }
             }
         }
     }
 
-    // // cut out all other zones
-    // for (bike, _, _, mut zones) in bikes.iter_mut() {
-    //     for (client_id, zone) in cut_zones.iter() {
-    //         // we don't cut our own zones
-    //         if bike.client_id != *client_id {
-    //             zones.cut_out_zones(zone);
-    //         }
-    //     }
-    // }
+    // cut out all other zones
+    for (_, bike) in bikes.iter() {
+        if let Ok(mut zones) = zones_query.get_mut(bike.zones) {
+            for (client_id, zone) in cut_zones.iter() {
+                // we don't cut our own zones
+                if bike.client_id != *client_id {
+                    zones.cut_out_zones(zone);
+                }
+            }
+        }
+    }
 }

@@ -6,15 +6,47 @@ use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 use shared::player::bike::BikeBundle;
 use shared::player::trail::{Trail, TrailBundle};
+use shared::player::zone::{Zones, ZonesBundle};
 
-/// Spawn a new bike when a player connects
+/// Spawn a new bike when a player connects, along with a `Trail` and a `Zones` entities
 pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands) {
     info!("Spawning bike for client {}", trigger.event().client_id);
     let client_id = trigger.event().client_id;
     let color = color_from_client_id(client_id.to_bits());
     let pos =  Vec2::new(0.0, 0.0);
-    commands.spawn((
-        BikeBundle::new_at(client_id.to_bits(), pos, color),
+
+    let trail = commands.spawn((
+        TrailBundle::new_at(pos),
+        // To replicate the parent/child hierarchy
+        ParentSync::default(),
+        // Enable delta compression when replicating the trail
+        DeltaCompression::<Trail>::default(),
+        Replicate {
+            // TODO: add network relevance
+            controlled_by: ControlledBy {
+                target: NetworkTarget::Single(client_id),
+                ..default()
+            },
+            ..default()
+        },
+    )).id();
+    let zones = commands.spawn((
+        ZonesBundle::default(),
+        // To replicate the parent/child hierarchy
+        ParentSync::default(),
+        // Enable delta compression when replicating the zones
+        DeltaCompression::<Zones>::default(),
+        Replicate {
+            // TODO: add network relevance
+            controlled_by: ControlledBy {
+                target: NetworkTarget::Single(client_id),
+                ..default()
+            },
+            ..default()
+        },
+    )).id();
+    let mut bike = commands.spawn((
+        BikeBundle::new_at(client_id.to_bits(), pos, color, trail, zones),
         RigidBody::Kinematic,
         Replicate {
             sync: SyncTarget {
@@ -33,25 +65,12 @@ pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands)
             },
             ..default()
         },
-    )).with_children(|parent| {
-        parent.spawn((
-            TrailBundle::new_at(pos),
-            // To replicate the parent/child hierarchy
-            ParentSync::default(),
-            // Enable delta compression when replicating the trail
-            // TODO: delta-compression doesn't work. Is it because the client says that it acks
-            //  some server messages, but it wasn't synced so it actually didn't handle those messages?
-            DeltaCompression::<Trail>::default(),
-            Replicate {
-                // TODO: add network relevance
-                controlled_by: ControlledBy {
-                    target: NetworkTarget::Single(client_id),
-                    ..default()
-                },
-                ..default()
-            },
-        ));
-    });
+    ));
+    // NOTE: for complicated reasons related to lightyear:
+    //  - each entity must be replicated in a different replication group (so that delta compression works)
+    //  - but the trail/zones must be replicated before the bike, so that the BikeMarker has a pointer to the correct entities
+    bike.add_child(trail);
+    bike.add_child(zones);
 }
 
 pub fn color_from_client_id(client_id: u64) -> Color {
