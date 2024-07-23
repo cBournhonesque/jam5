@@ -83,7 +83,7 @@ impl Diffable for Trail {
                 new_line: false,
             }
         };
-        info!("Computing trail diff: {diff:?}. Self: {:?} Other: {:?}", self.line.len(), other.line.len());
+        trace!("Computing trail diff: {diff:?}. Self: {:?} Other: {:?}", self.line.len(), other.line.len());
         diff
     }
 
