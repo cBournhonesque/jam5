@@ -34,17 +34,18 @@ fn game_start(mut commands: Commands) {
     commands
         .spawn((
             BikeBundle::new_at(3, Vec2::new(0.0, 0.0), color_from_client_id(3)),
-            RigidBody::Kinematic,
             Replicate::default(),
         ))
         .insert(Zones {
             zones: vec![Zone {
-                points: vec![
-                    Vec2::new(-100.0, -100.0),
-                    Vec2::new(100.0, -100.0),
-                    Vec2::new(100.0, 100.0),
-                    Vec2::new(-100.0, 100.0),
+                exterior: vec![
+                    Vec2::new(-1000.0, -1000.0),
+                    Vec2::new(1000.0, -1000.0),
+                    Vec2::new(1000.0, 1000.0),
+                    Vec2::new(-1000.0, 1000.0),
+                    Vec2::new(-1000.0, -1000.0),
                 ],
+                interiors: vec![],
             }],
         });
 }

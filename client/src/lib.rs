@@ -8,21 +8,20 @@ use shared::SharedPlugin;
 
 pub mod audio;
 
-pub mod render;
 pub mod camera;
+pub mod render;
 
 mod ui;
 
-pub mod screen;
-mod network;
 pub mod assets;
 mod inputs;
+mod network;
+pub mod screen;
 
 // Use a port of 0 to automatically select a port
 pub const CLIENT_PORT: u16 = 0;
 
 pub const SERVER_PORT: u16 = 5000;
-
 
 #[derive(Parser, PartialEq, Debug)]
 pub struct Cli {

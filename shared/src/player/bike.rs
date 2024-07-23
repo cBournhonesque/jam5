@@ -20,7 +20,7 @@ pub struct ColorComponent(pub Color);
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct BikeMarker {
     pub client_id: ClientId,
-    pub stopped: bool,
+    pub stopped: bool, // for testing
 }
 
 #[derive(Bundle, Default)]

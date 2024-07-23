@@ -10,41 +10,8 @@ var<uniform> color: vec4<f32>;
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
-    let pos = in.world_position.xy;
-    let time = globals.time;
-
-    // grid size
-    let grid_size = 75.0;
-
-    // scale to create diamonds
-    var scaled_pos = vec2f(pos.x * 0.5, pos.y);
-    scaled_pos += vec2f(0.0, time * -2.5);
-
-    let local_x = fract(scaled_pos.x / grid_size) - 0.5;
-    let local_y = fract(scaled_pos.y / grid_size) - 0.5;
-    let diamond_dist = abs(local_x) + abs(local_y);
-
-    // scrolling perlin noise
-    let noise_scrolled_large = perlin(scaled_pos / 100.0 + vec2f(time * 0.5, time * 0.5));
-    let noise_scrolled_slow = perlin(scaled_pos / 100.0 + vec2f(time * 0.1, time * 0.1));
-    // fresnel
-    var fresnel = 1.0 - dot(normalize(in.position.xy), vec2f(0.0, 1.0));
-    fresnel = pow(fresnel, 2.0);
-
-    let base_checkboard_color = 1.0 - smoothstep(0.45, 0.55, diamond_dist);
-    let final_color = mix(
-        base_checkboard_color * color * 0.55,
-        vec4<f32>(0.0, 0.0, 0.0, 0.15),
-        .5,
-    ) * vec4(0.0, 0.0, 0.0, 0.15) + vec4(0.0, 0.0, 0.0, 0.25) + noise_scrolled_large * 0.05;
-
-    let final_color2 = mix(
-        final_color,
-        vec4<f32>(0.0, 0.0, 0.0, 0.15),
-        fresnel,
-    ) + color * 0.15 + noise_scrolled_slow * 0.05;
-
-    return vec4<f32>(final_color2.r, final_color2.g, final_color2.b, 0.5);
+    
+    return color;
 }
 
 fn rotate(pos: vec2<f32>, angle: f32) -> vec2<f32> {

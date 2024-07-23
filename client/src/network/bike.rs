@@ -1,15 +1,17 @@
 //! Module to handle the networking of bikes on the client side
 
+use crate::render::trail::TrailRenderMarker;
 use crate::render::zones::ZoneRenderMarker;
-use crate::render::{trail::TrailRenderMarker, zones::ZoneMaterial};
 use avian2d::prelude::{Position, RigidBody, Rotation};
 use bevy::prelude::*;
 use bevy::render::view::NoFrustumCulling;
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy_prototype_lyon::prelude::*;
-use lightyear::prelude::client::*;
+use lightyear::client;
+use lightyear::connection::netcode::Client;
+use lightyear::prelude::{client::*, ClientId, MainSet};
 use shared::player::bike::{BikeMarker, ColorComponent};
-use shared::player::zone::Zone;
+use shared::player::zone::{self, Zone, Zones};
 
 pub struct BikeNetworkPlugin;
 
@@ -20,10 +22,7 @@ impl Plugin for BikeNetworkPlugin {
             PreUpdate,
             handle_new_predicted_bike.after(PredictionSet::SpawnHistory),
         );
-        app.add_systems(
-            PreUpdate,
-            handle_new_confirmed_bike.after(PredictionSet::SpawnPrediction),
-        );
+        app.add_systems(PreUpdate, handle_new_confirmed_bike.after(MainSet::Receive));
     }
 }
 
@@ -55,41 +54,42 @@ fn handle_new_predicted_bike(
 /// - create a new entity that will hold the zone mesh to render
 fn handle_new_confirmed_bike(
     mut commands: Commands,
-    mut materials: ResMut<Assets<ZoneMaterial>>,
-    confirmed_bikes: Query<(Entity, &ColorComponent), (With<BikeMarker>, Added<Confirmed>)>,
+    // checking with Added<BikeMarker> ensures that we only run this system once for each new bike, including other people's bikes and "mock bikes" for testing
+    confirmed_bikes: Query<(Entity, &BikeMarker, &ColorComponent, &Zones), Added<BikeMarker>>,
 ) {
-    for (entity, color) in confirmed_bikes.iter() {
+    for (entity, bike, color, zones) in confirmed_bikes.iter() {
+        info!("Decorating bike with color: {:?}", color.0);
+
         // color values above 1.0 enable bloom
-        let zone_color: Color = (Color::Hsva(Hsva {
-            // saturation: 0.2,
-            ..Hsva::from(color.0)
-        })
-        .to_linear()
-            * 3.0)
-            .into();
-        let trail_color: Color = (color.0.to_linear() * 10.0).into();
+        let c = color.0.to_linear();
+        let zone_fill_color: Color = Color::srgba(c.red, c.green, c.blue, 0.15);
+        let zone_border_color: Color = (c * 2.0).into();
+        let trail_color: Color = (c * 10.0).into();
+        let zone_z_order = -(bike.client_id as f32) * 100.0;
 
         commands.entity(entity).with_children(|parent| {
             // add the entity that will hold the zone mesh
             parent
                 .spawn((
-                    Path::default(),
-                    MaterialMesh2dBundle {
-                        material: materials.add(ZoneMaterial::new(zone_color, None)),
-                        transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                        ..default()
-                    },
+                    ShapeBundle::default(),
                     ZoneRenderMarker,
                     NoFrustumCulling,
-                    Fill::color(zone_color),
+                    Fill::color(zone_fill_color),
+                    Stroke::new(zone_border_color, 4.0),
                 ))
-                .insert(Transform::from_translation(Vec3::new(0.0, 0.0, -1000.0)));
+                .insert(GlobalTransform::from_translation(Vec3::new(
+                    0.0,
+                    0.0,
+                    -zone_z_order,
+                )))
+                .insert(Path::from(zones));
+
             // add the entity that will hold the trail mesh
             parent.spawn((
                 ShapeBundle::default(),
                 TrailRenderMarker,
                 NoFrustumCulling,
-                Stroke::new(trail_color, 1.0),
+                Stroke::new(trail_color, 2.0),
             ));
         });
     }
