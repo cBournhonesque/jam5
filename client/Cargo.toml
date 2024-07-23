@@ -36,6 +36,7 @@ bevy.workspace = true
 bevy_turborand.workspace = true
 lightyear.workspace = true
 clap.workspace = true
+tokio.workspace = true
 leafwing-input-manager.workspace = true
 bevy_prototype_lyon = "0.12.0"
 bevy_screen_diagnostics = "0.6"

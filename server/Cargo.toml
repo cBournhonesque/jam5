@@ -35,5 +35,6 @@ avian2d.workspace = true
 bevy.workspace = true
 lightyear.workspace = true
 clap.workspace = true
+tokio.workspace = true
 
 async-compat = "0.2.4"
