@@ -27,3 +27,4 @@ fn update_trail_path(
         // info!(?trail);
         *path = trail.into();
     }
+}
