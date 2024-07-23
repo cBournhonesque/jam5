@@ -5,6 +5,7 @@ use avian2d::prelude::*;
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::*;
 use lightyear::prelude::*;
+use crate::player::scores::{Score, Stats};
 
 pub const BASE_SPEED: f32 = 200.0;
 pub const FAST_SPEED: f32 = 600.0;
@@ -20,28 +21,30 @@ pub struct ColorComponent(pub Color);
 #[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BikeMarker {
     pub client_id: ClientId,
+    pub name: String,
     pub stopped: bool, // for testing
-    // TODO: these are unused right now!
-    // The trail entity associated with the bike
-    pub trail: Entity,
-    // The zones entity associated with the bike
-    pub zones: Entity,
+    // // TODO: these are unused right now!
+    // // The trail entity associated with the bike
+    // pub trail: Entity,
+    // // The zones entity associated with the bike
+    // pub zones: Entity,
 }
 
-impl MapEntities for BikeMarker {
-    fn map_entities<M: EntityMapper>(&mut self, entity_mapper: &mut M) {
-        self.trail = entity_mapper.map_entity(self.trail);
-        self.zones = entity_mapper.map_entity(self.zones);
-    }
-}
+// impl MapEntities for BikeMarker {
+//     fn map_entities<M: EntityMapper>(&mut self, entity_mapper: &mut M) {
+//         self.trail = entity_mapper.map_entity(self.trail);
+//         self.zones = entity_mapper.map_entity(self.zones);
+//     }
+// }
 
 impl Default for BikeMarker {
     fn default() -> Self {
         Self {
             client_id: ClientId::Netcode(0),
+            name: "Player".to_owned(),
             stopped: false,
-            trail: Entity::PLACEHOLDER,
-            zones: Entity::PLACEHOLDER,
+            // trail: Entity::PLACEHOLDER,
+            // zones: Entity::PLACEHOLDER,
         }
     }
 }
@@ -54,6 +57,8 @@ pub struct BikeBundle {
     pub rotation: Rotation,
     pub linear_velocity: LinearVelocity,
     pub color: ColorComponent,
+    pub score: Score,
+    pub stats: Stats,
     pub name: Name,
 }
 
@@ -63,9 +68,7 @@ impl BikeBundle {
         Self {
             marker: BikeMarker {
                 client_id,
-                stopped: false,
-                trail: Entity::PLACEHOLDER,
-                zones: Entity::PLACEHOLDER,
+                ..default()
             },
             position: Position(position),
             color: ColorComponent(color),

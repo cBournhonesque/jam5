@@ -11,6 +11,7 @@ use bevy::prelude::{default, Name};
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 use lightyear::utils::avian2d::*;
+use crate::player::scores::{Score, Stats};
 
 pub struct ProtocolPlugin;
 
@@ -29,12 +30,15 @@ impl Plugin for ProtocolPlugin {
         // Components
         app.register_component::<Player>(ChannelDirection::ServerToClient);
 
+        app.register_component::<Score>(ChannelDirection::ServerToClient);
+        app.register_component::<Stats>(ChannelDirection::ServerToClient);
+
         app.register_component::<ColorComponent>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 
         app.register_component::<BikeMarker>(ChannelDirection::ServerToClient)
-            .add_map_entities()
+            // .add_map_entities()
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 

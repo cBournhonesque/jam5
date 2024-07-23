@@ -11,6 +11,7 @@ pub mod player;
 pub mod trail;
 pub mod zones;
 pub mod label;
+mod leaderboard;
 
 pub(crate) struct RenderPlugin;
 
@@ -25,6 +26,7 @@ impl Plugin for RenderPlugin {
         ));
         app.add_plugins((
             diagnostics::DiagnosticsPlugin,
+            leaderboard::LeaderboardPlugin,
             label::EntityLabelPlugin,
             player::PlayerRenderPlugin,
             trail::TrailRenderPlugin,
