@@ -31,21 +31,22 @@ fn game_start(mut commands: Commands) {
     // spawn the map
     commands.trigger(SpawnMap);
 
-    commands
-        .spawn((
-            BikeBundle::new_at(3, Vec2::new(0.0, 0.0), color_from_client_id(3)),
-            Replicate::default(),
-        ))
-        .insert(Zones {
-            zones: vec![Zone {
-                exterior: vec![
-                    Vec2::new(-1000.0, -1000.0),
-                    Vec2::new(1000.0, -1000.0),
-                    Vec2::new(1000.0, 1000.0),
-                    Vec2::new(-1000.0, 1000.0),
-                    Vec2::new(-1000.0, -1000.0),
-                ],
-                interiors: vec![],
-            }],
-        });
+    // Testing
+    // commands
+    //     .spawn((
+    //         BikeBundle::new_at(3, Vec2::new(0.0, 0.0), color_from_client_id(3)),
+    //         Replicate::default(),
+    //     ))
+    //     .insert(Zones {
+    //         zones: vec![Zone {
+    //             exterior: vec![
+    //                 Vec2::new(-1000.0, -1000.0),
+    //                 Vec2::new(1000.0, -1000.0),
+    //                 Vec2::new(1000.0, 1000.0),
+    //                 Vec2::new(-1000.0, 1000.0),
+    //                 Vec2::new(-1000.0, -1000.0),
+    //             ],
+    //             interiors: vec![],
+    //         }],
+    //     });
 }

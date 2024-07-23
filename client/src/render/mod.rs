@@ -1,6 +1,7 @@
 use avian2d::prelude::{Position, Rotation};
 use bevy::app::{App, Plugin};
 use bevy::color::Color;
+use bevy::prelude::ClearColor;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use lightyear::prelude::client::*;
 
@@ -28,5 +29,6 @@ impl Plugin for RenderPlugin {
             zones::ZoneRenderPlugin,
             map::MapPlugin,
         ));
+        app.insert_resource(ClearColor(Color::BLACK));
     }
 }
