@@ -40,6 +40,7 @@ fn move_bike_system(
     fixed_time: Res<Time<Fixed>>,
     mut query: Query<
         (
+            // TODO: do we need this?
             &mut BikeMarker,
             &mut Position,
             &mut Rotation,
@@ -113,7 +114,7 @@ fn move_bike_system(
                 let scale = ((position.0.x.powi(2) / a.powi(2))
                     + (position.0.y.powi(2) / b.powi(2)))
                 .sqrt();
-                position.0 = Vec2::new((position.0.x / scale), (position.0.y / scale));
+                position.0 = Vec2::new(position.0.x / scale, position.0.y / scale);
 
                 // calculate normal and tangent
                 let normal =

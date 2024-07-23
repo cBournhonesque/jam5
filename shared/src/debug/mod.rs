@@ -7,6 +7,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 use lightyear::shared::replication::delta::{DeltaComponentHistory, DeltaManager};
+use crate::player::zone::Zones;
 
 pub struct DebugPlugin;
 
@@ -16,6 +17,7 @@ impl Plugin for DebugPlugin {
         // app.add_systems(Last, last_bike_log);
         // app.add_systems(FixedUpdate, fixed_update_trail_log);
         // app.add_systems(FixedUpdate, delta_manager_log);
+        // app.add_systems(FixedUpdate, log_parent_sync);
 
         if app.is_plugin_added::<RenderPlugin>() {
             app.add_plugins(WorldInspectorPlugin::default());
@@ -26,6 +28,19 @@ impl Plugin for DebugPlugin {
 fn delta_manager_log(manager: Option<Res<ServerConnectionManager>>) {
     if let Some(manager) = manager {
         //info!(?manager.delta_manager, "Delta Manager");
+    }
+}
+
+/// Log entities that have parent sync
+pub(crate) fn log_parent_sync(
+    children: Query<(Entity, &Parent, &ParentSync, Has<Zones>, Has<Trail>)>,
+    bikes: Query<(Entity, &Children, &BikeMarker)>,
+) {
+    for (entity, parent, parent_sync, zone, trail) in children.iter() {
+        info!(?entity, ?parent, ?parent_sync, ?zone, ?trail, "Parent Sync");
+    }
+    for (entity, children, bike) in bikes.iter() {
+        info!(?entity, ?children, ?bike, "Bike");
     }
 }
 

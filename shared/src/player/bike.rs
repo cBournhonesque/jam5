@@ -2,8 +2,8 @@ use super::trail::Trail;
 use crate::player::zone::Zones;
 use avian2d::math::Vector;
 use avian2d::prelude::*;
+use bevy::ecs::entity::MapEntities;
 use bevy::prelude::*;
-use lightyear::connection::netcode::ClientId;
 use lightyear::prelude::*;
 
 pub const BASE_SPEED: f32 = 200.0;
@@ -17,11 +17,35 @@ pub const FAST_DRAG: f32 = 2.0;
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct ColorComponent(pub Color);
 
-#[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
+#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BikeMarker {
     pub client_id: ClientId,
     pub stopped: bool, // for testing
+    // TODO: these are unused right now!
+    // The trail entity associated with the bike
+    pub trail: Entity,
+    // The zones entity associated with the bike
+    pub zones: Entity,
 }
+
+impl MapEntities for BikeMarker {
+    fn map_entities<M: EntityMapper>(&mut self, entity_mapper: &mut M) {
+        self.trail = entity_mapper.map_entity(self.trail);
+        self.zones = entity_mapper.map_entity(self.zones);
+    }
+}
+
+impl Default for BikeMarker {
+    fn default() -> Self {
+        Self {
+            client_id: ClientId::Netcode(0),
+            stopped: false,
+            trail: Entity::PLACEHOLDER,
+            zones: Entity::PLACEHOLDER,
+        }
+    }
+}
+
 
 #[derive(Bundle, Default)]
 pub struct BikeBundle {
@@ -30,8 +54,6 @@ pub struct BikeBundle {
     pub rotation: Rotation,
     pub linear_velocity: LinearVelocity,
     pub color: ColorComponent,
-    // pub trail: Trail,
-    pub zones: Zones,
     pub name: Name,
 }
 
@@ -42,6 +64,8 @@ impl BikeBundle {
             marker: BikeMarker {
                 client_id,
                 stopped: false,
+                trail: Entity::PLACEHOLDER,
+                zones: Entity::PLACEHOLDER,
             },
             position: Position(position),
             color: ColorComponent(color),
@@ -55,5 +79,7 @@ impl BikeBundle {
 pub struct BikePlugin;
 
 impl Plugin for BikePlugin {
-    fn build(&self, app: &mut App) {}
+    fn build(&self, app: &mut App) {
+        app.register_type::<BikeMarker>();
+    }
 }

@@ -1,7 +1,7 @@
 use avian2d::position::Position;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
-use bevy::utils::hashbrown::HashMap;
+use bevy::utils::HashMap;
 use lightyear::connection::netcode::ClientId;
 use lightyear::prelude::client::Predicted;
 use shared::physics::FixedSet;
@@ -27,25 +27,35 @@ impl Plugin for TrailPlugin {
 
 /// Add a new point to the trail and update the zones accordingly
 fn mark_trail_system(
-    mut q_bikes: Query<(&Position, &mut Zones), With<BikeMarker>>,
-    mut trails: Query<(&Parent, &mut Trail)>
+    mut bikes: Query<(&Position, &Children)>,
+    mut trails: Query<(Entity, &Parent, &mut Trail)>,
+    mut zones_query: Query<(&Parent, &mut Zones)>,
 ) {
-    for (parent, mut trail) in trails.iter_mut() {
-        if let Ok((position, mut zones)) = q_bikes.get_mut(parent.get()) {
+    let mut cut_zones = HashMap::<Entity, Zone>::new();
+    for (trail_entity, parent, mut trail) in trails.iter_mut() {
+        if let Ok((position, children)) = bikes.get_mut(parent.get()) {
             if let Some(shape) = trail.try_add_point(position.0) {
                 trail.line.clear();
-                zones.add_zone(Zone::new(shape));
+                // we find the zone entity by querying the children of Bike that are not Trail
+                let zone_entity = children.into_iter().find(|entity| {
+                    **entity != trail_entity
+                }).unwrap();
+                if let Ok((_, mut zones)) = zones_query.get_mut(*zone_entity) {
+                    let new_zone = Zone::new(shape);
+                    zones.add_zone(new_zone.clone());
+                    cut_zones.insert(parent.get(), new_zone);
+                }
             }
         }
     }
 
-    // // cut out all other zones
-    // for (bike, _, _, mut zones) in bikes.iter_mut() {
-    //     for (client_id, zone) in cut_zones.iter() {
-    //         // we don't cut our own zones
-    //         if bike.client_id != *client_id {
-    //             zones.cut_out_zones(zone);
-    //         }
-    //     }
-    // }
+    // cut out all other zones
+    for (parent, mut zones) in zones_query.iter_mut() {
+        for (bike_entity, zone) in cut_zones.iter() {
+            // we don't cut our own zone
+            if parent.get() != *bike_entity {
+                zones.cut_out_zones(zone);
+            }
+        }
+    }
 }
