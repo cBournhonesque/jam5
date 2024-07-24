@@ -22,12 +22,13 @@ pub struct ColorComponent(pub Color);
 pub struct BikeMarker {
     pub client_id: ClientId,
     pub name: String,
-    pub stopped: bool, // for testing
-                       // // TODO: these are unused right now!
-                       // // The trail entity associated with the bike
-                       // pub trail: Entity,
-                       // // The zones entity associated with the bike
-                       // pub zones: Entity,
+    // for testing
+    pub stopped: bool,
+    // // TODO: these are unused right now!
+    // // The trail entity associated with the bike
+    // pub trail: Entity,
+    // // The zones entity associated with the bike
+    // pub zones: Entity,
 }
 
 // impl MapEntities for BikeMarker {
