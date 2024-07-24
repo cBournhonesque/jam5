@@ -1,13 +1,13 @@
 //! Module to handle all networking-related logic
-use std::net::SocketAddr;
 use bevy::prelude::*;
 use lightyear::prelude::client::*;
+use std::net::SocketAddr;
 
-use shared::network::config::Transports;
 use crate::screen::Screen::Playing;
+use shared::network::config::Transports;
 
-pub(crate) mod config;
 mod bike;
+pub(crate) mod config;
 
 /// Plugin that handles networking
 pub(crate) struct NetworkPlugin {
@@ -19,6 +19,7 @@ pub(crate) struct NetworkPlugin {
 
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<BikeSpawned>();
         // the ClientPlugins must be added before the Protocol plugins
         app.add_plugins(config::build_lightyear_client(
             self.client_id,
@@ -45,9 +46,7 @@ fn connect(mut commands: Commands) {
 
 /// Show the client id when connected
 #[cfg(feature = "dev")]
-fn debug_connect(
-    trigger: Trigger<ConnectEvent>,
-    mut commands: Commands) {
+fn debug_connect(trigger: Trigger<ConnectEvent>, mut commands: Commands) {
     info!("Client connected: {}", trigger.event().client_id());
     let client_id = trigger.event().client_id();
     commands.spawn((
@@ -59,6 +58,11 @@ fn debug_connect(
                 ..default()
             },
         ),
-        Name::new("ClientIdText")
+        Name::new("ClientIdText"),
     ));
+}
+
+#[derive(Event, Debug)]
+pub struct BikeSpawned {
+    pub(crate) entity: Entity,
 }

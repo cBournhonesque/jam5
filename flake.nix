@@ -7,7 +7,7 @@
     flake-utils.url  = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
+  outputs = { nixpkgs, rust-overlay, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         overlays = [ (import rust-overlay) ];
@@ -39,6 +39,7 @@
             xorg.libXi
             xorg.libXrandr
             libxkbcommon
+            stdenv.cc.cc.lib
           ];
 
           LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
