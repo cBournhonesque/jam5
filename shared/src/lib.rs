@@ -79,6 +79,7 @@ impl Plugin for SharedPlugin {
         app.add_plugins(map::MapPlugin);
         app.add_plugins(physics::PhysicsPlugin);
         app.add_plugins(player::bike::BikePlugin);
+        app.add_plugins(player::death::DeathPlugin);
         app.add_plugins(player::trail::TrailPlugin);
         app.add_plugins(player::zone::ZonePlugin);
     }
