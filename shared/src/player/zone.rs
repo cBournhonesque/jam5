@@ -236,7 +236,7 @@ impl Zones {
         let mut merged_zone = new_zone;
         self.zones.retain(|zone| {
             if Self::zones_overlap(zone, &merged_zone) {
-                merged_zone = Self::union_zones(merged_zone.clone(), zone.clone());
+                merged_zone = Self::union_zones(&merged_zone, zone);
                 false
             } else {
                 true
@@ -266,7 +266,7 @@ impl Zones {
         self.zones = new_zones;
     }
 
-    fn union_zones(zone1: Zone, zone2: Zone) -> Zone {
+    fn union_zones(zone1: &Zone, zone2: &Zone) -> Zone {
         let poly1 = zone1.to_geo_polygon();
         let poly2 = zone2.to_geo_polygon();
 
@@ -275,7 +275,7 @@ impl Zones {
                 polys.sort_by_key(|p| std::cmp::Reverse(p.exterior().0.len()));
                 Zone::from_geo_polygon(polys.remove(0))
             }
-            _ => zone1,
+            _ => zone1.clone(),
         }
     }
 

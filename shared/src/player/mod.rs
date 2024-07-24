@@ -6,6 +6,7 @@ pub mod bike;
 pub mod trail;
 pub mod zone;
 pub mod scores;
+pub mod death;
 
 /// Indicates a player entity
 /// TODO: should we separate the player entity from the actual visual character?

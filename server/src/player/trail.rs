@@ -6,7 +6,9 @@ use shared::physics::FixedSet;
 use shared::player::trail::ADD_POINT_INTERVAL;
 use shared::player::zone::Zones;
 use shared::player::{trail::Trail, zone::Zone};
+use shared::player::death::Dead;
 use shared::player::scores::{Score, Stats};
+use crate::player::death::PlayerKillEvent;
 
 pub struct TrailPlugin;
 
@@ -26,13 +28,14 @@ impl Plugin for TrailPlugin {
 
 /// Add a new point to the trail and update the zones accordingly
 fn mark_trail_system(
-    mut bikes: Query<(&Position, &Children, &mut Stats)>,
-    mut trails: Query<(Entity, &Parent, &mut Trail)>,
-    mut zones_query: Query<(&Parent, &mut Zones)>,
+    mut commands: Commands,
+    mut bikes: Query<(Entity, &Position, &Children, &mut Stats), Without<Dead>>,
+    mut trails: Query<(Entity, &Parent, &mut Trail), Without<Dead>>,
+    mut zones_query: Query<(&Parent, &mut Zones), Without<Dead>>,
 ) {
-    let mut cut_zones = HashMap::<Entity, Zone>::new();
+    let mut new_zones = HashMap::<Entity, Zone>::new();
     for (trail_entity, parent, mut trail) in trails.iter_mut() {
-        if let Ok((position, children, mut stats)) = bikes.get_mut(parent.get()) {
+        if let Ok((_, position, children, mut stats)) = bikes.get_mut(parent.get()) {
             if let Some(shape) = trail.try_add_point(position.0) {
                 // update stats
                 stats.max_trail_length = stats.max_trail_length.max(trail.len() as u32);
@@ -45,18 +48,29 @@ fn mark_trail_system(
                 if let Ok((_, mut zones)) = zones_query.get_mut(*zone_entity) {
                     let new_zone = Zone::new(shape);
                     zones.add_zone(new_zone.clone());
-                    cut_zones.insert(parent.get(), new_zone);
+                    new_zones.insert(parent.get(), new_zone);
                 }
             }
         }
     }
 
     // cut out all other zones
-    for (parent, mut zones) in zones_query.iter_mut() {
-        for (bike_entity, zone) in cut_zones.iter() {
+    for (bike_entity, zone) in new_zones.iter() {
+        for (parent, mut zones) in zones_query.iter_mut() {
             // we don't cut our own zone
             if parent.get() != *bike_entity {
                 zones.cut_out_zones(zone);
+            }
+        }
+
+        // check if a player was killed
+        for (entity, position, _, _) in bikes.iter() {
+            // you cannot kill yourself
+            if *bike_entity != entity && zone.contains(position.0) {
+                commands.trigger(PlayerKillEvent {
+                    killer: *bike_entity,
+                    killed: entity,
+                })
             }
         }
     }
