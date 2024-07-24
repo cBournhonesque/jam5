@@ -2,7 +2,7 @@
 
 use crate::network::inputs::PlayerMovement;
 use crate::network::message::{KillMessage, KilledByMessage};
-use crate::player::bike::{BikeMarker, ColorComponent};
+use crate::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use crate::player::scores::{Score, Stats};
 use crate::player::trail::Trail;
 use crate::player::zone::Zones;
@@ -38,6 +38,10 @@ impl Plugin for ProtocolPlugin {
         // Components
         app.register_component::<Score>(ChannelDirection::ServerToClient);
         app.register_component::<Stats>(ChannelDirection::ServerToClient);
+
+        app.register_component::<ClientIdMarker>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once)
+            .add_interpolation(ComponentSyncMode::Once);
 
         app.register_component::<ColorComponent>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
