@@ -4,6 +4,7 @@ use avian2d::prelude::*;
 use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::prelude::*;
 use bevy::prelude::*;
+use bevy::reflect::DynamicTypePath;
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use bevy::sprite::Material2d;
@@ -22,10 +23,7 @@ impl Plugin for PlayerRenderPlugin {
 
         app.observe(on_bike_spawned);
         // Draw after TransformPropagate and VisualInterpolation
-        app.add_systems(
-            PostUpdate,
-            (draw_bike_debug, update_bike_position).after(TransformPropagate),
-        );
+        app.add_systems(PostUpdate, (update_bike_position).after(TransformPropagate));
     }
 }
 
@@ -59,6 +57,12 @@ fn on_bike_spawned(
     }
 }
 
+const ROTATION_AMOUNT: f32 = 360.0 / 32.0;
+
+fn degrees_to_sprite_index(degrees: f32) -> usize {
+    ((degrees + 180.0) / ROTATION_AMOUNT).floor() as usize
+}
+
 fn update_bike_position(
     q_parents: Query<
         (&Position, &Rotation),
@@ -68,11 +72,12 @@ fn update_bike_position(
             Without<BikeGraphics>,
         ),
     >,
-    mut q_bike: Query<(&BikeGraphics, &mut Transform)>,
+    mut q_bike: Query<(&BikeGraphics, &mut Transform, &mut TextureAtlas)>,
 ) {
-    for (BikeGraphics { followed_entity }, mut transform) in q_bike.iter_mut() {
+    for (BikeGraphics { followed_entity }, mut transform, mut atlas) in q_bike.iter_mut() {
         if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
             transform.translation = Vec3::new(parent_pos.0.x, parent_pos.0.y, 100.0);
+            atlas.index = degrees_to_sprite_index(parent_rot.as_degrees());
         }
     }
 }
