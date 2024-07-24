@@ -1,11 +1,11 @@
 use super::trail::Trail;
+use crate::player::scores::{Score, Stats};
 use crate::player::zone::Zones;
 use avian2d::math::Vector;
 use avian2d::prelude::*;
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::*;
 use lightyear::prelude::*;
-use crate::player::scores::{Score, Stats};
 
 pub const BASE_SPEED: f32 = 200.0;
 pub const FAST_SPEED: f32 = 600.0;
@@ -23,11 +23,11 @@ pub struct BikeMarker {
     pub client_id: ClientId,
     pub name: String,
     pub stopped: bool, // for testing
-    // // TODO: these are unused right now!
-    // // The trail entity associated with the bike
-    // pub trail: Entity,
-    // // The zones entity associated with the bike
-    // pub zones: Entity,
+                       // // TODO: these are unused right now!
+                       // // The trail entity associated with the bike
+                       // pub trail: Entity,
+                       // // The zones entity associated with the bike
+                       // pub zones: Entity,
 }
 
 // impl MapEntities for BikeMarker {
@@ -48,7 +48,6 @@ impl Default for BikeMarker {
         }
     }
 }
-
 
 #[derive(Bundle, Default)]
 pub struct BikeBundle {

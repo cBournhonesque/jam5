@@ -1,9 +1,9 @@
 /// Utility plugin to display a text label next to an entity.
 ///
 /// Label will track parent position, ignoring rotation.
-use avian2d::prelude::{Position};
-use bevy::prelude::*;
+use avian2d::prelude::Position;
 use bevy::prelude::TransformSystem::TransformPropagate;
+use bevy::prelude::*;
 
 pub struct EntityLabelPlugin;
 
@@ -50,10 +50,7 @@ impl Default for EntityLabel {
 pub struct EntityLabelChild;
 
 /// Add the child entity containing the Text2dBundle
-fn label_added(
-    q: Query<(Entity, &EntityLabel), Added<EntityLabel>>,
-    mut commands: Commands,
-) {
+fn label_added(q: Query<(Entity, &EntityLabel), Added<EntityLabel>>, mut commands: Commands) {
     let font: Handle<Font> = Default::default();
     let mut ts = TextStyle::default();
     let mut ts_sub = TextStyle::default();
@@ -71,8 +68,8 @@ fn label_added(
                         TextSection::new("\n", ts.clone()),
                         TextSection::new(label.sub_text.clone(), ts_sub.clone()),
                     ])
-                        .with_no_wrap()
-                        .with_justify(JustifyText::Center),
+                    .with_no_wrap()
+                    .with_justify(JustifyText::Center),
                     transform: Transform::from_translation(Vec3::new(
                         label.offset.x,
                         label.offset.y,
@@ -129,7 +126,8 @@ fn update_entity_label_positions(
 ) {
     for (parent, mut transform) in q_text.iter_mut() {
         if let Ok((parent_pos, fl)) = q_parents.get(parent.get()) {
-            *transform = GlobalTransform::from_translation(Vec3::from((parent_pos.0 + fl.offset, fl.z)));
+            *transform =
+                GlobalTransform::from_translation(Vec3::from((parent_pos.0 + fl.offset, fl.z)));
         }
     }
 }
