@@ -42,7 +42,7 @@ pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands)
         ))
         // do not replicate the hierarchy at all, because the ParentSync component might be invalid
         // instead we will build the hierarchy on the client side manually
-        // .remove::<ReplicateHierarchy>()
+        .remove::<ReplicateHierarchy>()
         .id();
 
     let trail = commands
@@ -59,9 +59,9 @@ pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands)
                 ..default()
             },
         ))
-        // .remove::<ReplicateHierarchy>()
+        .remove::<(ReplicateHierarchy, SyncTarget)>()
         .id();
-
+    //
     let zones = commands
         .spawn((
             ZonesBundle::new(client_id),
@@ -76,7 +76,7 @@ pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands)
                 ..default()
             },
         ))
-        // .remove::<ReplicateHierarchy>()
+        .remove::<(ReplicateHierarchy, SyncTarget)>()
         .id();
     commands.entity(bike).add_child(trail).add_child(zones);
 }

@@ -10,6 +10,7 @@ use bevy::prelude::*;
 use bevy::render::view::NoFrustumCulling;
 use bevy_prototype_lyon::prelude::*;
 use lightyear::prelude::{client::*, MainSet};
+use lightyear::shared::replication::components::Controlled;
 use shared::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use shared::player::trail::Trail;
 use shared::player::zone::Zones;
@@ -40,7 +41,7 @@ impl Plugin for BikeNetworkPlugin {
 /// When a new trail is added, we go through all bikes to find the parent
 fn add_trail_hierarchy(
     mut commands: Commands,
-    bike: Query<(Entity, &ClientIdMarker), With<BikeMarker>>,
+    bike: Query<(Entity, &ClientIdMarker), (With<BikeMarker>, With<Confirmed>)>,
     trails: Query<(Entity, &ClientIdMarker), (With<Trail>, Without<Parent>)>,
 ) {
     for (trail, trail_client_id) in trails.iter() {
@@ -55,7 +56,7 @@ fn add_trail_hierarchy(
 /// When a new zones is added, we go through all bikes to find the parent
 fn add_zones_hierarchy(
     mut commands: Commands,
-    bike: Query<(Entity, &ClientIdMarker), With<BikeMarker>>,
+    bike: Query<(Entity, &ClientIdMarker), (With<BikeMarker>, With<Confirmed>)>,
     zones: Query<(Entity, &ClientIdMarker), (With<Zones>, Without<Parent>)>,
 ) {
     for (zones, zone_client_id) in zones.iter() {

@@ -31,7 +31,8 @@ impl Default for ZonesBundle {
     fn default() -> Self {
         Self {
             name: Name::from("Zones"),
-            ..default()
+            client: ClientIdMarker::default(),
+            zones: Zones::default(),
         }
     }
 }

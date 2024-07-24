@@ -19,6 +19,7 @@ impl Plugin for PlayerRenderPlugin {
     fn build(&self, app: &mut App) {
         // Plugins
         app.register_type::<HandleMap<ImageKey>>();
+        app.register_type::<BikeGraphics>();
         app.init_resource::<HandleMap<ImageKey>>();
 
         app.observe(on_bike_spawned);
@@ -27,7 +28,7 @@ impl Plugin for PlayerRenderPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Reflect, Component)]
 pub struct BikeGraphics {
     followed_entity: Entity,
 }
@@ -63,6 +64,7 @@ fn on_bike_spawned(
                     layout: texture_atlas_handle,
                     index: 0,
                 },
+                Name::from("BikeSprite"),
             ));
         }
     }
