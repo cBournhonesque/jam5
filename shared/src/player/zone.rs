@@ -1,3 +1,4 @@
+use crate::player::bike::ClientIdMarker;
 use crate::player::trail::Trail;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
@@ -13,14 +14,25 @@ const CLIPPER_SCALE: f64 = 1_000_000.0;
 #[derive(Bundle, Debug)]
 pub struct ZonesBundle {
     pub zones: Zones,
+    pub client: ClientIdMarker,
     pub name: Name,
+}
+
+impl ZonesBundle {
+    pub fn new(client_id: ClientId) -> Self {
+        Self {
+            client: ClientIdMarker(client_id),
+            ..default()
+        }
+    }
 }
 
 impl Default for ZonesBundle {
     fn default() -> Self {
         Self {
-            zones: Zones::default(),
             name: Name::from("Zones"),
+            client: ClientIdMarker::default(),
+            zones: Zones::default(),
         }
     }
 }
@@ -44,15 +56,11 @@ pub struct Zone {
 #[derive(Reflect, Component, Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Zones {
     pub zones: Vec<Zone>,
-    pub owner_client_id: ClientId,
 }
 
 impl Default for Zones {
     fn default() -> Self {
-        Zones {
-            zones: Vec::new(),
-            owner_client_id: ClientId::Netcode(0),
-        }
+        Zones { zones: Vec::new() }
     }
 }
 

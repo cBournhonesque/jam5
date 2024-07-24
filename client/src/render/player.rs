@@ -19,6 +19,7 @@ impl Plugin for PlayerRenderPlugin {
     fn build(&self, app: &mut App) {
         // Plugins
         app.register_type::<HandleMap<ImageKey>>();
+        app.register_type::<BikeGraphics>();
         app.init_resource::<HandleMap<ImageKey>>();
 
         app.observe(on_bike_spawned);
@@ -27,7 +28,7 @@ impl Plugin for PlayerRenderPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Reflect, Component)]
 pub struct BikeGraphics {
     followed_entity: Entity,
 }
@@ -40,31 +41,29 @@ fn on_bike_spawned(
     trigger: Trigger<BikeSpawned>,
     mut commands: Commands,
     image_key: Res<HandleMap<ImageKey>>,
-    q_bike: Query<&ColorComponent, Added<BikeMarker>>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    for color in q_bike.iter() {
-        let layout = TextureAtlasLayout::from_grid(UVec2::splat(128), 6, 6, None, None);
-        let texture_atlas_handle = texture_atlas_layouts.add(layout);
-        if let Some(texture) = image_key.get(&ImageKey::Moto) {
-            commands.spawn((
-                BikeGraphics {
-                    followed_entity: trigger.event().entity,
-                },
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: color.0,
-                        ..default()
-                    },
-                    texture: texture.clone(),
+    let layout = TextureAtlasLayout::from_grid(UVec2::splat(128), 6, 6, None, None);
+    let texture_atlas_handle = texture_atlas_layouts.add(layout);
+    if let Some(texture) = image_key.get(&ImageKey::Moto) {
+        commands.spawn((
+            BikeGraphics {
+                followed_entity: trigger.event().entity,
+            },
+            SpriteBundle {
+                sprite: Sprite {
+                    color: trigger.event().color,
                     ..default()
                 },
-                TextureAtlas {
-                    layout: texture_atlas_handle,
-                    index: 0,
-                },
-            ));
-        }
+                texture: texture.clone(),
+                ..default()
+            },
+            TextureAtlas {
+                layout: texture_atlas_handle,
+                index: 0,
+            },
+            Name::from("BikeSprite"),
+        ));
     }
 }
 

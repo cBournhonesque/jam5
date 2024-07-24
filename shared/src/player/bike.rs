@@ -14,7 +14,8 @@ pub const ACCEL: f32 = 300.0;
 pub const FAST_SPEED_MAX_SPEED_DISTANCE: f32 = 500.0; // we lerp from BASE_SPEED to FAST_SPEED based on this mouse distance
 pub const MAX_ROTATION_SPEED: f32 = 6.0;
 pub const FAST_DRAG: f32 = 2.0;
-pub const ZONE_SPEED_MULTIPLIER: f32 = 1.5;
+pub const OUR_ZONE_SPEED_MULTIPLIER: f32 = 1.5;
+pub const ENEMY_ZONE_SPEED_MULTIPLIER: f32 = 0.8;
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct ColorComponent(pub Color);
@@ -25,38 +26,22 @@ impl ColorComponent {
     }
 }
 
-#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct BikeMarker {
-    pub client_id: ClientId,
-    pub name: String,
-    // // TODO: these are unused right now!
-    // // The trail entity associated with the bike
-    // pub trail: Entity,
-    // // The zones entity associated with the bike
-    // pub zones: Entity,
-}
+#[derive(Deref, Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct ClientIdMarker(pub ClientId);
 
-// impl MapEntities for BikeMarker {
-//     fn map_entities<M: EntityMapper>(&mut self, entity_mapper: &mut M) {
-//         self.trail = entity_mapper.map_entity(self.trail);
-//         self.zones = entity_mapper.map_entity(self.zones);
-//     }
-// }
-
-impl Default for BikeMarker {
+impl Default for ClientIdMarker {
     fn default() -> Self {
-        Self {
-            client_id: ClientId::Netcode(0),
-            name: "Player".to_owned(),
-            // trail: Entity::PLACEHOLDER,
-            // zones: Entity::PLACEHOLDER,
-        }
+        Self(ClientId::Netcode(0))
     }
 }
+
+#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Default, Clone)]
+pub struct BikeMarker;
 
 #[derive(Bundle, Default)]
 pub struct BikeBundle {
     pub marker: BikeMarker,
+    pub client_id: ClientIdMarker,
     pub position: Position,
     pub rotation: Rotation,
     pub linear_velocity: LinearVelocity,
@@ -70,10 +55,8 @@ impl BikeBundle {
     pub fn new_at(client_id: ClientId, position: Vec2, color: Color) -> Self {
         // TODO: spawn at a random position on the map
         Self {
-            marker: BikeMarker {
-                client_id,
-                ..default()
-            },
+            marker: BikeMarker,
+            client_id: ClientIdMarker(client_id),
             position: Position(position),
             color: ColorComponent(color),
             linear_velocity: LinearVelocity(Vector::new(0.0, 0.0)),
@@ -88,5 +71,6 @@ pub struct BikePlugin;
 impl Plugin for BikePlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<BikeMarker>();
+        app.register_type::<ClientIdMarker>();
     }
 }

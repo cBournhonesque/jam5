@@ -81,5 +81,6 @@ fn setup_map(
         },
         NoFrustumCulling,
         Fill::color(map_color),
+        Name::from("Map"),
     ));
 }

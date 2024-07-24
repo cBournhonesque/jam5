@@ -64,5 +64,6 @@ fn debug_connect(trigger: Trigger<ConnectEvent>, mut commands: Commands) {
 
 #[derive(Event, Debug)]
 pub struct BikeSpawned {
+    pub(crate) color: Color,
     pub(crate) entity: Entity,
 }

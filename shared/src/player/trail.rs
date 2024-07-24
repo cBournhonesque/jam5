@@ -1,9 +1,10 @@
-use bevy::utils::Duration;
 use crate::physics::util::line_segments_intersect;
+use crate::player::bike::ClientIdMarker;
 use bevy::prelude::*;
+use bevy::utils::Duration;
 use bevy_prototype_lyon::prelude::{GeometryBuilder, Path, PathBuilder};
 use bevy_prototype_lyon::shapes;
-use lightyear::prelude::DeltaCompression;
+use lightyear::prelude::{ClientId, DeltaCompression};
 use lightyear::shared::replication::delta::Diffable;
 use serde::{Deserialize, Serialize};
 
@@ -15,15 +16,15 @@ const MAX_LINE_POINTS: usize = 200;
 #[derive(Bundle, Debug)]
 pub struct TrailBundle {
     pub trail: Trail,
+    pub client: ClientIdMarker,
     pub name: Name,
 }
 
 impl TrailBundle {
-    pub fn new_at(pos: Vec2) -> Self {
+    pub fn new_at(pos: Vec2, client_id: ClientId) -> Self {
         TrailBundle {
-            trail: Trail {
-                line: vec![pos],
-            },
+            trail: Trail { line: vec![pos] },
+            client: ClientIdMarker(client_id),
             name: Name::from("Trail"),
         }
     }
@@ -32,8 +33,8 @@ impl TrailBundle {
 impl Default for TrailBundle {
     fn default() -> Self {
         TrailBundle {
-            trail: Trail::default(),
             name: Name::from("Trail"),
+            ..default()
         }
     }
 }
@@ -83,7 +84,11 @@ impl Diffable for Trail {
                 new_line: false,
             }
         };
-        trace!("Computing trail diff: {diff:?}. Self: {:?} Other: {:?}", self.line.len(), other.line.len());
+        trace!(
+            "Computing trail diff: {diff:?}. Self: {:?} Other: {:?}",
+            self.line.len(),
+            other.line.len()
+        );
         diff
     }
 
@@ -96,7 +101,6 @@ impl Diffable for Trail {
         }
     }
 }
-
 
 impl From<&Trail> for Path {
     fn from(value: &Trail) -> Self {
@@ -113,7 +117,6 @@ impl From<&Trail> for Path {
 }
 
 impl Trail {
-
     /// Size of the trail
     pub fn len(&self) -> f32 {
         let mut length = 0.0;

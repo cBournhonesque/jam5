@@ -2,8 +2,8 @@ use crate::map::MAP_SIZE;
 use crate::network::inputs::PlayerMovement;
 use crate::physics::FixedSet;
 use crate::player::bike::{
-    BikeMarker, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE,
-    MAX_ROTATION_SPEED, ZONE_SPEED_MULTIPLIER,
+    BikeMarker, ClientIdMarker, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED,
+    FAST_SPEED_MAX_SPEED_DISTANCE, MAX_ROTATION_SPEED, OUR_ZONE_SPEED_MULTIPLIER,
 };
 use crate::player::zone::Zones;
 use avian2d::prelude::*;
@@ -39,11 +39,12 @@ impl Plugin for MovementPlugin {
 fn move_bike_system(
     tick_manager: Res<TickManager>,
     fixed_time: Res<Time<Fixed>>,
-    q_zones: Query<&Zones>,
+    // TODO: add spatial index
+    q_zones: Query<(&Zones, &ClientIdMarker)>,
     mut q_bike: Query<
         (
             // TODO: do we need this?
-            &mut BikeMarker,
+            &ClientIdMarker,
             &mut Position,
             &mut Rotation,
             &mut LinearVelocity,
@@ -54,7 +55,7 @@ fn move_bike_system(
     >,
 ) {
     let mut zones = q_zones.iter();
-    for (mut bike, mut position, mut rotation, mut linear, action_state) in q_bike.iter_mut() {
+    for (client_id, mut position, mut rotation, mut linear, action_state) in q_bike.iter_mut() {
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
 
@@ -68,8 +69,8 @@ fn move_bike_system(
 
             // are we in our own zone?
             let wish_speed_multiplier =
-                if zones.any(|z| z.owner_client_id == bike.client_id && z.contains(position.0)) {
-                    ZONE_SPEED_MULTIPLIER
+                if zones.any(|(z, zone_owner)| zone_owner == client_id && z.contains(position.0)) {
+                    OUR_ZONE_SPEED_MULTIPLIER
                 } else {
                     1.0
                 };
