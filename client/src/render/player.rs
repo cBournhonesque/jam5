@@ -41,32 +41,29 @@ fn on_bike_spawned(
     trigger: Trigger<BikeSpawned>,
     mut commands: Commands,
     image_key: Res<HandleMap<ImageKey>>,
-    q_bike: Query<&ColorComponent, Added<BikeMarker>>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    for color in q_bike.iter() {
-        let layout = TextureAtlasLayout::from_grid(UVec2::splat(128), 6, 6, None, None);
-        let texture_atlas_handle = texture_atlas_layouts.add(layout);
-        if let Some(texture) = image_key.get(&ImageKey::Moto) {
-            commands.spawn((
-                BikeGraphics {
-                    followed_entity: trigger.event().entity,
-                },
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: color.0,
-                        ..default()
-                    },
-                    texture: texture.clone(),
+    let layout = TextureAtlasLayout::from_grid(UVec2::splat(128), 6, 6, None, None);
+    let texture_atlas_handle = texture_atlas_layouts.add(layout);
+    if let Some(texture) = image_key.get(&ImageKey::Moto) {
+        commands.spawn((
+            BikeGraphics {
+                followed_entity: trigger.event().entity,
+            },
+            SpriteBundle {
+                sprite: Sprite {
+                    color: trigger.event().color,
                     ..default()
                 },
-                TextureAtlas {
-                    layout: texture_atlas_handle,
-                    index: 0,
-                },
-                Name::from("BikeSprite"),
-            ));
-        }
+                texture: texture.clone(),
+                ..default()
+            },
+            TextureAtlas {
+                layout: texture_atlas_handle,
+                index: 0,
+            },
+            Name::from("BikeSprite"),
+        ));
     }
 }
 

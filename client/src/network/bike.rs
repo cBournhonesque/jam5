@@ -86,7 +86,10 @@ fn handle_new_interpolated_bike(
             color: color_component.overbright(4.0),
             ..default()
         },));
-        commands.trigger(BikeSpawned { entity });
+        commands.trigger(BikeSpawned {
+            entity,
+            color: color_component.0,
+        });
     }
 }
 
@@ -99,11 +102,7 @@ fn handle_new_predicted_bike(
     mut commands: Commands,
     predicted_bikes: Query<
         (Entity, &ColorComponent),
-        (
-            With<BikeMarker>,
-            With<Predicted>,
-            Without<VisualInterpolateStatus<Position>>,
-        ),
+        (With<BikeMarker>, With<Predicted>, Without<EntityLabel>),
     >,
 ) {
     for (entity, color_component) in predicted_bikes.iter() {
@@ -119,7 +118,10 @@ fn handle_new_predicted_bike(
                 ..default()
             },
         ));
-        commands.trigger(BikeSpawned { entity });
+        commands.trigger(BikeSpawned {
+            entity,
+            color: color_component.0,
+        });
     }
 }
 
