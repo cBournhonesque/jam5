@@ -3,8 +3,9 @@ use crate::network::inputs::PlayerMovement;
 use crate::physics::FixedSet;
 use crate::player::bike::{
     BikeMarker, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE,
-    MAX_ROTATION_SPEED,
+    MAX_ROTATION_SPEED, ZONE_SPEED_MULTIPLIER,
 };
+use crate::player::zone::Zones;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
@@ -38,7 +39,8 @@ impl Plugin for MovementPlugin {
 fn move_bike_system(
     tick_manager: Res<TickManager>,
     fixed_time: Res<Time<Fixed>>,
-    mut query: Query<
+    q_zones: Query<&Zones>,
+    mut q_bike: Query<
         (
             // TODO: do we need this?
             &mut BikeMarker,
@@ -51,7 +53,8 @@ fn move_bike_system(
         Or<(With<Predicted>, With<Replicating>)>,
     >,
 ) {
-    for (mut bike, mut position, mut rotation, mut linear, action_state) in query.iter_mut() {
+    let mut zones = q_zones.iter();
+    for (mut bike, mut position, mut rotation, mut linear, action_state) in q_bike.iter_mut() {
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
 
@@ -62,7 +65,17 @@ fn move_bike_system(
             let wish_dir = relative_mouse_pos.xy().normalize_or_zero();
             let normalized_mouse_distance =
                 (relative_mouse_pos.length() / FAST_SPEED_MAX_SPEED_DISTANCE).clamp(0.0, 1.0);
-            let wish_speed = BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance);
+
+            // are we in our own zone?
+            let wish_speed_multiplier =
+                if zones.any(|z| z.owner_client_id == bike.client_id && z.contains(position.0)) {
+                    ZONE_SPEED_MULTIPLIER
+                } else {
+                    1.0
+                };
+
+            let wish_speed =
+                BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance) * wish_speed_multiplier;
             let wish_drag = DRAG.lerp(FAST_DRAG, normalized_mouse_distance);
 
             // limit the rotation

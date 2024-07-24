@@ -1,19 +1,19 @@
 //! How to render zones
 
+use crate::render::trail::TrailRenderMarker;
+use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::{
     prelude::*,
     render::render_resource::{AsBindGroup, ShaderRef},
     sprite::{Material2d, Material2dPlugin},
 };
-use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy_prototype_lyon::prelude::Path;
 use lightyear::prelude::MainSet;
+use shared::player::trail::Trail;
 use shared::player::{
     bike::ColorComponent,
     zone::{Zone, Zones},
 };
-use shared::player::trail::Trail;
-use crate::render::trail::TrailRenderMarker;
 
 pub struct ZoneRenderPlugin;
 
@@ -24,8 +24,6 @@ impl Plugin for ZoneRenderPlugin {
     fn build(&self, app: &mut App) {
         // update the trail path after Receive, but before rendering
         app.add_systems(Update, update_zones_path);
-        // Draw after TransformPropagate and VisualInterpolation
-        app.add_systems(PostUpdate, (draw_zone_outlines).after(TransformPropagate));
     }
 }
 
@@ -47,44 +45,6 @@ fn update_zone_path(
     for (parent, mut path) in zone_render_query.iter_mut() {
         if let Ok(zones) = zone_query.get(parent.get()) {
             *path = zones.into();
-        }
-    }
-}
-
-fn draw_zone_outlines(mut gizmos: Gizmos, query: Query<(&Zones, &ColorComponent)>) {
-    for (zones, color) in query.iter() {
-        let color = Color::Hsva(Hsva {
-            saturation: 0.4,
-            ..Hsva::from(color.0)
-        });
-        for zone in zones.zones.iter() {
-            // draw exterior outline
-            for i in 0..zone.exterior.len() - 1 {
-                let start = zone.exterior[i];
-                let end = zone.exterior[i + 1];
-                gizmos.line_2d(start, end, color);
-            }
-            // close the exterior polygon
-            if !zone.exterior.is_empty() {
-                let start = zone.exterior[zone.exterior.len() - 1];
-                let end = zone.exterior[0];
-                gizmos.line_2d(start, end, color);
-            }
-
-            // draw interior holes
-            for interior in zone.interiors.iter() {
-                for i in 0..interior.len() - 1 {
-                    let start = interior[i];
-                    let end = interior[i + 1];
-                    gizmos.line_2d(start, end, color);
-                }
-                // close the interior polygon
-                if !interior.is_empty() {
-                    let start = interior[interior.len() - 1];
-                    let end = interior[0];
-                    gizmos.line_2d(start, end, color);
-                }
-            }
         }
     }
 }

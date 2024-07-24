@@ -63,7 +63,13 @@ pub(crate) fn spawn_bike(trigger: Trigger<ConnectEvent>, mut commands: Commands)
         .id();
     let zones = commands
         .spawn((
-            ZonesBundle::default(),
+            ZonesBundle {
+                zones: Zones {
+                    owner_client_id: client_id,
+                    ..default()
+                },
+                ..default()
+            },
             // To replicate the parent/child hierarchy
             ParentSync::default(),
             // Enable delta compression when replicating the zones

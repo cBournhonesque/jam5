@@ -14,6 +14,7 @@ pub const ACCEL: f32 = 300.0;
 pub const FAST_SPEED_MAX_SPEED_DISTANCE: f32 = 500.0; // we lerp from BASE_SPEED to FAST_SPEED based on this mouse distance
 pub const MAX_ROTATION_SPEED: f32 = 6.0;
 pub const FAST_DRAG: f32 = 2.0;
+pub const ZONE_SPEED_MULTIPLIER: f32 = 1.5;
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct ColorComponent(pub Color);

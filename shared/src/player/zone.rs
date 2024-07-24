@@ -1,12 +1,12 @@
+use crate::player::trail::Trail;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 use bevy_prototype_lyon::prelude::*;
-use geo::area::Area;
+use geo::{area::Area, Contains};
 use geo_clipper::Clipper;
 use geo_types::{Coord, LineString, MultiPolygon, Polygon};
-use lightyear::shared::replication::delta::Diffable;
+use lightyear::{prelude::*, shared::replication::delta::Diffable};
 use serde::{Deserialize, Serialize};
-use crate::player::trail::Trail;
 
 const CLIPPER_SCALE: f64 = 1_000_000.0;
 
@@ -40,12 +40,26 @@ pub struct Zone {
     pub interiors: Vec<Vec<Vec2>>,
 }
 
-
-
 // TODO: maybe use a hashmap<barycenter, Zone> so that computing the diff is quicker?
-#[derive(Reflect, Component, Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[derive(Reflect, Component, Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Zones {
     pub zones: Vec<Zone>,
+    pub owner_client_id: ClientId,
+}
+
+impl Default for Zones {
+    fn default() -> Self {
+        Zones {
+            zones: Vec::new(),
+            owner_client_id: ClientId::Netcode(0),
+        }
+    }
+}
+
+impl Zones {
+    pub fn contains(&self, point: Vec2) -> bool {
+        self.zones.iter().any(|zone| zone.contains(point))
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
@@ -78,7 +92,8 @@ impl Diffable for Zones {
     }
 
     fn apply_diff(&mut self, delta: &Self::Delta) {
-        self.zones.retain(|zone| !delta.removed_zones.contains(zone));
+        self.zones
+            .retain(|zone| !delta.removed_zones.contains(zone));
         self.zones.extend(delta.new_zones.iter().cloned());
     }
 }
@@ -150,6 +165,14 @@ impl Zone {
         poly.unsigned_area() as f32
     }
 
+    pub fn contains(&self, point: Vec2) -> bool {
+        let poly = self.to_geo_polygon();
+        poly.contains(&Coord {
+            x: point.x as f64,
+            y: point.y as f64,
+        })
+    }
+
     fn to_geo_polygon(&self) -> Polygon {
         let exterior: Vec<Coord> = self
             .exterior
@@ -205,7 +228,6 @@ impl Zone {
 }
 
 impl Zones {
-
     pub fn area(&self) -> f32 {
         self.zones.iter().map(|zone| zone.area()).sum()
     }
