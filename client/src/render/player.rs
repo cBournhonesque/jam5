@@ -46,6 +46,10 @@ fn on_bike_spawned(
                 followed_entity: trigger.event().entity,
             },
             SpriteBundle {
+                sprite: Sprite {
+                    color: Color::WHITE,
+                    ..default()
+                },
                 texture: texture.clone(),
                 ..default()
             },

@@ -17,7 +17,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let grid_size = 75.0;
 
     // scale to create diamonds
-    var scaled_pos = vec2f(pos.x * 0.5, pos.y);
+    var scaled_pos = vec2f(pos.x * 0.45, pos.y);
     scaled_pos += vec2f(0.0, -2.5);
 
     let local_x = fract(scaled_pos.x / grid_size) - 0.5;
@@ -40,7 +40,11 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     // fresnel
     let fresnel = 1.0 - dot(normalize(in.position.xy), vec2f(0.0, 1.0));
 
-    let base_checkboard_color = 1.0 - smoothstep(0.2, 0.25, diamond_dist) + color.rgb * 0.5;
+    let animation_progress = (sin(time * 3.5) + 1.0) * 0.5;
+    let checkerboard_min = mix(0.2, 0.25, animation_progress);
+    let checkerboard_max = checkerboard_min + 0.05;
+
+    let base_checkboard_color = 1.0 - smoothstep(checkerboard_min, checkerboard_max, diamond_dist) + color.rgb * 0.5;
     let base = mix(
         vec3<f32>(0.0, 0.0, 0.0),
         color.rgb,
