@@ -6,7 +6,6 @@ use crate::player::bike::{BikeMarker, ColorComponent};
 use crate::player::scores::{Score, Stats};
 use crate::player::trail::Trail;
 use crate::player::zone::Zones;
-use crate::player::Player;
 use avian2d::prelude::*;
 use bevy::app::{App, Plugin};
 use bevy::prelude::{default, Name};
@@ -37,8 +36,6 @@ impl Plugin for ProtocolPlugin {
             .add_map_entities();
 
         // Components
-        app.register_component::<Player>(ChannelDirection::ServerToClient);
-
         app.register_component::<Score>(ChannelDirection::ServerToClient);
         app.register_component::<Stats>(ChannelDirection::ServerToClient);
 

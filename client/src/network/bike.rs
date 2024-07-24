@@ -10,7 +10,7 @@ use bevy::prelude::*;
 use bevy::render::view::NoFrustumCulling;
 use bevy_prototype_lyon::prelude::*;
 use lightyear::prelude::{client::*, MainSet};
-use shared::player::bike::{BikeMarker, ColorComponent};
+use shared::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use shared::player::trail::Trail;
 use shared::player::zone::Zones;
 
@@ -33,6 +33,37 @@ impl Plugin for BikeNetworkPlugin {
             PreUpdate,
             (handle_new_trail, handle_new_zones).after(MainSet::Receive),
         );
+        app.add_systems(Update, (add_trail_hierarchy, add_zones_hierarchy));
+    }
+}
+
+/// When a new trail is added, we go through all bikes to find the parent
+fn add_trail_hierarchy(
+    mut commands: Commands,
+    bike: Query<(Entity, &ClientIdMarker), With<BikeMarker>>,
+    trails: Query<(Entity, &ClientIdMarker), (With<Trail>, Without<Parent>)>,
+) {
+    for (trail, trail_client_id) in trails.iter() {
+        for (bike, bike_client_id) in bike.iter() {
+            if bike_client_id == trail_client_id {
+                commands.entity(bike).add_child(trail);
+            }
+        }
+    }
+}
+
+/// When a new zones is added, we go through all bikes to find the parent
+fn add_zones_hierarchy(
+    mut commands: Commands,
+    bike: Query<(Entity, &ClientIdMarker), With<BikeMarker>>,
+    zones: Query<(Entity, &ClientIdMarker), (With<Zones>, Without<Parent>)>,
+) {
+    for (zones, zone_client_id) in zones.iter() {
+        for (bike, bike_client_id) in bike.iter() {
+            if bike_client_id == zone_client_id {
+                commands.entity(bike).add_child(zones);
+            }
+        }
     }
 }
 
@@ -113,16 +144,16 @@ fn handle_new_trail(
 /// When a zones entity is replicated, add the render-related components
 fn handle_new_zones(
     mut commands: Commands,
-    bikes: Query<(&BikeMarker, &ColorComponent), With<BikeMarker>>,
+    bikes: Query<(&ClientIdMarker, &ColorComponent), With<BikeMarker>>,
     new_zones: Query<(&Parent, Entity), (With<Zones>, Without<ZoneRenderMarker>)>,
 ) {
     for (parent, entity) in new_zones.iter() {
-        if let Ok((bike, color)) = bikes.get(parent.get()) {
+        if let Ok((client_id, color)) = bikes.get(parent.get()) {
             // color values above 1.0 enable bloom
             let c = color.0.to_linear();
             let zone_fill_color: Color = Color::srgba(c.red, c.green, c.blue, 0.08);
             let zone_border_color: Color = (c * 2.0).into();
-            let zone_z_order = (bike.client_id.to_bits() as f32) * 100.0;
+            let zone_z_order = (client_id.to_bits() as f32) * 100.0;
             // add the entity that will hold the zone mesh
             commands
                 .entity(entity)
@@ -133,6 +164,7 @@ fn handle_new_zones(
                     Fill::color(zone_fill_color),
                     Stroke::new(zone_border_color, 4.0),
                 ))
+                // we insert GlobalTransform separately because ShapeBundle includes GlobalTransform
                 .insert(GlobalTransform::from_translation(Vec3::new(
                     0.0,
                     0.0,
