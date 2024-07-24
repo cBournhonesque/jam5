@@ -1,10 +1,10 @@
 //! Display a leaderboard with player scores
+use crate::screen::Screen::Playing;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use egui_extras::{Column, TableBuilder};
 use shared::player::bike::BikeMarker;
 use shared::player::scores::Score;
-use crate::screen::Screen::Playing;
 
 pub struct LeaderboardPlugin;
 
@@ -17,17 +17,11 @@ impl Plugin for LeaderboardPlugin {
     }
 }
 
-
-fn leaderboard_ui(
-    mut contexts: EguiContexts,
-    scores: Query<(&Score, &BikeMarker)>,
-) {
+fn leaderboard_ui(mut contexts: EguiContexts, scores: Query<(&Score, &BikeMarker)>) {
     let scores = scores
         .iter()
         .sort_by::<(&Score, &BikeMarker)>(|(a, _), (b, _)| b.cmp(a))
-        .map(|(score, bike)| {
-            (bike.name.clone(), score.score)
-        })
+        .map(|(score, bike)| (bike.name.clone(), score.total()))
         .take(6)
         .collect::<Vec<_>>();
     egui::Window::new("Leaderboard")

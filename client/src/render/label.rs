@@ -4,7 +4,7 @@
 use avian2d::prelude::Position;
 use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::prelude::*;
-use lightyear::prelude::client::VisualInterpolateStatus;
+use shared::player::death::Dead;
 
 pub struct EntityLabelPlugin;
 
@@ -122,18 +122,13 @@ fn label_changed(
 fn update_entity_label_positions(
     // we query the Position and not the Transform, because only the position is visually interpolated
     // so that's what we should use
-    q_parents: Query<
-        (&VisualInterpolateStatus<Position>, &EntityLabel),
-        (Changed<Position>, Without<EntityLabelChild>),
-    >,
+    q_parents: Query<(&Position, &EntityLabel), (Without<EntityLabelChild>, Without<Dead>)>,
     mut q_text: Query<(&Parent, &mut GlobalTransform), With<EntityLabelChild>>,
 ) {
     for (parent, mut transform) in q_text.iter_mut() {
         if let Ok((parent_pos, fl)) = q_parents.get(parent.get()) {
-            if let Some(pos) = parent_pos.current_value {
-                *transform =
-                    GlobalTransform::from_translation(Vec3::from((pos.0 + fl.offset, fl.z)));
-            }
+            *transform =
+                GlobalTransform::from_translation(Vec3::from((parent_pos.0 + fl.offset, fl.z)));
         }
     }
 }

@@ -6,12 +6,13 @@ use bevy_prototype_lyon::prelude::ShapePlugin;
 use lightyear::prelude::client::*;
 
 mod diagnostics;
+mod kills;
+pub mod label;
+mod leaderboard;
 pub mod map;
 pub mod player;
 pub mod trail;
 pub mod zones;
-pub mod label;
-mod leaderboard;
 
 pub(crate) struct RenderPlugin;
 

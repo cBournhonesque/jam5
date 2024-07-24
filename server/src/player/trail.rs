@@ -1,14 +1,14 @@
+use crate::player::death::PlayerKillEvent;
 use avian2d::position::Position;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use bevy::utils::HashMap;
 use shared::physics::FixedSet;
+use shared::player::death::Dead;
+use shared::player::scores::{Score, Stats};
 use shared::player::trail::ADD_POINT_INTERVAL;
 use shared::player::zone::Zones;
 use shared::player::{trail::Trail, zone::Zone};
-use shared::player::death::Dead;
-use shared::player::scores::{Score, Stats};
-use crate::player::death::PlayerKillEvent;
 
 pub struct TrailPlugin;
 
@@ -42,9 +42,10 @@ fn mark_trail_system(
 
                 trail.line.clear();
                 // we find the zone entity by querying the children of Bike that are not Trail
-                let zone_entity = children.into_iter().find(|entity| {
-                    **entity != trail_entity
-                }).unwrap();
+                let zone_entity = children
+                    .into_iter()
+                    .find(|entity| **entity != trail_entity)
+                    .unwrap();
                 if let Ok((_, mut zones)) = zones_query.get_mut(*zone_entity) {
                     let new_zone = Zone::new(shape);
                     zones.add_zone(new_zone.clone());
@@ -82,13 +83,13 @@ fn update_score(
     mut zones_query: Query<(&Parent, &mut Zones), Changed<Zones>>,
 ) {
     for (parent, mut zones) in zones_query.iter_mut() {
-        if let Ok((mut stats, mut scores)) = bikes.get_mut(parent.get()) {
+        if let Ok((mut stats, mut score)) = bikes.get_mut(parent.get()) {
             // we use the area / 1000 as score
-            // TODO: add kills to score formula
-            let score = (zones.area() / 1000.0) as u32;
-            scores.score = score;
-            stats.max_score = stats.max_score.max(score);
-            stats.max_area = stats.max_area.max(score);
+            let zone_score = (zones.area() / 1000.0) as u32;
+            score.zone_score = zone_score;
+
+            stats.max_score = stats.max_score.max(score.total());
+            stats.max_area = stats.max_area.max(zone_score);
             stats.max_zones = stats.max_zones.max(zones.zones.len() as u32);
         }
     }
