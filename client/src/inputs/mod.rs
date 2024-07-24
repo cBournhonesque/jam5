@@ -79,22 +79,6 @@ fn capture_input(
                 .action_data_mut(&PlayerMovement::MousePositionRelative)
                 .unwrap()
                 .axis_pair = Some(DualAxisData::from_xy(mouse_position_relative));
-            if keyboard_input.just_pressed(KeyCode::Space) {
-                if bike.stopped {
-                    action_state.release(&PlayerMovement::ToggleStop);
-                    action_state
-                        .action_data_mut(&PlayerMovement::ToggleStop)
-                        .unwrap()
-                        .value = 0.0;
-                } else {
-                    action_state.press(&PlayerMovement::ToggleStop);
-                    action_state
-                        .action_data_mut(&PlayerMovement::ToggleStop)
-                        .unwrap()
-                        .value = 1.0;
-                }
-            }
-
             trace!(tick = ?tick_manager.tick(), ?mouse_position_relative, "Relative mouse position");
         }
     }

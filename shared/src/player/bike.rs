@@ -18,12 +18,16 @@ pub const FAST_DRAG: f32 = 2.0;
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct ColorComponent(pub Color);
 
+impl ColorComponent {
+    pub fn overbright(&self, amount: f32) -> Color {
+        (self.0.to_linear() * amount).into()
+    }
+}
+
 #[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BikeMarker {
     pub client_id: ClientId,
     pub name: String,
-    // for testing
-    pub stopped: bool,
     // // TODO: these are unused right now!
     // // The trail entity associated with the bike
     // pub trail: Entity,
@@ -43,7 +47,6 @@ impl Default for BikeMarker {
         Self {
             client_id: ClientId::Netcode(0),
             name: "Player".to_owned(),
-            stopped: false,
             // trail: Entity::PLACEHOLDER,
             // zones: Entity::PLACEHOLDER,
         }

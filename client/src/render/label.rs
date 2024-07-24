@@ -1,9 +1,10 @@
 /// Utility plugin to display a text label next to an entity.
 ///
 /// Label will track parent position, ignoring rotation.
-use avian2d::prelude::{Position};
-use bevy::prelude::*;
+use avian2d::prelude::Position;
 use bevy::prelude::TransformSystem::TransformPropagate;
+use bevy::prelude::*;
+use lightyear::prelude::client::VisualInterpolateStatus;
 
 pub struct EntityLabelPlugin;
 
@@ -50,10 +51,7 @@ impl Default for EntityLabel {
 pub struct EntityLabelChild;
 
 /// Add the child entity containing the Text2dBundle
-fn label_added(
-    q: Query<(Entity, &EntityLabel), Added<EntityLabel>>,
-    mut commands: Commands,
-) {
+fn label_added(q: Query<(Entity, &EntityLabel), Added<EntityLabel>>, mut commands: Commands) {
     let font: Handle<Font> = Default::default();
     let mut ts = TextStyle::default();
     let mut ts_sub = TextStyle::default();
@@ -71,8 +69,8 @@ fn label_added(
                         TextSection::new("\n", ts.clone()),
                         TextSection::new(label.sub_text.clone(), ts_sub.clone()),
                     ])
-                        .with_no_wrap()
-                        .with_justify(JustifyText::Center),
+                    .with_no_wrap()
+                    .with_justify(JustifyText::Center),
                     transform: Transform::from_translation(Vec3::new(
                         label.offset.x,
                         label.offset.y,
@@ -124,12 +122,18 @@ fn label_changed(
 fn update_entity_label_positions(
     // we query the Position and not the Transform, because only the position is visually interpolated
     // so that's what we should use
-    q_parents: Query<(&Position, &EntityLabel), (Changed<Position>, Without<EntityLabelChild>)>,
+    q_parents: Query<
+        (&VisualInterpolateStatus<Position>, &EntityLabel),
+        (Changed<Position>, Without<EntityLabelChild>),
+    >,
     mut q_text: Query<(&Parent, &mut GlobalTransform), With<EntityLabelChild>>,
 ) {
     for (parent, mut transform) in q_text.iter_mut() {
         if let Ok((parent_pos, fl)) = q_parents.get(parent.get()) {
-            *transform = GlobalTransform::from_translation(Vec3::from((parent_pos.0 + fl.offset, fl.z)));
+            if let Some(pos) = parent_pos.current_value {
+                *transform =
+                    GlobalTransform::from_translation(Vec3::from((pos.0 + fl.offset, fl.z)));
+            }
         }
     }
 }

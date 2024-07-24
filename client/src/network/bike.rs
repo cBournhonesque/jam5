@@ -40,7 +40,7 @@ impl Plugin for BikeNetworkPlugin {
 fn handle_new_predicted_bike(
     mut commands: Commands,
     predicted_bikes: Query<
-        Entity,
+        (Entity, &ColorComponent),
         (
             With<BikeMarker>,
             With<Predicted>,
@@ -48,7 +48,7 @@ fn handle_new_predicted_bike(
         ),
     >,
 ) {
-    for entity in predicted_bikes.iter() {
+    for (entity, color_component) in predicted_bikes.iter() {
         commands.entity(entity).insert((
             VisualInterpolateStatus::<Position>::default(),
             VisualInterpolateStatus::<Rotation>::default(),
@@ -56,6 +56,8 @@ fn handle_new_predicted_bike(
             EntityLabel {
                 text: "Player".to_owned(),
                 sub_text: "".to_owned(),
+                offset: Vec2::new(0.0, 60.0),
+                color: color_component.overbright(4.0),
                 ..default()
             },
         ));
@@ -71,7 +73,7 @@ fn handle_new_trail(
 ) {
     for (parent, entity) in new_trails.iter() {
         if let Ok(color) = bike.get(parent.get()) {
-            let trail_color: Color = (color.0.to_linear() * 10.0).into();
+            let trail_color: Color = color.overbright(10.0);
             commands.entity(entity).insert((
                 ShapeBundle::default(),
                 TrailRenderMarker,

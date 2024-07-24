@@ -65,19 +65,23 @@ fn degrees_to_sprite_index(degrees: f32) -> usize {
 
 fn update_bike_position(
     q_parents: Query<
-        (&Position, &Rotation),
         (
-            Or<(Changed<Position>, Changed<Rotation>)>,
-            With<BikeMarker>,
-            Without<BikeGraphics>,
+            &VisualInterpolateStatus<Position>,
+            &VisualInterpolateStatus<Rotation>,
         ),
+        (With<BikeMarker>, Without<BikeGraphics>),
     >,
     mut q_bike: Query<(&BikeGraphics, &mut Transform, &mut TextureAtlas)>,
 ) {
     for (BikeGraphics { followed_entity }, mut transform, mut atlas) in q_bike.iter_mut() {
         if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
-            transform.translation = Vec3::new(parent_pos.0.x, parent_pos.0.y, 100.0);
-            atlas.index = degrees_to_sprite_index(parent_rot.as_degrees());
+            if let Some(pos) = parent_pos.current_value {
+                transform.translation = Vec3::new(pos.x, pos.y, 100.0);
+            }
+
+            if let Some(rot) = parent_rot.current_value {
+                atlas.index = degrees_to_sprite_index(rot.as_degrees());
+            }
         }
     }
 }

@@ -55,12 +55,6 @@ fn move_bike_system(
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
 
-        // should we stop?
-        if action_state.value(&PlayerMovement::ToggleStop) > 0.0 {
-            linear.0 = Vec2::ZERO;
-            continue;
-        }
-
         // speed we wish to move at is based on mouse distance
         if let Some(relative_mouse_pos) =
             action_state.axis_pair(&PlayerMovement::MousePositionRelative)
