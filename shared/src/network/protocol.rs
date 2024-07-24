@@ -1,7 +1,9 @@
 //! Defines the shared network protocol between the client and server
 
 use crate::network::inputs::PlayerMovement;
+use crate::network::message::{KillMessage, KilledByMessage};
 use crate::player::bike::{BikeMarker, ColorComponent};
+use crate::player::scores::{Score, Stats};
 use crate::player::trail::Trail;
 use crate::player::zone::Zones;
 use crate::player::Player;
@@ -11,7 +13,6 @@ use bevy::prelude::{default, Name};
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 use lightyear::utils::avian2d::*;
-use crate::player::scores::{Score, Stats};
 
 pub struct ProtocolPlugin;
 
@@ -21,11 +22,19 @@ pub struct Channel1;
 impl Plugin for ProtocolPlugin {
     fn build(&self, app: &mut App) {
         // Channels
+        app.add_channel::<Channel1>(ChannelSettings {
+            mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
+            ..default()
+        });
 
         // Inputs
         app.add_plugins(LeafwingInputPlugin::<PlayerMovement>::default());
 
         // Messages
+        app.register_message::<KilledByMessage>(ChannelDirection::ServerToClient)
+            .add_map_entities();
+        app.register_message::<KillMessage>(ChannelDirection::ServerToClient)
+            .add_map_entities();
 
         // Components
         app.register_component::<Player>(ChannelDirection::ServerToClient);
@@ -69,11 +78,5 @@ impl Plugin for ProtocolPlugin {
             .add_delta_compression();
         app.register_component::<Zones>(ChannelDirection::ServerToClient)
             .add_delta_compression();
-
-        // channels
-        app.add_channel::<Channel1>(ChannelSettings {
-            mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
-            ..default()
-        });
     }
 }

@@ -2,9 +2,28 @@ use bevy::prelude::*;
 use lightyear::prelude::*;
 
 /// Current score of a player
-#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Eq, Default, Debug, Clone, PartialOrd, Ord)]
+#[derive(
+    Reflect,
+    Component,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Default,
+    Debug,
+    Clone,
+    PartialOrd,
+    Ord,
+)]
 pub struct Score {
-    pub score: u32,
+    pub zone_score: u32,
+    pub kill_score: u32,
+}
+
+impl Score {
+    pub fn total(&self) -> u32 {
+        self.zone_score + self.kill_score
+    }
 }
 
 /// Stats of a player (shown when they die)

@@ -1,11 +1,15 @@
-
 use bevy::prelude::*;
+use lightyear::prelude::ServerConnectionManager;
+use shared::network::message::{KillMessage, KilledByMessage};
+use shared::network::protocol::Channel1;
 use shared::player::bike::BikeMarker;
 use shared::player::death::Dead;
+use shared::player::scores::{Score, Stats};
 use shared::player::trail::Trail;
 
-pub struct DeathPlugin;
+const KILL_SCORE: u32 = 1000;
 
+pub struct DeathPlugin;
 
 #[derive(Event)]
 pub struct PlayerKillEvent {
@@ -13,33 +17,47 @@ pub struct PlayerKillEvent {
     pub killed: Entity,
 }
 
-
 impl Plugin for DeathPlugin {
     fn build(&self, app: &mut App) {
         app.observe(kill_player);
     }
 }
 
-
 /// Observer that handles player_kill_events to put bikes in Dead state
 fn kill_player(
     trigger: Trigger<PlayerKillEvent>,
+    mut server: ResMut<ServerConnectionManager>,
     mut commands: Commands,
-    bikes: Query<&Children, (With<BikeMarker>, Without<Dead>)>,
+    mut bikes: Query<(&Children, &BikeMarker, &mut Score, &mut Stats), Without<Dead>>,
     mut trails: Query<&mut Trail>,
 ) {
     let killed = trigger.event().killed;
+    let killer = trigger.event().killer;
     if let Some(mut com) = commands.get_entity(killed) {
         com.insert(Dead);
     }
-    if let Ok(children) = bikes.get(killed) {
+    if let Ok((children, bike, mut score, mut stats)) = bikes.get_mut(killed) {
         children.into_iter().for_each(|e| {
             // clear the trail
             if let Ok(mut trail) = trails.get_mut(*e) {
                 trail.line.clear();
             }
             // TODO: clear the zones?
-        })
+        });
+
+        *score = Score::default();
+        *stats = Stats::default();
+
+        server
+            .send_message::<Channel1, _>(bike.client_id, &KilledByMessage { killer })
+            .expect("could not send message");
     }
-    // TODO: send a message and increase score
+    if let Ok((_, bike, mut score, mut stats)) = bikes.get_mut(killer) {
+        score.kill_score += KILL_SCORE;
+        stats.kills += 1;
+        stats.max_score = stats.max_score.max(score.total());
+        server
+            .send_message::<Channel1, _>(bike.client_id, &KillMessage { killed })
+            .expect("could not send message");
+    }
 }

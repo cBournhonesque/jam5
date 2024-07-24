@@ -27,8 +27,34 @@ impl Plugin for BikeNetworkPlugin {
         );
         app.add_systems(
             PreUpdate,
+            handle_new_interpolated_bike.after(InterpolationSet::Interpolate),
+        );
+        app.add_systems(
+            PreUpdate,
             (handle_new_trail, handle_new_zones).after(MainSet::Receive),
         );
+    }
+}
+
+/// When a interpolated bike gets created, we want to:
+/// - add a Player Label
+/// - trigger `BikeSpawned` to draw a mesh
+fn handle_new_interpolated_bike(
+    mut commands: Commands,
+    interpolated_bikes: Query<
+        (Entity, &ColorComponent),
+        (With<BikeMarker>, With<Interpolated>, Without<EntityLabel>),
+    >,
+) {
+    for (entity, color_component) in interpolated_bikes.iter() {
+        commands.entity(entity).insert((EntityLabel {
+            text: "OtherPlayer".to_owned(),
+            sub_text: "".to_owned(),
+            offset: Vec2::new(0.0, 60.0),
+            color: color_component.overbright(4.0),
+            ..default()
+        },));
+        commands.trigger(BikeSpawned { entity });
     }
 }
 

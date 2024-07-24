@@ -32,6 +32,10 @@ pub struct BikeGraphics {
     followed_entity: Entity,
 }
 
+// NOTE:
+// - we don't add the sprite directly on the bike entity because then it would have Transform/GlobalTransform
+//   and we don't want the transform to propagate. Or should we just disable Transform Propagation?
+// - we don't the sprite entity to be a child of the bike entity because of transform propagation issues as well?
 fn on_bike_spawned(
     trigger: Trigger<BikeSpawned>,
     mut commands: Commands,
@@ -71,24 +75,13 @@ fn degrees_to_sprite_index(degrees: f32) -> usize {
 }
 
 fn update_bike_position(
-    q_parents: Query<
-        (
-            &VisualInterpolateStatus<Position>,
-            &VisualInterpolateStatus<Rotation>,
-        ),
-        (With<BikeMarker>, Without<BikeGraphics>),
-    >,
-    mut q_bike: Query<(&BikeGraphics, &mut Transform, &mut TextureAtlas)>,
+    q_parents: Query<(&Position, &Rotation), (With<BikeMarker>, Without<BikeGraphics>)>,
+    mut q_bike: Query<(&BikeGraphics, &mut GlobalTransform, &mut TextureAtlas)>,
 ) {
     for (BikeGraphics { followed_entity }, mut transform, mut atlas) in q_bike.iter_mut() {
         if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
-            if let Some(pos) = parent_pos.current_value {
-                transform.translation = Vec3::new(pos.x, pos.y, 100.0);
-            }
-
-            if let Some(rot) = parent_rot.current_value {
-                atlas.index = degrees_to_sprite_index(rot.as_degrees());
-            }
+            *transform = GlobalTransform::from_translation(Vec3::from((parent_pos.0, 100.0)));
+            atlas.index = degrees_to_sprite_index(parent_rot.as_degrees());
         }
     }
 }
