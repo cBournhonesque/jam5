@@ -54,7 +54,7 @@ fn move_bike_system(
     >,
 ) {
     let mut zones = q_zones.iter();
-    for (mut bike, position, mut rotation, mut linear, action_state) in q_bike.iter_mut() {
+    for (mut bike, mut position, mut rotation, mut linear, action_state) in q_bike.iter_mut() {
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
 
