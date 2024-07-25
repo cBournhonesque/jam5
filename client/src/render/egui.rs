@@ -49,7 +49,7 @@ fn leaderboard_ui(
     mut egui_contexts: EguiContexts,
     killed_by: Res<KilledByMessageRes>,
     kills: Res<KillMessages>,
-    scores: Query<(&Score, &ClientIdMarker), With<BikeMarker>>,
+    scores: Query<(&Score, &BikeMarker), With<BikeMarker>>,
 ) {
     // Killed by window
     if let Some(timer) = &killed_by.timer {
@@ -87,8 +87,8 @@ fn leaderboard_ui(
     // leaderboard
     let scores = scores
         .iter()
-        .sort_by::<(&Score, &ClientIdMarker)>(|(a, _), (b, _)| b.cmp(a))
-        .map(|(score, client_id)| (client_id.0.clone(), score.total()))
+        .sort_by::<(&Score, &BikeMarker)>(|(a, _), (b, _)| b.cmp(a))
+        .map(|(score, bike)| (bike.name.clone(), score.total()))
         .take(6)
         .collect::<Vec<_>>();
     egui::Window::new("Leaderboard")

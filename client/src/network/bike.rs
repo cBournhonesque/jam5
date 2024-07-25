@@ -71,13 +71,13 @@ fn add_zones_hierarchy(
 fn handle_new_interpolated_bike(
     mut commands: Commands,
     interpolated_bikes: Query<
-        (Entity, &ColorComponent),
-        (With<BikeMarker>, With<Interpolated>, Without<EntityLabel>),
+        (Entity, &ColorComponent, &BikeMarker),
+        (With<Interpolated>, Without<EntityLabel>),
     >,
 ) {
-    for (entity, color_component) in interpolated_bikes.iter() {
+    for (entity, color_component, bike) in interpolated_bikes.iter() {
         commands.entity(entity).insert((EntityLabel {
-            text: "OtherPlayer".to_owned(),
+            text: bike.name.clone(),
             sub_text: "".to_owned(),
             offset: Vec2::new(0.0, 60.0),
             color: color_component.overbright(4.0),
@@ -98,17 +98,17 @@ fn handle_new_interpolated_bike(
 fn handle_new_predicted_bike(
     mut commands: Commands,
     predicted_bikes: Query<
-        (Entity, &ColorComponent),
-        (With<BikeMarker>, With<Predicted>, Without<EntityLabel>),
+        (Entity, &ColorComponent, &BikeMarker),
+        (With<Predicted>, Without<EntityLabel>),
     >,
 ) {
-    for (entity, color_component) in predicted_bikes.iter() {
+    for (entity, color_component, bike) in predicted_bikes.iter() {
         commands.entity(entity).insert((
             VisualInterpolateStatus::<Position>::default(),
             VisualInterpolateStatus::<Rotation>::default(),
             RigidBody::Kinematic,
             EntityLabel {
-                text: "Player".to_owned(),
+                text: bike.name.clone(),
                 sub_text: "".to_owned(),
                 offset: Vec2::new(0.0, 60.0),
                 color: color_component.overbright(4.0),
