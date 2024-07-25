@@ -125,18 +125,27 @@ fn handle_new_predicted_bike(
 /// When a trail is replicated, add the render-related components
 fn handle_new_trail(
     mut commands: Commands,
-    bike: Query<&ColorComponent, With<BikeMarker>>,
+    bike: Query<(&ClientIdMarker, &ColorComponent), With<BikeMarker>>,
     new_trails: Query<(&Parent, Entity), (With<Trail>, Without<TrailRenderMarker>)>,
 ) {
     for (parent, entity) in new_trails.iter() {
-        if let Ok(color) = bike.get(parent.get()) {
+        if let Ok((client_id, color)) = bike.get(parent.get()) {
             let trail_color: Color = color.overbright(10.0);
-            commands.entity(entity).insert((
-                ShapeBundle::default(),
-                TrailRenderMarker,
-                NoFrustumCulling,
-                Stroke::new(trail_color, 1.0),
-            ));
+            let trail_z_order = ((client_id.to_bits() as f32) % 10.0) * 100.0;
+            commands
+                .entity(entity)
+                .insert((
+                    ShapeBundle::default(),
+                    TrailRenderMarker,
+                    NoFrustumCulling,
+                    Stroke::new(trail_color, 1.0),
+                ))
+                // we insert GlobalTransform separately because ShapeBundle includes GlobalTransform
+                .insert(GlobalTransform::from_translation(Vec3::new(
+                    0.0,
+                    0.0,
+                    trail_z_order,
+                )));
         }
     }
 }

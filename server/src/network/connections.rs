@@ -3,17 +3,53 @@
 use avian2d::prelude::{Position, RigidBody};
 use bevy::color::palettes::css;
 use bevy::prelude::*;
+use bevy::utils::HashSet;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
+use rand::Rng;
 use shared::network::message::SpawnPlayerMessage;
 use shared::player::bike::{BikeBundle, BikeMarker};
 use shared::player::trail::{Trail, TrailBundle};
 use shared::player::zone::{Zones, ZonesBundle};
 use std::time::Duration;
 
+#[derive(Resource)]
+pub struct AvailableColors(pub Vec<Color>);
+
+impl Default for AvailableColors {
+    fn default() -> Self {
+        Self(Vec::from([
+            css::LIMEGREEN.into(),
+            css::PINK.into(),
+            css::YELLOW.into(),
+            css::AQUA.into(),
+            css::CRIMSON.into(),
+            css::GOLD.into(),
+            css::ORANGE_RED.into(),
+            css::SILVER.into(),
+            css::SALMON.into(),
+            css::YELLOW_GREEN.into(),
+            css::WHITE.into(),
+            css::RED.into(),
+        ]))
+    }
+}
+
+impl AvailableColors {
+    pub fn pick_color(&mut self) -> Color {
+        let index = rand::thread_rng().gen_range(0..self.0.len());
+        self.0.swap_remove(index)
+    }
+
+    pub fn add_color(&mut self, color: Color) {
+        self.0.push(color);
+    }
+}
+
 /// Spawn a new bike when a player connects, along with a `Trail` and a `Zones` entities
 pub(crate) fn spawn_bike(
     mut messages: ResMut<Events<MessageEvent<SpawnPlayerMessage>>>,
+    mut colors: ResMut<AvailableColors>,
     mut commands: Commands,
 ) {
     for message in messages.drain() {
@@ -24,7 +60,7 @@ pub(crate) fn spawn_bike(
             "Spawning bike for client {:?}, player {:?}",
             client_id, name
         );
-        let color = color_from_client_id(client_id.to_bits());
+        let color = colors.pick_color();
         let pos = Vec2::new(0.0, 0.0);
 
         // NOTE: for complicated reasons related to lightyear:
@@ -90,25 +126,4 @@ pub(crate) fn spawn_bike(
             .id();
         commands.entity(bike).add_child(trail).add_child(zones);
     }
-}
-
-pub fn color_from_client_id(client_id: u64) -> Color {
-    let available_colors = [
-        css::LIMEGREEN,
-        css::PINK,
-        css::YELLOW,
-        css::AQUA,
-        css::CRIMSON,
-        css::GOLD,
-        css::ORANGE_RED,
-        css::SILVER,
-        css::SALMON,
-        css::YELLOW_GREEN,
-        css::WHITE,
-        css::RED,
-    ];
-    let color = available_colors
-        .get((client_id % (available_colors.len() as u64)) as usize)
-        .unwrap();
-    return Color::Srgba(*color);
 }
