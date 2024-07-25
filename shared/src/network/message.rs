@@ -1,18 +1,18 @@
+use crate::player::scores::Stats;
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::{Component, Entity, EntityMapper, Reflect};
 use lightyear::prelude::{Deserialize, Serialize};
 
-/// Message sent to the client to notify that we are spawning an entity
-#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
+/// Message sent from the client to spawn the player with a given name
+#[derive(Reflect, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct SpawnPlayerMessage {
-    bike: Entity,
-    trail: Entity,
-    zones: Entity,
+    pub name: String,
 }
 
-#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Reflect, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct KilledByMessage {
     pub killer: Entity,
+    pub stats: Stats,
 }
 
 impl MapEntities for KilledByMessage {
@@ -21,7 +21,7 @@ impl MapEntities for KilledByMessage {
     }
 }
 
-#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Reflect, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct KillMessage {
     pub killed: Entity,
 }

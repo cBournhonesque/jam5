@@ -46,6 +46,11 @@ fn add_input_map(
         commands
             .entity(entity)
             .insert(InputMap::<PlayerMovement>::default());
+        // NOTE: uncomment this to be able to pause players during testing
+        // .insert(InputMap::<PlayerMovement>::new([(
+        //     PlayerMovement::Pause,
+        //     KeyCode::Space,
+        // )]));
     }
 }
 

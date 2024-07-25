@@ -30,7 +30,9 @@ impl Plugin for SharedPlugin {
                     level: Level::INFO,
                     // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
                     // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
-                    filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=warn,lightyear::shared::replication::delta=warn,lightyear::protocol::component=info".to_string(),
+                    // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=info,lightyear::shared::replication::delta=info,lightyear::protocol::component=info",
+                    filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=warn,lightyear::shared::replication::delta=warn,lightyear::protocol::component=warn"
+                        .to_string(),
                     ..default()
                 },
             ));
@@ -41,7 +43,9 @@ impl Plugin for SharedPlugin {
                         level: Level::INFO,
                         // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
                         // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
-                        filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=warn,lightyear::shared::replication::delta=warn,lightyear::protocol::component=info".to_string(),
+                        // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=info,lightyear::shared::replication::delta=info,lightyear::protocol::component=info"
+                        filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=warn,lightyear::shared::replication::delta=warn,lightyear::protocol::component=warn"
+                            .to_string(),
                         ..default()
                     })
                     .set(AssetPlugin {

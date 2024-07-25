@@ -1,9 +1,10 @@
 use crate::physics::util::line_segments_intersect;
+use crate::player::bike::ClientIdMarker;
 use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_prototype_lyon::prelude::{GeometryBuilder, Path, PathBuilder};
 use bevy_prototype_lyon::shapes;
-use lightyear::prelude::DeltaCompression;
+use lightyear::prelude::{ClientId, DeltaCompression};
 use lightyear::shared::replication::delta::Diffable;
 use serde::{Deserialize, Serialize};
 
@@ -15,13 +16,15 @@ const MAX_LINE_POINTS: usize = 200;
 #[derive(Bundle, Debug)]
 pub struct TrailBundle {
     pub trail: Trail,
+    pub client: ClientIdMarker,
     pub name: Name,
 }
 
 impl TrailBundle {
-    pub fn new_at(pos: Vec2) -> Self {
+    pub fn new_at(pos: Vec2, client_id: ClientId) -> Self {
         TrailBundle {
             trail: Trail { line: vec![pos] },
+            client: ClientIdMarker(client_id),
             name: Name::from("Trail"),
         }
     }
@@ -30,8 +33,8 @@ impl TrailBundle {
 impl Default for TrailBundle {
     fn default() -> Self {
         TrailBundle {
-            trail: Trail::default(),
             name: Name::from("Trail"),
+            ..default()
         }
     }
 }

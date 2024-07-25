@@ -3,11 +3,13 @@ use bevy::prelude::*;
 use lightyear::prelude::client::*;
 use std::net::SocketAddr;
 
+use crate::network::connect::on_connect;
 use crate::screen::Screen::Playing;
 use shared::network::config::Transports;
 
 mod bike;
 pub(crate) mod config;
+mod connect;
 
 /// Plugin that handles networking
 pub(crate) struct NetworkPlugin {
@@ -33,6 +35,7 @@ impl Plugin for NetworkPlugin {
         app.add_plugins(bike::BikeNetworkPlugin);
 
         app.add_systems(OnEnter(Playing), connect.run_if(not(is_connected)));
+        app.add_systems(OnEnter(NetworkingState::Connected), on_connect);
 
         #[cfg(feature = "dev")]
         app.observe(debug_connect);
@@ -64,5 +67,6 @@ fn debug_connect(trigger: Trigger<ConnectEvent>, mut commands: Commands) {
 
 #[derive(Event, Debug)]
 pub struct BikeSpawned {
+    pub(crate) color: Color,
     pub(crate) entity: Entity,
 }

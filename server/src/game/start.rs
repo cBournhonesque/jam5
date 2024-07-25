@@ -16,8 +16,6 @@ use shared::{
     },
 };
 
-use crate::network::connections::color_from_client_id;
-
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {

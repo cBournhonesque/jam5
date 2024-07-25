@@ -2,9 +2,10 @@ use crate::map::MAP_SIZE;
 use crate::network::inputs::PlayerMovement;
 use crate::physics::FixedSet;
 use crate::player::bike::{
-    BikeMarker, ColorComponent, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED,
-    FAST_SPEED_MAX_SPEED_DISTANCE, MAX_ROTATION_SPEED, ZONE_SPEED_MULTIPLIER,
+    BikeMarker, ClientIdMarker, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED,
+    FAST_SPEED_MAX_SPEED_DISTANCE, MAX_ROTATION_SPEED, OUR_ZONE_SPEED_MULTIPLIER,
 };
+use crate::player::death::Dead;
 use crate::player::zone::Zones;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -33,32 +34,53 @@ impl Plugin for MovementPlugin {
             FixedUpdate,
             (move_bike_system).in_set(FixedSet::HandleInputs),
         );
+        #[cfg(feature = "dev")]
+        app.add_systems(Update, pause_bike);
     }
 }
+
+#[cfg(feature = "dev")]
+fn pause_bike(mut q_bike: Query<(&mut BikeMarker, &ActionState<PlayerMovement>)>) {
+    for (mut bike, actions) in q_bike.iter_mut() {
+        if actions.just_pressed(&PlayerMovement::Pause) {
+            bike.paused = !bike.paused;
+        }
+    }
+}
+
 /// System that takes the 'rotation' from the input and uses it to turn the bikes
 fn move_bike_system(
     tick_manager: Res<TickManager>,
     fixed_time: Res<Time<Fixed>>,
-    q_zones: Query<(&Parent, &Zones)>,
-    mut q_bikes: Query<
+    // TODO: add spatial index
+    q_zones: Query<(&Zones, &ClientIdMarker)>,
+    mut q_bike: Query<
         (
-            Entity,
+            // TODO: do we need this?
+            &ClientIdMarker,
+            &BikeMarker,
             &mut Position,
             &mut Rotation,
             &mut LinearVelocity,
-            Option<&ActionState<PlayerMovement>>,
+            &ActionState<PlayerMovement>,
         ),
-        Or<(With<Predicted>, With<Replicating>)>,
+        // apply inputs either on predicted entities on the client, or replicating entities on the server
+        (Or<(With<Predicted>, With<Replicating>)>, Without<Dead>),
     >,
 ) {
-    for (entity, mut position, mut rotation, mut linear, action_state) in q_bikes.iter_mut() {
-        let Some(action_state) = action_state else {
+    let mut zones = q_zones.iter();
+    for (client_id, marker, mut position, mut rotation, mut linear, action_state) in
+        q_bike.iter_mut()
+    {
+        #[cfg(feature = "dev")]
+        if marker.paused {
+            *linear = LinearVelocity::default();
             continue;
-        };
-
+        }
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
 
+        // speed we wish to move at is based on mouse distance
         if let Some(relative_mouse_pos) =
             action_state.axis_pair(&PlayerMovement::MousePositionRelative)
         {
@@ -67,16 +89,12 @@ fn move_bike_system(
                 (relative_mouse_pos.length() / FAST_SPEED_MAX_SPEED_DISTANCE).clamp(0.0, 1.0);
 
             // are we in our own zone?
-            let wish_speed_multiplier = q_zones
-                .iter()
-                .find_map(|(parent, zone)| {
-                    if parent.get() == entity && zone.contains(position.0) {
-                        Some(ZONE_SPEED_MULTIPLIER)
-                    } else {
-                        None
-                    }
-                })
-                .unwrap_or(1.0);
+            let wish_speed_multiplier =
+                if zones.any(|(z, zone_owner)| zone_owner == client_id && z.contains(position.0)) {
+                    OUR_ZONE_SPEED_MULTIPLIER
+                } else {
+                    1.0
+                };
 
             let wish_speed =
                 BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance) * wish_speed_multiplier;

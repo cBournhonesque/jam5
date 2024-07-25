@@ -1,9 +1,10 @@
+use crate::player::bike::ClientIdMarker;
 use crate::player::trail::Trail;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 use bevy_prototype_lyon::prelude::*;
-use geo::{area::Area, BooleanOps, Contains};
-use geo_types::{Coord, LineString, MultiPolygon, Polygon};
+use geo::{area::Area, BooleanOps, Contains, Coord, LineString};
+use geo_types::{MultiPolygon, Polygon};
 use lightyear::{prelude::*, shared::replication::delta::Diffable};
 use serde::{Deserialize, Serialize};
 
@@ -12,14 +13,25 @@ const CLIPPER_SCALE: f64 = 1_000_000.0;
 #[derive(Bundle, Debug)]
 pub struct ZonesBundle {
     pub zones: Zones,
+    pub client: ClientIdMarker,
     pub name: Name,
+}
+
+impl ZonesBundle {
+    pub fn new(client_id: ClientId) -> Self {
+        Self {
+            client: ClientIdMarker(client_id),
+            ..default()
+        }
+    }
 }
 
 impl Default for ZonesBundle {
     fn default() -> Self {
         Self {
-            zones: Zones::default(),
             name: Name::from("Zones"),
+            client: ClientIdMarker::default(),
+            zones: Zones::default(),
         }
     }
 }
@@ -47,9 +59,7 @@ pub struct Zones {
 
 impl Default for Zones {
     fn default() -> Self {
-        Zones {
-            zones: Vec::new(),
-        }
+        Zones { zones: Vec::new() }
     }
 }
 
@@ -130,9 +140,12 @@ impl From<&Zone> for Path {
             return path.build();
         }
         path.move_to(zone.exterior[0]);
-        for point in zone.exterior.iter().skip(1) {
-            path.line_to(*point);
+        for i in 1..(zone.exterior.len() - 2) {
+            path.line_to(zone.exterior[i]);
         }
+        // for point in zone.exterior.iter().skip(1) {
+        //     path.line_to(*point);
+        // }
         path.close();
 
         for interior in &zone.interiors {

@@ -48,7 +48,9 @@ fn mark_trail_system(
                     .unwrap();
                 if let Ok((_, mut zones)) = zones_query.get_mut(*zone_entity) {
                     let new_zone = Zone::new(shape);
+                    trace!("new zone: {:?}", new_zone);
                     zones.add_zone(new_zone.clone());
+                    trace!("zones: {:?}", zones);
                     new_zones.insert(parent.get(), new_zone);
                 }
             }

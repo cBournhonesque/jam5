@@ -1,5 +1,6 @@
 use crate::player::bike::BikeMarker;
 use crate::player::trail::Trail;
+use crate::player::zone::Zones;
 use avian2d::position::{Position, Rotation};
 use bevy::prelude::*;
 use bevy::render::RenderPlugin;
@@ -7,7 +8,6 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 use lightyear::shared::replication::delta::{DeltaComponentHistory, DeltaManager};
-use crate::player::zone::Zones;
 
 pub struct DebugPlugin;
 

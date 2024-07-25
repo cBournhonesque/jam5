@@ -2,7 +2,8 @@ use std::net::Ipv4Addr;
 
 use bevy::app::{App, PluginGroup};
 use clap::Parser;
-
+use rand::prelude::IteratorRandom;
+use rand::Rng;
 use shared::network::config::Transports;
 use shared::SharedPlugin;
 
@@ -47,13 +48,18 @@ pub struct Cli {
 pub fn app(cli: Cli) -> App {
     let mut app = App::new();
     app.add_plugins(SharedPlugin { headless: false });
+    let client_id = if cli.client_id == 0 {
+        rand::thread_rng().gen::<u64>()
+    } else {
+        cli.client_id
+    };
     app.add_plugins(network::NetworkPlugin {
-        client_id: cli.client_id,
+        client_id,
         client_port: cli.client_port,
         server_addr: (cli.server_addr, cli.server_port).into(),
         transport: cli.transport,
     });
-    app.add_plugins(audio::plugin);
+    // app.add_plugins(audio::plugin);
     app.add_plugins(camera::CameraPlugin);
     app.add_plugins(inputs::InputPlugin);
     app.add_plugins(screen::plugin);

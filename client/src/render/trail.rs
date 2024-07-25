@@ -3,8 +3,6 @@
 use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::Path;
-use lightyear::prelude::MainSet;
-use shared::player::bike::ColorComponent;
 use shared::player::trail::Trail;
 
 pub struct TrailRenderPlugin;

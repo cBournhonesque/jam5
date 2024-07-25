@@ -2,10 +2,10 @@ use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
 
 use bevy::prelude::default;
-use lightyear::prelude::*;
 use lightyear::prelude::client::*;
+use lightyear::prelude::*;
 
-use shared::network::config::{KEY, PROTOCOL_ID, shared_config, Transports};
+use shared::network::config::{shared_config, Transports, KEY, PROTOCOL_ID};
 
 pub(crate) fn build_lightyear_client(
     client_id: u64,
@@ -31,17 +31,22 @@ pub(crate) fn build_lightyear_client(
         },
         Transports::WebSocket => ClientTransport::WebSocketClient { server_addr },
     };
-    let link_conditioner = LinkConditionerConfig {
-        incoming_latency: Duration::from_millis(40),
-        incoming_jitter: Duration::from_millis(4),
-        incoming_loss: 0.01,
-    };
+
+    let mut io = IoConfig::from_transport(transport_config);
+    if cfg!(feature = "dev") {
+        let link_conditioner = LinkConditionerConfig {
+            incoming_latency: Duration::from_millis(40),
+            incoming_jitter: Duration::from_millis(4),
+            incoming_loss: 0.01,
+        };
+        io = io.with_conditioner(link_conditioner);
+    }
     let config = ClientConfig {
         shared: shared_config(),
         net: NetConfig::Netcode {
             auth,
             config: NetcodeConfig::default(),
-            io: IoConfig::from_transport(transport_config).with_conditioner(link_conditioner),
+            io,
         },
         interpolation: InterpolationConfig {
             delay: InterpolationDelay::default().with_send_interval_ratio(2.0),

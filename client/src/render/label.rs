@@ -122,7 +122,7 @@ fn label_changed(
 fn update_entity_label_positions(
     // we query the Position and not the Transform, because only the position is visually interpolated
     // so that's what we should use
-    q_parents: Query<(&Position, &EntityLabel), (Without<EntityLabelChild>, Without<Dead>)>,
+    q_parents: Query<(&Position, &EntityLabel), Without<EntityLabelChild>>,
     mut q_text: Query<(&Parent, &mut GlobalTransform), With<EntityLabelChild>>,
 ) {
     for (parent, mut transform) in q_text.iter_mut() {

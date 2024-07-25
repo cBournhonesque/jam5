@@ -5,7 +5,6 @@ pub mod connections;
 use bevy::prelude::*;
 use lightyear::prelude::server::*;
 
-use crate::network::connections::spawn_trail;
 use shared::network::config::Transports;
 use shared::network::protocol::ProtocolPlugin;
 
@@ -25,8 +24,7 @@ impl Plugin for NetworkPlugin {
 
         // systems
         app.add_systems(Startup, start_server);
-        app.add_systems(Update, spawn_trail);
-        app.observe(connections::spawn_bike);
+        app.add_systems(Update, connections::spawn_bike);
     }
 }
 
