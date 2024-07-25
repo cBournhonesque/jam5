@@ -1,13 +1,13 @@
-use std::net::{Ipv4Addr, SocketAddr};
-use std::time::Duration;
 use async_compat::Compat;
 use bevy::log::info;
 use bevy::prelude::default;
 use bevy::tasks::IoTaskPool;
-use lightyear::prelude::*;
 use lightyear::prelude::server::*;
+use lightyear::prelude::*;
+use std::net::{Ipv4Addr, SocketAddr};
+use std::time::Duration;
 
-use shared::network::config::{KEY, PROTOCOL_ID, shared_config, Transports};
+use shared::network::config::{shared_config, Transports, KEY, PROTOCOL_ID};
 
 pub(crate) fn build_lightyear_server(port: u16, transport: Transports) -> ServerPlugins {
     // Step 1: create the io (transport + link conditioner)
@@ -22,20 +22,17 @@ pub(crate) fn build_lightyear_server(port: u16, transport: Transports) -> Server
                 .scope(|s| {
                     s.spawn(Compat::new(async {
                         server::Identity::load_pemfiles(
-                            "../assets/certificates/cert.pem",
-                            "../assets/certificates/key.pem",
+                            "../client/assets/certificates/cert.pem",
+                            "../client/assets/certificates/key.pem",
                         )
-                            .await
-                            .unwrap()
+                        .await
+                        .unwrap()
                     }));
                 })
                 .pop()
                 .unwrap();
             let digest = certificate.certificate_chain().as_slice()[0].hash();
-            info!(
-                "Generated self-signed certificate with digest: {}",
-                digest
-            );
+            info!("Generated self-signed certificate with digest: {}", digest);
             ServerTransport::WebTransportServer {
                 server_addr,
                 certificate,

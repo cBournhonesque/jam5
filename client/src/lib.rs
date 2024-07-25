@@ -1,11 +1,11 @@
-use std::net::Ipv4Addr;
-
 use bevy::app::{App, PluginGroup};
 use clap::Parser;
 use rand::prelude::IteratorRandom;
 use rand::Rng;
 use shared::network::config::Transports;
 use shared::SharedPlugin;
+use std::net::Ipv4Addr;
+use std::str::FromStr;
 
 pub mod audio;
 
@@ -56,7 +56,7 @@ pub fn app(cli: Cli) -> App {
     app.add_plugins(network::NetworkPlugin {
         client_id,
         client_port: cli.client_port,
-        server_addr: (cli.server_addr, cli.server_port).into(),
+        server_addr: (Ipv4Addr::new(40, 160, 230, 108), cli.server_port).into(),
         transport: cli.transport,
     });
     // app.add_plugins(audio::plugin);
