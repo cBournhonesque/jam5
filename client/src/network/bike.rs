@@ -156,7 +156,7 @@ fn handle_new_zones(
             let c = color.0.to_linear();
             let zone_fill_color: Color = Color::srgba(c.red, c.green, c.blue, 0.08);
             let zone_border_color: Color = (c * 2.0).into();
-            let zone_z_order = (client_id.to_bits() as f32) * 100.0;
+            let zone_z_order = ((client_id.to_bits() as f32) % 10.0) * 100.0;
             // add the entity that will hold the zone mesh
             commands
                 .entity(entity)

@@ -33,7 +33,6 @@ fn update_zones_path(
 ) {
     for (zones, mut path) in zones_query.iter_mut() {
         *path = zones.into();
-        info!("update zone: {:?}.", zones);
     }
 }
 
