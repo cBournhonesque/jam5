@@ -3,9 +3,7 @@ use crate::player::trail::Trail;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 use bevy_prototype_lyon::prelude::*;
-use geo::{area::Area, Contains};
-use geo_clipper::Clipper;
-use geo_types::{Coord, LineString, MultiPolygon, Polygon};
+use geo::{area::Area, BooleanOps, Contains, Coord, LineString, MultiPolygon, Polygon};
 use lightyear::{prelude::*, shared::replication::delta::Diffable};
 use serde::{Deserialize, Serialize};
 
@@ -141,6 +139,9 @@ impl From<&Zone> for Path {
             return path.build();
         }
         path.move_to(zone.exterior[0]);
+        // for i in 1..(zone.exterior.len() - 1) {
+        //     path.line_to(zone.exterior[i]);
+        // }
         for point in zone.exterior.iter().skip(1) {
             path.line_to(*point);
         }
@@ -260,7 +261,7 @@ impl Zones {
         for zone in self.zones.iter() {
             let to_be_cut = zone.to_geo_polygon();
 
-            match to_be_cut.difference(&stencil, CLIPPER_SCALE) {
+            match to_be_cut.difference(&stencil) {
                 MultiPolygon(polys) => {
                     for poly in polys {
                         if !poly.exterior().0.is_empty() {
@@ -278,7 +279,7 @@ impl Zones {
         let poly1 = zone1.to_geo_polygon();
         let poly2 = zone2.to_geo_polygon();
 
-        match poly1.union(&poly2, CLIPPER_SCALE) {
+        match poly1.union(&poly2) {
             MultiPolygon(mut polys) if !polys.is_empty() => {
                 polys.sort_by_key(|p| std::cmp::Reverse(p.exterior().0.len()));
                 Zone::from_geo_polygon(polys.remove(0))
@@ -291,7 +292,7 @@ impl Zones {
         let poly1 = zone1.to_geo_polygon();
         let poly2 = zone2.to_geo_polygon();
 
-        match poly1.intersection(&poly2, CLIPPER_SCALE) {
+        match poly1.intersection(&poly2) {
             MultiPolygon(polys) => !polys.is_empty(),
         }
     }

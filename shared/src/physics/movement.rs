@@ -34,10 +34,12 @@ impl Plugin for MovementPlugin {
             FixedUpdate,
             (move_bike_system).in_set(FixedSet::HandleInputs),
         );
+        #[cfg(feature = "dev")]
         app.add_systems(Update, pause_bike);
     }
 }
 
+#[cfg(feature = "dev")]
 fn pause_bike(mut q_bike: Query<(&mut BikeMarker, &ActionState<PlayerMovement>)>) {
     for (mut bike, actions) in q_bike.iter_mut() {
         if actions.just_pressed(&PlayerMovement::Pause) {
@@ -70,6 +72,7 @@ fn move_bike_system(
     for (client_id, marker, mut position, mut rotation, mut linear, action_state) in
         q_bike.iter_mut()
     {
+        #[cfg(feature = "dev")]
         if marker.paused {
             *linear = LinearVelocity::default();
             continue;
