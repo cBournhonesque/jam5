@@ -2,6 +2,7 @@ use avian2d::position::Position;
 use bevy::core_pipeline::bloom::BloomSettings;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::TransformSystem::TransformPropagate;
+use bevy::render::camera::ScalingMode;
 use bevy::{prelude::*, window::PrimaryWindow};
 use lightyear::client::prediction::Predicted;
 use lightyear::prelude::client::InterpolationSet;
@@ -37,6 +38,13 @@ fn init_camera(mut commands: Commands) {
         Camera2dBundle {
             camera: Camera {
                 hdr: true, // 1. HDR is required for bloom
+                ..default()
+            },
+            projection: OrthographicProjection {
+                scale: 1.0,
+                scaling_mode: ScalingMode::FixedVertical(1000.),
+                near: -10000.0,
+                far: 10000.0,
                 ..default()
             },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended

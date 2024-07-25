@@ -8,6 +8,8 @@ pub mod player;
 pub mod physics;
 
 use bevy::log::{Level, LogPlugin};
+use bevy::render::settings::{WgpuFeatures, WgpuSettings};
+use bevy::render::RenderPlugin;
 use bevy::state::app::StatesPlugin;
 use bevy::{
     asset::AssetMetaCheck,
@@ -37,6 +39,10 @@ impl Plugin for SharedPlugin {
                 },
             ));
         } else {
+            let mut wgpu_settings = WgpuSettings::default();
+            wgpu_settings
+                .features
+                .set(WgpuFeatures::VERTEX_WRITABLE_STORAGE, true);
             app.add_plugins(
                 DefaultPlugins
                     .set(LogPlugin {
@@ -72,6 +78,10 @@ impl Plugin for SharedPlugin {
                             volume: Volume::new(0.3),
                         },
                         ..default()
+                    })
+                    .set(RenderPlugin {
+                        render_creation: wgpu_settings.into(),
+                        synchronous_pipeline_compilation: false,
                     }),
             );
         }
