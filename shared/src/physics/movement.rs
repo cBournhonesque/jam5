@@ -5,6 +5,7 @@ use crate::player::bike::{
     BikeMarker, ClientIdMarker, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED,
     FAST_SPEED_MAX_SPEED_DISTANCE, MAX_ROTATION_SPEED, OUR_ZONE_SPEED_MULTIPLIER,
 };
+use crate::player::death::Dead;
 use crate::player::zone::Zones;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -33,8 +34,18 @@ impl Plugin for MovementPlugin {
             FixedUpdate,
             (move_bike_system).in_set(FixedSet::HandleInputs),
         );
+        app.add_systems(Update, pause_bike);
     }
 }
+
+fn pause_bike(mut q_bike: Query<(&mut BikeMarker, &ActionState<PlayerMovement>)>) {
+    for (mut bike, actions) in q_bike.iter_mut() {
+        if actions.just_pressed(&PlayerMovement::Pause) {
+            bike.paused = !bike.paused;
+        }
+    }
+}
+
 /// System that takes the 'rotation' from the input and uses it to turn the bikes
 fn move_bike_system(
     tick_manager: Res<TickManager>,
@@ -45,17 +56,24 @@ fn move_bike_system(
         (
             // TODO: do we need this?
             &ClientIdMarker,
+            &BikeMarker,
             &mut Position,
             &mut Rotation,
             &mut LinearVelocity,
             &ActionState<PlayerMovement>,
         ),
         // apply inputs either on predicted entities on the client, or replicating entities on the server
-        Or<(With<Predicted>, With<Replicating>)>,
+        (Or<(With<Predicted>, With<Replicating>)>, Without<Dead>),
     >,
 ) {
     let mut zones = q_zones.iter();
-    for (client_id, mut position, mut rotation, mut linear, action_state) in q_bike.iter_mut() {
+    for (client_id, marker, mut position, mut rotation, mut linear, action_state) in
+        q_bike.iter_mut()
+    {
+        if marker.paused {
+            *linear = LinearVelocity::default();
+            continue;
+        }
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
 

@@ -6,9 +6,9 @@ use bevy_prototype_lyon::prelude::ShapePlugin;
 use lightyear::prelude::client::*;
 
 mod diagnostics;
+mod egui;
 mod kills;
 pub mod label;
-mod leaderboard;
 pub mod map;
 pub mod player;
 pub mod trail;
@@ -27,7 +27,8 @@ impl Plugin for RenderPlugin {
         ));
         app.add_plugins((
             diagnostics::DiagnosticsPlugin,
-            leaderboard::LeaderboardPlugin,
+            kills::KillPlugin,
+            egui::MyEguiPlugin,
             label::EntityLabelPlugin,
             player::PlayerRenderPlugin,
             trail::TrailRenderPlugin,

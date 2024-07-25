@@ -1,11 +1,12 @@
 use avian2d::position::Position;
+use bevy::core_pipeline::bloom::BloomSettings;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy::core_pipeline::bloom::BloomSettings;
 use lightyear::client::prediction::Predicted;
 use lightyear::prelude::client::InterpolationSet;
 use shared::player::bike::BikeMarker;
+use shared::player::death::Dead;
 
 pub const FOLLOW_CAMERA_Z: f32 = 2.0;
 pub const CAMERA_FOLLOW_SPEED: f32 = 5.0;
@@ -50,7 +51,7 @@ fn update_camera(
     time: Res<Time>,
     mut q_camera: Query<(&Camera, &mut Transform, &GlobalTransform), With<Camera2d>>,
     q_window: Query<&Window, With<PrimaryWindow>>,
-    q_player: Query<&Position, (With<BikeMarker>, With<Predicted>)>,
+    q_player: Query<&Position, (With<BikeMarker>, With<Predicted>, Without<Dead>)>,
 ) {
     let window = q_window.single();
 
