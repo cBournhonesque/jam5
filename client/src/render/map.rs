@@ -70,6 +70,10 @@ fn setup_map(
     info!("Creating map with radius: {}", radius);
     let map_color = Color::srgb(0.15, 0.1, 0.3);
     commands.spawn((
+        // ShapeBundle {
+        //     path: GeometryBuilder::build_as(&shape),
+        //     ..Default::default()
+        // },
         Path::from(GeometryBuilder::build_as(&shape)),
         MaterialMesh2dBundle {
             material: materials.add(MapMaterial::new(map_color, None)),

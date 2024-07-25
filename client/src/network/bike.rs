@@ -1,21 +1,18 @@
 //! Module to handle the networking of bikes on the client side
 
-use super::BikeSpawned;
-use crate::assets::HandleMap;
-use crate::render::bike::create_bike_particle_effect;
 use crate::render::label::EntityLabel;
 use crate::render::trail::TrailRenderMarker;
 use crate::render::zones::ZoneRenderMarker;
 use avian2d::prelude::{Position, RigidBody, Rotation};
 use bevy::prelude::*;
 use bevy::render::view::NoFrustumCulling;
-use bevy_hanabi::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use lightyear::prelude::{client::*, MainSet};
-use lightyear::shared::replication::components::Controlled;
 use shared::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use shared::player::trail::Trail;
 use shared::player::zone::Zones;
+
+use super::BikeSpawned;
 
 pub struct BikeNetworkPlugin;
 
@@ -100,13 +97,12 @@ fn handle_new_interpolated_bike(
 /// - add a Player Label
 fn handle_new_predicted_bike(
     mut commands: Commands,
-    mut effects: ResMut<Assets<EffectAsset>>,
     predicted_bikes: Query<
-        (Entity, &Position, &ColorComponent),
+        (Entity, &ColorComponent),
         (With<BikeMarker>, With<Predicted>, Without<EntityLabel>),
     >,
 ) {
-    for (entity, position, color_component) in predicted_bikes.iter() {
+    for (entity, color_component) in predicted_bikes.iter() {
         commands.entity(entity).insert((
             VisualInterpolateStatus::<Position>::default(),
             VisualInterpolateStatus::<Rotation>::default(),
