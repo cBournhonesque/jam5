@@ -17,7 +17,7 @@
         rust = pkgs.rust-bin.selectLatestNightlyWith (
           toolchain: toolchain.default.override { 
             extensions = [ "rust-analyzer" "rust-src" ];
-            targets = [];
+            targets = [ "wasm32-unknown-unknown" ];
           }
         );
       in
@@ -25,6 +25,7 @@
       {
         devShells.default = mkShell rec {
           buildInputs = [
+            trunk
             mold
             openssl
             pkg-config
