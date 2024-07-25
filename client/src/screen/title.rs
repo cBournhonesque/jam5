@@ -7,7 +7,7 @@ use bevy_egui::{egui, EguiContexts};
 
 pub(super) fn plugin(app: &mut App) {
     app.insert_resource(PlayerNamePrompt {
-        name: "Player".to_string(),
+        name: "".to_string(),
     });
     app.add_systems(PostUpdate, title.run_if(in_state(Screen::Title)));
 }
@@ -27,20 +27,29 @@ fn title(
         .title_bar(false)
         .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
         .show(egui_contexts.ctx_mut(), |ui| {
-            // ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 10.0);
-            ui.text_edit_singleline(&mut player_name_prompt.name);
-            if ui.button("Play").clicked() {
-                next_screen.set(Screen::Playing);
-            }
+            ui.with_layout(
+                egui::Layout::centered_and_justified(egui::Direction::TopDown),
+                |ui| {
+                    // ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 10.0);
+                    ui.add(
+                        egui::TextEdit::singleline(&mut player_name_prompt.name)
+                            .desired_width(200.0)
+                            .hint_text("Enter your name"),
+                    );
+                    if ui.button("Play").clicked() {
+                        next_screen.set(Screen::Playing);
+                    }
 
-            ui.separator();
-            if ui.button("Credits").clicked() {
-                next_screen.set(Screen::Credits);
-            }
-            // exit doesn't work well in embedded applications
-            #[cfg(not(target_family = "wasm"))]
-            if ui.button("Exit").clicked() {
-                app_exit.send(AppExit::Success);
-            }
+                    ui.separator();
+                    if ui.button("Credits").clicked() {
+                        next_screen.set(Screen::Credits);
+                    }
+                    // exit doesn't work well in embedded applications
+                    #[cfg(not(target_family = "wasm"))]
+                    if ui.button("Exit").clicked() {
+                        app_exit.send(AppExit::Success);
+                    }
+                },
+            );
         });
 }
