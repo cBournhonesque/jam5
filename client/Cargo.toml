@@ -40,6 +40,9 @@ tokio.workspace = true
 leafwing-input-manager.workspace = true
 bevy_prototype_lyon = "0.12.0"
 bevy_screen_diagnostics = "0.6"
-bevy_egui = "0.28"
+bevy_egui = { version = "0.28", default-features = false, features = [
+    "default_fonts",
+    "render",
+] }
 egui_extras = "0.28"
 rand = "0.8.5"

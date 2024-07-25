@@ -20,7 +20,7 @@ impl Plugin for DebugPlugin {
         // app.add_systems(FixedUpdate, log_parent_sync);
 
         if app.is_plugin_added::<RenderPlugin>() {
-            // app.add_plugins(WorldInspectorPlugin::default());
+            app.add_plugins(WorldInspectorPlugin::default());
         }
     }
 }

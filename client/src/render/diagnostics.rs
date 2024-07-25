@@ -22,10 +22,12 @@ fn setup_diagnostic(mut onscreen: ResMut<ScreenDiagnostics>) {
         .add("Jitter".to_string(), PingDiagnosticsPlugin::JITTER)
         .aggregate(Aggregate::Value)
         .format(|v| format!("{v:.0}ms"));
+    #[cfg(feature = "dev")]
     onscreen
         .add("RB".to_string(), PredictionDiagnosticsPlugin::ROLLBACKS)
         .aggregate(Aggregate::Value)
         .format(|v| format!("{v:.0}"));
+    #[cfg(feature = "dev")]
     onscreen
         .add(
             "RBt".to_string(),
@@ -33,6 +35,7 @@ fn setup_diagnostic(mut onscreen: ResMut<ScreenDiagnostics>) {
         )
         .aggregate(Aggregate::Value)
         .format(|v| format!("{v:.0}"));
+    #[cfg(feature = "dev")]
     onscreen
         .add(
             "RBd".to_string(),
@@ -46,6 +49,7 @@ fn setup_diagnostic(mut onscreen: ResMut<ScreenDiagnostics>) {
         .add("KB_in".to_string(), IoDiagnosticsPlugin::BYTES_IN)
         .aggregate(Aggregate::Average)
         .format(|v| format!("{v:0>3.0}"));
+    #[cfg(feature = "dev")]
     onscreen
         .add("KB_out".to_string(), IoDiagnosticsPlugin::BYTES_OUT)
         .aggregate(Aggregate::Average)

@@ -20,8 +20,6 @@ tokio.workspace = true
 bevy-inspector-egui = { version = "0.25.1", optional = true }
 bevy_prototype_lyon = "0.12.0"
 geo = "0.28.0"
-geo-types = "0.7.13"
-geo-clipper = "0.8.0"
 
 [features]
 default = [

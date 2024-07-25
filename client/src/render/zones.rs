@@ -32,20 +32,8 @@ fn update_zones_path(
     mut zones_query: Query<(&Zones, &mut Path), (Changed<Zones>, With<ZoneRenderMarker>)>,
 ) {
     for (zones, mut path) in zones_query.iter_mut() {
-        // info!(?trail);
+        trace!("update zone: {:?}", zones);
         *path = zones.into();
-    }
-}
-
-/// Update the path of a zone when the zone gets updated
-fn update_zone_path(
-    zone_query: Query<&Zones, Or<(Added<Zones>, Changed<Zones>)>>,
-    mut zone_render_query: Query<(&Parent, &mut Path), With<ZoneRenderMarker>>,
-) {
-    for (parent, mut path) in zone_render_query.iter_mut() {
-        if let Ok(zones) = zone_query.get(parent.get()) {
-            *path = zones.into();
-        }
     }
 }
 
