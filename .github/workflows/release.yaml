@@ -61,26 +61,26 @@ jobs:
             package_ext: .zip
             runner: ubuntu-latest
 
-          - platform: linux
-            targets: x86_64-unknown-linux-gnu
-            profile: release-native
-            features: bevy/wayland
-            package_ext: .zip
-            runner: ubuntu-latest
-
-          - platform: windows
-            targets: x86_64-pc-windows-msvc
-            profile: release-native
-            binary_ext: .exe
-            package_ext: .zip
-            runner: windows-latest
-
-          - platform: macos
-            targets: x86_64-apple-darwin aarch64-apple-darwin
-            profile: release-native
-            out_dir_suffix: .app/Contents/MacOS
-            package_ext: .dmg
-            runner: macos-latest
+    #          - platform: linux
+    #            targets: x86_64-unknown-linux-gnu
+    #            profile: release-native
+    #            features: bevy/wayland
+    #            package_ext: .zip
+    #            runner: ubuntu-latest
+    #
+    #          - platform: windows
+    #            targets: x86_64-pc-windows-msvc
+    #            profile: release-native
+    #            binary_ext: .exe
+    #            package_ext: .zip
+    #            runner: windows-latest
+    #
+    #          - platform: macos
+    #            targets: x86_64-apple-darwin aarch64-apple-darwin
+    #            profile: release-native
+    #            out_dir_suffix: .app/Contents/MacOS
+    #            package_ext: .dmg
+    #            runner: macos-latest
     runs-on: ${{ matrix.runner }}
     defaults:
       run:
