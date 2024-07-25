@@ -124,6 +124,7 @@ jobs:
         if: ${{ matrix.platform == 'web' }}
         run: |
           cargo binstall trunk --no-confirm
+          mkdir -p tmp/package
           trunk build --release --dist '${{ env.OUT_DIR }}'
           zip --recurse-paths '${{ env.PACKAGE }}${{ matrix.package_ext }}' '${{ env.OUT_DIR }}'
           mkdir -p ../tmp/package
