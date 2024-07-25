@@ -1,56 +1,46 @@
 //! The title screen that appears when the game starts.
 
-use bevy::prelude::*;
-
 use super::Screen;
 use crate::ui::prelude::*;
+use bevy::prelude::*;
+use bevy_egui::{egui, EguiContexts};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::Title), enter_title);
-
-    app.register_type::<TitleAction>();
-    app.add_systems(Update, handle_title_action.run_if(in_state(Screen::Title)));
+    app.insert_resource(PlayerNamePrompt {
+        name: "Player".to_string(),
+    });
+    app.add_systems(PostUpdate, title.run_if(in_state(Screen::Title)));
 }
 
-#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
-#[reflect(Component)]
-enum TitleAction {
-    Play,
-    Credits,
-    /// Exit doesn't work well with embedded applications.
-    #[cfg(not(target_family = "wasm"))]
-    Exit,
+#[derive(Resource, Default)]
+pub struct PlayerNamePrompt {
+    pub name: String,
 }
 
-fn enter_title(mut commands: Commands) {
-    commands
-        .ui_root()
-        .insert(StateScoped(Screen::Title))
-        .with_children(|children| {
-            children.button("Play").insert(TitleAction::Play);
-            children.button("Credits").insert(TitleAction::Credits);
-
-            #[cfg(not(target_family = "wasm"))]
-            children.button("Exit").insert(TitleAction::Exit);
-        });
-}
-
-fn handle_title_action(
+fn title(
+    mut egui_contexts: EguiContexts,
+    mut player_name_prompt: ResMut<PlayerNamePrompt>,
     mut next_screen: ResMut<NextState<Screen>>,
-    mut button_query: InteractionQuery<&TitleAction>,
     #[cfg(not(target_family = "wasm"))] mut app_exit: EventWriter<AppExit>,
 ) {
-    for (interaction, action) in &mut button_query {
-        if matches!(interaction, Interaction::Pressed) {
-            match action {
-                TitleAction::Play => next_screen.set(Screen::Playing),
-                TitleAction::Credits => next_screen.set(Screen::Credits),
-
-                #[cfg(not(target_family = "wasm"))]
-                TitleAction::Exit => {
-                    app_exit.send(AppExit::Success);
-                }
+    egui::Window::new("Title")
+        .title_bar(false)
+        .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+        .show(egui_contexts.ctx_mut(), |ui| {
+            // ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 10.0);
+            ui.text_edit_singleline(&mut player_name_prompt.name);
+            if ui.button("Play").clicked() {
+                next_screen.set(Screen::Playing);
             }
-        }
-    }
+
+            ui.separator();
+            if ui.button("Credits").clicked() {
+                next_screen.set(Screen::Credits);
+            }
+            // exit doesn't work well in embedded applications
+            #[cfg(not(target_family = "wasm"))]
+            if ui.button("Exit").clicked() {
+                app_exit.send(AppExit::Success);
+            }
+        });
 }
