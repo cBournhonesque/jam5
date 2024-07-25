@@ -24,6 +24,7 @@ impl Plugin for PlayerRenderPlugin {
         app.init_resource::<HandleMap<ImageKey>>();
 
         app.observe(on_bike_spawned);
+        app.observe(remove_bike_graphics);
         // app.observe(hide_dead_bikes);
         // app.observe(show_respawn_bikes);
         // Draw after TransformPropagate and VisualInterpolation
@@ -113,6 +114,19 @@ fn update_bike_position(
         if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
             *transform = GlobalTransform::from_translation(Vec3::from((parent_pos.0, 100.0)));
             atlas.index = degrees_to_sprite_index(parent_rot.as_degrees());
+        }
+    }
+}
+
+/// If the player disconnects, we want to remove their bike
+fn remove_bike_graphics(
+    trigger: Trigger<OnRemove, BikeMarker>,
+    mut commands: Commands,
+    q_graphics: Query<(Entity, &BikeGraphics)>,
+) {
+    for (entity, graphics) in q_graphics.iter() {
+        if graphics.followed_entity == trigger.entity() {
+            commands.entity(entity).despawn_recursive();
         }
     }
 }

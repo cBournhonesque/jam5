@@ -1,12 +1,11 @@
 use bevy::prelude::*;
 use bevy::tasks::futures_lite::StreamExt;
-use bevy_egui::{egui, EguiContexts};
 use lightyear::prelude::client::*;
 use rand::prelude::SliceRandom;
 use shared::network::message::{KillMessage, KilledByMessage};
-use shared::player::bike::{BikeMarker, ClientIdMarker};
+use shared::player::bike::BikeMarker;
 use shared::player::death::DEATH_TIMER;
-use shared::player::scores::{Score, Stats};
+use shared::player::scores::Stats;
 use std::time::Duration;
 
 const KILL_MESSAGE_DURATION: Duration = Duration::from_secs(3);

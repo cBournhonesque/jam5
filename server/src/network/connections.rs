@@ -49,6 +49,7 @@ impl AvailableColors {
 /// Spawn a new bike when a player connects, along with a `Trail` and a `Zones` entities
 pub(crate) fn spawn_bike(
     mut messages: ResMut<Events<MessageEvent<SpawnPlayerMessage>>>,
+    time: Res<Time>,
     mut colors: ResMut<AvailableColors>,
     mut commands: Commands,
 ) {
@@ -71,7 +72,7 @@ pub(crate) fn spawn_bike(
         // We will add the hierarchy manually on the client side by comparing client ids
         let bike = commands
             .spawn((
-                BikeBundle::new_at(client_id, name, pos, color),
+                BikeBundle::new_at(client_id, name, pos, color, time.elapsed()),
                 RigidBody::Kinematic,
                 Replicate {
                     sync: SyncTarget {
