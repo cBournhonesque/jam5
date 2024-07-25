@@ -4,7 +4,7 @@ mod credits;
 mod loading;
 mod playing;
 mod splash;
-mod title;
+pub mod title;
 
 #[cfg(feature = "dev")]
 use bevy::dev_tools::states::log_transitions;
