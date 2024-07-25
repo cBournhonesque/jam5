@@ -38,6 +38,12 @@ fn init_camera(mut commands: Commands) {
                 hdr: true, // 1. HDR is required for bloom
                 ..default()
             },
+            projection: OrthographicProjection {
+                near: -1000.,
+                far: 1000.,
+                scale: 1.5,
+                ..default()
+            },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
             ..default()
         },
