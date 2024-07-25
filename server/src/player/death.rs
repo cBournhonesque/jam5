@@ -1,9 +1,10 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use lightyear::prelude::ServerConnectionManager;
 use shared::network::message::{KillMessage, KilledByMessage};
 use shared::network::protocol::Channel1;
 use shared::player::bike::ClientIdMarker;
-use shared::player::death::Dead;
+use shared::player::death::{Dead, DeathTimer, DEATH_TIMER};
 use shared::player::scores::{Score, Stats};
 use shared::player::trail::Trail;
 
@@ -19,7 +20,30 @@ pub struct PlayerKillEvent {
 
 impl Plugin for DeathPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Update, respawn_player);
         app.observe(kill_player);
+    }
+}
+
+/// Tick death timers and respawn players
+fn respawn_player(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut dead: Query<(Entity, &mut DeathTimer), With<Dead>>,
+) {
+    for (entity, mut timer) in dead.iter_mut() {
+        timer.respawn_timer.tick(time.delta());
+        if timer.respawn_timer.finished() {
+            commands
+                .entity(entity)
+                .insert((
+                    Position::default(),
+                    Rotation::default(),
+                    LinearVelocity::default(),
+                ))
+                .remove::<Dead>()
+                .remove::<DeathTimer>();
+        }
     }
 }
 
@@ -28,31 +52,52 @@ fn kill_player(
     trigger: Trigger<PlayerKillEvent>,
     mut server: ResMut<ServerConnectionManager>,
     mut commands: Commands,
-    mut bikes: Query<(&Children, &ClientIdMarker, &mut Score, &mut Stats), Without<Dead>>,
+    mut bikes: Query<
+        (
+            &Children,
+            &ClientIdMarker,
+            &mut Position,
+            &mut Score,
+            &mut Stats,
+        ),
+        Without<Dead>,
+    >,
     mut trails: Query<&mut Trail>,
 ) {
     let killed = trigger.event().killed;
     let killer = trigger.event().killer;
     if let Some(mut com) = commands.get_entity(killed) {
         com.insert(Dead);
+        com.insert(DeathTimer {
+            respawn_timer: Timer::new(DEATH_TIMER, TimerMode::Once),
+        });
     }
-    if let Ok((children, client_id, mut score, mut stats)) = bikes.get_mut(killed) {
+    if let Ok((children, client_id, mut position, mut score, mut stats)) = bikes.get_mut(killed) {
+        // we send dead bikes to narnia
+        *position = Position::new(Vec2::new(100000.0, 1000000.0));
+
         children.into_iter().for_each(|e| {
             // clear the trail
             if let Ok(mut trail) = trails.get_mut(*e) {
                 trail.line.clear();
             }
-            // TODO: clear the zones?
+            // TODO: clear the zones when a player is killed?
         });
+
+        server
+            .send_message::<Channel1, _>(
+                client_id.0,
+                &KilledByMessage {
+                    killer,
+                    stats: stats.clone(),
+                },
+            )
+            .expect("could not send message");
 
         *score = Score::default();
         *stats = Stats::default();
-
-        server
-            .send_message::<Channel1, _>(client_id.0, &KilledByMessage { killer })
-            .expect("could not send message");
     }
-    if let Ok((_, client_id, mut score, mut stats)) = bikes.get_mut(killer) {
+    if let Ok((_, client_id, _, mut score, mut stats)) = bikes.get_mut(killer) {
         score.kill_score += KILL_SCORE;
         stats.kills += 1;
         stats.max_score = stats.max_score.max(score.total());

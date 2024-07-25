@@ -10,6 +10,7 @@ use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use bevy::sprite::Material2d;
 use lightyear::prelude::client::*;
 use shared::player::bike::{BikeMarker, ColorComponent};
+use shared::player::death::Dead;
 use shared::player::trail::Trail;
 use shared::player::zone::Zones;
 
@@ -23,6 +24,8 @@ impl Plugin for PlayerRenderPlugin {
         app.init_resource::<HandleMap<ImageKey>>();
 
         app.observe(on_bike_spawned);
+        // app.observe(hide_dead_bikes);
+        // app.observe(show_respawn_bikes);
         // Draw after TransformPropagate and VisualInterpolation
         app.add_systems(PostUpdate, (update_bike_position).after(TransformPropagate));
     }
@@ -66,6 +69,35 @@ fn on_bike_spawned(
         ));
     }
 }
+
+// fn hide_dead_bikes(
+//     trigger: Trigger<OnAdd, Dead>,
+//     q_bike: Query<(), Or<(With<Interpolated>, With<Predicted>)>>,
+//     mut q_graphics: Query<(&BikeGraphics, &mut Visibility)>,
+// ) {
+//     if let Ok(()) = q_bike.get(trigger.entity()) {
+//         for (q_graphics, mut vis) in q_graphics.iter_mut() {
+//             if q_graphics.followed_entity == trigger.entity() {
+//                 info!("Hide dead bike");
+//                 *vis = Visibility::Hidden;
+//             }
+//         }
+//     }
+// }
+//
+// fn show_respawn_bikes(
+//     trigger: Trigger<OnRemove, Dead>,
+//     q_bike: Query<(), Or<(With<Interpolated>, With<Predicted>)>>,
+//     mut q_graphics: Query<(&BikeGraphics, &mut Visibility)>,
+// ) {
+//     if let Ok(()) = q_bike.get(trigger.entity()) {
+//         for (q_graphics, mut vis) in q_graphics.iter_mut() {
+//             if q_graphics.followed_entity == trigger.entity() {
+//                 *vis = Visibility::Visible;
+//             }
+//         }
+//     }
+// }
 
 const ROTATION_AMOUNT: f32 = 360.0 / 32.0;
 

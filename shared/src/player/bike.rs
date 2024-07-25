@@ -35,8 +35,32 @@ impl Default for ClientIdMarker {
     }
 }
 
-#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Default, Clone)]
-pub struct BikeMarker;
+#[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct BikeMarker {
+    pub name: String,
+    #[cfg(feature = "dev")]
+    pub paused: bool,
+}
+
+impl BikeMarker {
+    pub fn new(name: String) -> Self {
+        Self {
+            name,
+            #[cfg(feature = "dev")]
+            paused: false,
+        }
+    }
+}
+
+impl Default for BikeMarker {
+    fn default() -> Self {
+        Self {
+            name: "Player".to_string(),
+            #[cfg(feature = "dev")]
+            paused: false,
+        }
+    }
+}
 
 #[derive(Bundle, Default)]
 pub struct BikeBundle {
@@ -52,10 +76,10 @@ pub struct BikeBundle {
 }
 
 impl BikeBundle {
-    pub fn new_at(client_id: ClientId, position: Vec2, color: Color) -> Self {
+    pub fn new_at(client_id: ClientId, name: String, position: Vec2, color: Color) -> Self {
         // TODO: spawn at a random position on the map
         Self {
-            marker: BikeMarker,
+            marker: BikeMarker::new(name),
             client_id: ClientIdMarker(client_id),
             position: Position(position),
             color: ColorComponent(color),
