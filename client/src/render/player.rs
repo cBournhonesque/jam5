@@ -4,13 +4,10 @@ use avian2d::prelude::*;
 use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::prelude::*;
 use bevy::prelude::*;
-use bevy::prelude::*;
 use bevy::reflect::DynamicTypePath;
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use bevy::sprite::Material2d;
-use bevy_hanabi::prelude::*;
-use bevy_hanabi::{EffectAsset, ParticleEffect, ParticleEffectBundle};
 use lightyear::prelude::client::*;
 use shared::player::bike::{BikeMarker, ColorComponent};
 use shared::player::death::Dead;
@@ -46,39 +43,30 @@ pub struct BikeGraphics {
 fn on_bike_spawned(
     trigger: Trigger<BikeSpawned>,
     mut commands: Commands,
-    mut effects: ResMut<Assets<EffectAsset>>,
     image_key: Res<HandleMap<ImageKey>>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(128), 6, 6, None, None);
     let texture_atlas_handle = texture_atlas_layouts.add(layout);
-    let color = trigger.event().color;
     if let Some(texture) = image_key.get(&ImageKey::Moto) {
-        commands
-            .spawn((
-                BikeGraphics {
-                    followed_entity: trigger.event().entity,
-                },
-                SpriteBundle {
-                    sprite: Sprite { color, ..default() },
-                    texture: texture.clone(),
+        commands.spawn((
+            BikeGraphics {
+                followed_entity: trigger.event().entity,
+            },
+            SpriteBundle {
+                sprite: Sprite {
+                    color: trigger.event().color,
                     ..default()
                 },
-                TextureAtlas {
-                    layout: texture_atlas_handle,
-                    index: 0,
-                },
-                Name::from("BikeSprite"),
-            ))
-            .insert(ParticleEffectBundle {
-                effect: ParticleEffect::new(create_bike_particle_effect(color, &mut effects))
-                    .with_z_layer_2d(Some(1.0)),
-                transform: Transform {
-                    translation: Vec3::new(100.0, 0.0, 0.0),
-                    ..default()
-                },
+                texture: texture.clone(),
                 ..default()
-            });
+            },
+            TextureAtlas {
+                layout: texture_atlas_handle,
+                index: 0,
+            },
+            Name::from("BikeSprite"),
+        ));
     }
 }
 
@@ -162,47 +150,4 @@ impl FromWorld for HandleMap<ImageKey> {
         )]
         .into()
     }
-}
-
-pub fn create_bike_particle_effect(
-    color: Color,
-    effects: &mut Assets<EffectAsset>,
-) -> Handle<EffectAsset> {
-    let color = color.to_linear();
-    let mut gradient = Gradient::new();
-    gradient.add_key(0.0, Vec4::new(color.red, color.green, color.blue, 1.0));
-    gradient.add_key(1.0, Vec4::new(color.red, color.green, color.blue, 0.0));
-
-    let writer = ExprWriter::new();
-
-    let init_pos = SetPositionCircleModifier {
-        center: writer.lit(Vec3::ZERO).expr(),
-        axis: writer.lit(Vec3::Z).expr(),
-        radius: writer.lit(25.0).expr(),
-        dimension: ShapeDimension::Surface,
-    };
-
-    let init_vel = SetVelocityCircleModifier {
-        center: writer.lit(Vec3::ZERO).expr(),
-        axis: writer.lit(Vec3::Z).expr(),
-        speed: writer.lit(10.0).expr(),
-    };
-
-    let lifetime = writer.lit(1.0).expr();
-    let init_lifetime = SetAttributeModifier::new(Attribute::LIFETIME, lifetime);
-
-    let mut module = writer.finish();
-
-    let spawner = Spawner::rate(50.0.into());
-    effects.add(
-        EffectAsset::new(vec![4096], spawner, module)
-            .init(init_pos)
-            .init(init_vel)
-            .init(init_lifetime)
-            .render(SizeOverLifetimeModifier {
-                gradient: Gradient::constant(Vec2::splat(5.0)),
-                screen_space_size: false,
-            })
-            .render(ColorOverLifetimeModifier { gradient }),
-    )
 }
