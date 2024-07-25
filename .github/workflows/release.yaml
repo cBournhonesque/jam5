@@ -120,10 +120,14 @@ jobs:
         uses: cargo-bins/cargo-binstall@v1.7.4
 
       - name: Install and run trunk (Web)
+        working-directory: client
         if: ${{ matrix.platform == 'web' }}
         run: |
           cargo binstall trunk --no-confirm
-          trunk build --bin client --release --dist '${{ env.OUT_DIR }}'
+          trunk build --release --dist '${{ env.OUT_DIR }}'
+          zip --recurse-paths '${{ env.PACKAGE }}${{ matrix.package_ext }}' '${{ env.OUT_DIR }}'
+          mkdir -p ../tmp/package
+          mv '${{ env.PACKAGE }}${{ matrix.package_ext }}' ../tmp/package
 
       #      - name: Build binaries (non-Web)
       #        if: ${{ matrix.platform != 'web' }}
@@ -180,16 +184,16 @@ jobs:
       #            </plist>
       #          EOF
 
-      - name: Finish package (non-Windows)
-        if: ${{ matrix.platform != 'windows' }}
-        working-directory: tmp/package
-        run: |
-          if [ '${{ matrix.platform }}' == 'macos' ]; then
-            ln -s /Applications .
-            hdiutil create -fs HFS+ -volname '${{ env.PACKAGE_NAME }}' -srcfolder . '${{ env.PACKAGE }}${{ matrix.package_ext }}'
-          else
-            zip --recurse-paths '${{ env.PACKAGE }}${{ matrix.package_ext }}' '${{ env.PACKAGE_NAME }}'
-          fi
+      #      - name: Finish package (non-Windows)
+      #        if: ${{ matrix.platform != 'web' && matrix.platform != 'windows' }}
+      #        working-directory: tmp/package
+      #        run: |
+      #          if [ '${{ matrix.platform }}' == 'macos' ]; then
+      #            ln -s /Applications .
+      #            hdiutil create -fs HFS+ -volname '${{ env.PACKAGE_NAME }}' -srcfolder . '${{ env.PACKAGE }}${{ matrix.package_ext }}'
+      #          else
+      #            zip --recurse-paths '${{ env.PACKAGE }}${{ matrix.package_ext }}' '${{ env.PACKAGE_NAME }}'
+      #          fi
 
       #      - name: Finish package (Windows)
       #        if: ${{ matrix.platform == 'windows' }}
