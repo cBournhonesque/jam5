@@ -1,8 +1,6 @@
 //! Module to handle the networking of bikes on the client side
 
-use crate::assets::HandleMap;
 use crate::render::label::EntityLabel;
-use crate::render::player::{BikeGraphics, ImageKey};
 use crate::render::trail::TrailRenderMarker;
 use crate::render::zones::ZoneRenderMarker;
 use avian2d::prelude::{Position, RigidBody, Rotation};
@@ -10,7 +8,6 @@ use bevy::prelude::*;
 use bevy::render::view::NoFrustumCulling;
 use bevy_prototype_lyon::prelude::*;
 use lightyear::prelude::{client::*, MainSet};
-use lightyear::shared::replication::components::Controlled;
 use shared::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use shared::player::trail::Trail;
 use shared::player::zone::Zones;

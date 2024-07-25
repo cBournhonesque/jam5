@@ -131,14 +131,17 @@ impl Trail {
             return None;
         }
 
+        // NOTE: I think it's better to have infinite trails + the min_point_distance makes the trail look
+        //  less natural?
         let last_point = *self.line.last().unwrap();
-        if (last_point - point).length() < MIN_POINT_DISTANCE {
-            return None;
-        }
 
-        if self.line.len() >= MAX_LINE_POINTS {
-            self.line.remove(0);
-        }
+        // if (last_point - point).length() < MIN_POINT_DISTANCE {
+        //     return None;
+        // }
+        //
+        // if self.line.len() >= MAX_LINE_POINTS {
+        //     self.line.remove(0);
+        // }
 
         if self.line.len() >= 3 {
             if let Some(shape) = self.detect_intersection(last_point, point) {
