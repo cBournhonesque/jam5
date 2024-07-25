@@ -139,12 +139,12 @@ impl From<&Zone> for Path {
             return path.build();
         }
         path.move_to(zone.exterior[0]);
-        // for i in 1..(zone.exterior.len() - 1) {
-        //     path.line_to(zone.exterior[i]);
-        // }
-        for point in zone.exterior.iter().skip(1) {
-            path.line_to(*point);
+        for i in 1..(zone.exterior.len() - 2) {
+            path.line_to(zone.exterior[i]);
         }
+        // for point in zone.exterior.iter().skip(1) {
+        //     path.line_to(*point);
+        // }
         path.close();
 
         for interior in &zone.interiors {
