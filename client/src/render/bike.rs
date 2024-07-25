@@ -123,7 +123,7 @@ fn update_bike_position(
 ) {
     for (BikeGraphics { followed_entity }, mut transform, mut atlas) in q_bike.iter_mut() {
         if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
-            *transform = GlobalTransform::from_translation(Vec3::from((parent_pos.0, 0.0)));
+            *transform = GlobalTransform::from_translation(Vec3::from((parent_pos.0, 100.0)));
             atlas.index = degrees_to_sprite_index(parent_rot.as_degrees());
         }
     }
@@ -188,7 +188,7 @@ pub fn create_bike_particle_effect(
         speed: writer.lit(10.0).expr(),
     };
 
-    let lifetime = writer.lit(2.0).expr();
+    let lifetime = writer.lit(1.0).expr();
     let init_lifetime = SetAttributeModifier::new(Attribute::LIFETIME, lifetime);
 
     let mut module = writer.finish();
