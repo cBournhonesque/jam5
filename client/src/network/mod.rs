@@ -21,7 +21,7 @@ pub(crate) struct NetworkPlugin {
 
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<BikeSpawned>();
+        // app.add_event::<BikeSpawned>();
         // the ClientPlugins must be added before the Protocol plugins
         app.add_plugins(config::build_lightyear_client(
             self.client_id,

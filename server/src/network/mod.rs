@@ -1,6 +1,7 @@
 /// Server networking related plugins
 mod config;
 pub mod connections;
+pub mod disconnections;
 
 use bevy::prelude::*;
 use lightyear::prelude::server::*;
@@ -22,9 +23,13 @@ impl Plugin for NetworkPlugin {
         ));
         app.add_plugins(ProtocolPlugin);
 
+        // resources
+        app.init_resource::<connections::AvailableColors>();
+
         // systems
         app.add_systems(Startup, start_server);
         app.add_systems(Update, connections::spawn_bike);
+        app.observe(disconnections::observe_disconnect);
     }
 }
 

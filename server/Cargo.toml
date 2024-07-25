@@ -38,3 +38,4 @@ clap.workspace = true
 tokio.workspace = true
 
 async-compat = "0.2.4"
+rand = "0.8.5"
