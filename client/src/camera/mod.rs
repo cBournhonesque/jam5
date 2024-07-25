@@ -67,7 +67,7 @@ fn update_camera(
             .map(|ray| ray.origin.truncate())
         {
             if let Some(player_pos) = q_player.iter().next() {
-                let target = (player_pos.0 + world_position) * 0.5;
+                let target = player_pos.0.lerp(world_position, 0.25);
                 let current_pos = cam_xform.translation.truncate();
                 let new_pos = current_pos.lerp(target, CAMERA_FOLLOW_SPEED * time.delta_seconds());
                 let new_pos_3d = Vec3::new(new_pos.x, new_pos.y, FOLLOW_CAMERA_Z);
