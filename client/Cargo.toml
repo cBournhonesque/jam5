@@ -1,5 +1,5 @@
 [package]
-name = "cycles_io"
+name = "client"
 version.workspace = true
 edition.workspace = true
 
