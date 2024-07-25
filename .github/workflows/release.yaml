@@ -17,14 +17,14 @@ on:
 # Configure constants for this workflow.
 env:
   # The base filename of the binary produced by `cargo build`.
-  BINARY: bevy_quickstart
+  BINARY: cycles_io
   # The name to use for the packaged application produced by this workflow.
-  PACKAGE_NAME: bevy_quickstart
+  PACKAGE_NAME: cycles_io
   # The itch.io page to upload to, in the format: `user-name/project-name`.
   # Comment this out to disable.
-  ITCH_TARGET: the-bevy-flock/bevy-quickstart
+  ITCH_TARGET: https://cbournhonesque.itch.io/cyclesio
   # The organization or author that owns the rights to the game.
-  OWNER: the-bevy-flock
+  OWNER: jam5-team
   # The path to the assets directory.
   ASSETS_DIR: assets
   # Whether packages produced by this workflow should be uploaded to the Github release.
