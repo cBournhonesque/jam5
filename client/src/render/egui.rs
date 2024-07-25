@@ -22,7 +22,7 @@ impl Plugin for MyEguiPlugin {
             app.add_plugins(EguiPlugin);
         }
         app.add_systems(Startup, global_egui_visuals);
-        app.add_systems(PostUpdate, leaderboard_ui.run_if(in_state(Playing)));
+        app.add_systems(Update, leaderboard_ui.run_if(in_state(Playing)));
     }
 }
 
@@ -58,14 +58,17 @@ fn leaderboard_ui(
             .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
             .show(egui_contexts.ctx_mut(), |ui| {
                 ui.label(&killed_by.message);
-                ui.label("Stats");
+                ui.separator();
+                ui.label("Stats:\n");
                 let stats = &killed_by.stats;
                 ui.label(format!("Kills: {}", stats.kills));
-                ui.label(format!("Time lived: {}", stats.time_lived_secs));
+                ui.label(format!("Time lived: {}s", stats.time_lived_secs));
                 ui.label(format!("Max area: {}", stats.max_area));
                 ui.label(format!("Max zones: {}", stats.max_zones));
                 ui.label(format!("Max trail length: {}", stats.max_trail_length));
                 ui.label(format!("Max score: {}", stats.max_score));
+
+                ui.separator();
 
                 ui.label(format!(
                     "Respawn in {:.0}...",

@@ -4,7 +4,6 @@ use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::{prelude::*, window::PrimaryWindow};
 use lightyear::client::prediction::Predicted;
-use lightyear::prelude::client::InterpolationSet;
 use shared::player::bike::BikeMarker;
 use shared::player::death::Dead;
 

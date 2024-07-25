@@ -9,7 +9,7 @@ pub(super) fn plugin(app: &mut App) {
     app.insert_resource(PlayerNamePrompt {
         name: "".to_string(),
     });
-    app.add_systems(PostUpdate, title.run_if(in_state(Screen::Title)));
+    app.add_systems(Update, title.run_if(in_state(Screen::Title)));
 }
 
 #[derive(Resource, Default)]

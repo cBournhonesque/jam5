@@ -5,6 +5,7 @@ use avian2d::math::Vector;
 use avian2d::prelude::*;
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::*;
+use bevy::utils::Duration;
 use lightyear::prelude::*;
 
 pub const BASE_SPEED: f32 = 200.0;
@@ -38,14 +39,16 @@ impl Default for ClientIdMarker {
 #[derive(Reflect, Component, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BikeMarker {
     pub name: String,
+    pub spawn_time: Duration,
     #[cfg(feature = "dev")]
     pub paused: bool,
 }
 
 impl BikeMarker {
-    pub fn new(name: String) -> Self {
+    pub fn new(name: String, spawn_time: Duration) -> Self {
         Self {
             name,
+            spawn_time,
             #[cfg(feature = "dev")]
             paused: false,
         }
@@ -56,6 +59,7 @@ impl Default for BikeMarker {
     fn default() -> Self {
         Self {
             name: "Player".to_string(),
+            spawn_time: Duration::default(),
             #[cfg(feature = "dev")]
             paused: false,
         }
@@ -76,10 +80,16 @@ pub struct BikeBundle {
 }
 
 impl BikeBundle {
-    pub fn new_at(client_id: ClientId, name: String, position: Vec2, color: Color) -> Self {
+    pub fn new_at(
+        client_id: ClientId,
+        name: String,
+        position: Vec2,
+        color: Color,
+        spawn_time: Duration,
+    ) -> Self {
         // TODO: spawn at a random position on the map
         Self {
-            marker: BikeMarker::new(name),
+            marker: BikeMarker::new(name, spawn_time),
             client_id: ClientIdMarker(client_id),
             position: Position(position),
             color: ColorComponent(color),
