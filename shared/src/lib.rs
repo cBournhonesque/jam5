@@ -49,7 +49,7 @@ impl Plugin for SharedPlugin {
                         ..default()
                     })
                     .set(AssetPlugin {
-                        file_path: "../assets".to_string(),
+                        file_path: "assets".to_string(),
                         // Wasm builds will check for meta files (that don't exist) if this isn't set.
                         // This causes errors and even panics on web build on itch.
                         // See https://github.com/bevyengine/bevy_github_ci_template/issues/48.

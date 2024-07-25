@@ -22,7 +22,7 @@ env:
   PACKAGE_NAME: cycles_io
   # The itch.io page to upload to, in the format: `user-name/project-name`.
   # Comment this out to disable.
-  ITCH_TARGET: https://cbournhonesque.itch.io/cyclesio
+  ITCH_TARGET: cbournhonesque/cyclesio
   # The organization or author that owns the rights to the game.
   OWNER: jam5-team
   # The path to the assets directory.
@@ -149,7 +149,7 @@ jobs:
 
       #      - name: Add assets to package (non-Web)
       #        if: ${{ matrix.platform != 'web' }}
-      #        run: cp -r '../${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true # Ignore error if assets folder does not exist
+      #        run: cp -r '${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true # Ignore error if assets folder does not exist
 
       #      - name: Add app metadata to package (MacOS)
       #        if: ${{ matrix.platform == 'macos' }}
