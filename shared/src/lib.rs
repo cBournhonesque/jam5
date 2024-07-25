@@ -39,6 +39,7 @@ impl Plugin for SharedPlugin {
         } else {
             app.add_plugins(
                 DefaultPlugins
+                    .build()
                     .disable::<LogPlugin>()
                     .set(AssetPlugin {
                         file_path: "assets".to_string(),
