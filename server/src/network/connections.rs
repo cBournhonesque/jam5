@@ -76,7 +76,7 @@ pub(crate) fn spawn_bike(
             .spawn((
                 ZonesBundle::new(client_id),
                 // Enable delta compression when replicating the zones
-                // DeltaCompression::<Zones>::default(),
+                DeltaCompression::<Zones>::default(),
                 Replicate {
                     // TODO: add network relevance
                     controlled_by: ControlledBy {
@@ -108,7 +108,7 @@ pub fn color_from_client_id(client_id: u64) -> Color {
         css::RED,
     ];
     let color = available_colors
-        .get(client_id as usize % available_colors.len())
+        .get((client_id % (available_colors.len() as u64)) as usize)
         .unwrap();
     return Color::Srgba(*color);
 }

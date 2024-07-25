@@ -32,7 +32,6 @@ fn update_zones_path(
     mut zones_query: Query<(&Zones, &mut Path), (Changed<Zones>, With<ZoneRenderMarker>)>,
 ) {
     for (zones, mut path) in zones_query.iter_mut() {
-        trace!("update zone: {:?}", zones);
         *path = zones.into();
     }
 }
