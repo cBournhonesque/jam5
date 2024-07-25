@@ -1,6 +1,6 @@
-use bevy::utils::Duration;
 use crate::physics::util::line_segments_intersect;
 use bevy::prelude::*;
+use bevy::utils::Duration;
 use bevy_prototype_lyon::prelude::{GeometryBuilder, Path, PathBuilder};
 use bevy_prototype_lyon::shapes;
 use lightyear::prelude::DeltaCompression;
@@ -21,9 +21,7 @@ pub struct TrailBundle {
 impl TrailBundle {
     pub fn new_at(pos: Vec2) -> Self {
         TrailBundle {
-            trail: Trail {
-                line: vec![pos],
-            },
+            trail: Trail { line: vec![pos] },
             name: Name::from("Trail"),
         }
     }
@@ -83,7 +81,11 @@ impl Diffable for Trail {
                 new_line: false,
             }
         };
-        trace!("Computing trail diff: {diff:?}. Self: {:?} Other: {:?}", self.line.len(), other.line.len());
+        trace!(
+            "Computing trail diff: {diff:?}. Self: {:?} Other: {:?}",
+            self.line.len(),
+            other.line.len()
+        );
         diff
     }
 
@@ -96,7 +98,6 @@ impl Diffable for Trail {
         }
     }
 }
-
 
 impl From<&Trail> for Path {
     fn from(value: &Trail) -> Self {
@@ -113,31 +114,30 @@ impl From<&Trail> for Path {
 }
 
 impl Trail {
-
     /// Size of the trail
     pub fn len(&self) -> f32 {
-        let mut length = 0.0;
-        for i in 0..self.line.len() - 1 {
-            length += (self.line[i] - self.line[i + 1]).length();
-        }
-        length
+        self.line
+            .windows(2)
+            .map(|pair| (pair[0] - pair[1]).length())
+            .sum()
     }
 
     pub fn try_add_point(&mut self, point: Vec2) -> Option<Vec<Vec2>> {
-        // // don't place near the last point
-        // if let Some(last) = self.line.last() {
-        //     if (*last - point).length() < MIN_POINT_DISTANCE {
-        //         return None;
-        //     }
-        // }
-        //
-        // // limit the length of the trail
-        // if self.line.len() > MAX_LINE_POINTS {
-        //     self.line.remove(0);
-        // }
+        if self.line.is_empty() {
+            self.line.push(point);
+            return None;
+        }
+
+        let last_point = *self.line.last().unwrap();
+        if (last_point - point).length() < MIN_POINT_DISTANCE {
+            return None;
+        }
+
+        if self.line.len() >= MAX_LINE_POINTS {
+            self.line.remove(0);
+        }
 
         if self.line.len() >= 3 {
-            let last_point = *self.line.last().unwrap();
             if let Some(shape) = self.detect_intersection(last_point, point) {
                 self.line = shape;
                 return Some(self.line.clone());
@@ -152,26 +152,19 @@ impl Trail {
         if self.line.len() < 3 {
             return None;
         }
-        // check all segments except the last one
-        for i in 0..self.line.len() - 2 {
-            let line_a = self.line[i];
-            let line_b = self.line[i + 1];
+
+        for (i, window) in self.line.windows(2).enumerate().take(self.line.len() - 2) {
+            let line_a = window[0];
+            let line_b = window[1];
 
             if let Some(intersection) = line_segments_intersect(point_a, point_b, line_a, line_b) {
-                // found an intersection, now form the shape
                 let mut shape = Vec::new();
 
-                // add the intersection point
-                shape.push(intersection);
-
-                // add points from the intersection to the end of the trail
+                // start from the point after the intersection
                 shape.extend_from_slice(&self.line[i + 1..]);
 
-                // add the intersection point to close off the shape (DO WE NEED THIS?)
+                // add the intersection point to close the loop
                 shape.push(intersection);
-
-                // add the new point
-                shape.push(point_b);
 
                 return Some(shape);
             }

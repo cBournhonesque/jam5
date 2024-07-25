@@ -113,7 +113,7 @@ fn handle_new_trail(
 /// When a zones entity is replicated, add the render-related components
 fn handle_new_zones(
     mut commands: Commands,
-    bikes: Query<(&BikeMarker, &ColorComponent), With<BikeMarker>>,
+    bikes: Query<(&BikeMarker, &ColorComponent)>,
     new_zones: Query<(&Parent, Entity), (With<Zones>, Without<ZoneRenderMarker>)>,
 ) {
     for (parent, entity) in new_zones.iter() {
@@ -133,11 +133,7 @@ fn handle_new_zones(
                     Fill::color(zone_fill_color),
                     Stroke::new(zone_border_color, 4.0),
                 ))
-                .insert(GlobalTransform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    -zone_z_order,
-                )));
+                .insert(GlobalTransform::from_translation(Vec3::new(0.0, 0.0, 0.0)));
         }
     }
 }

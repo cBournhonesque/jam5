@@ -35,6 +35,7 @@ pub(crate) fn spawn_trail(
             commands
                 .entity(entity)
                 .remove::<DelaySpawnTrailZone>()
+                // add the trail and zones
                 .with_children(|parent| {
                     parent.spawn((
                         TrailBundle::new_at(pos.0),
@@ -52,13 +53,7 @@ pub(crate) fn spawn_trail(
                         },
                     ));
                     parent.spawn((
-                        ZonesBundle {
-                            zones: Zones {
-                                owner_client_id: client_id,
-                                ..default()
-                            },
-                            ..default()
-                        },
+                        ZonesBundle::default(),
                         // To replicate the parent/child hierarchy
                         ParentSync::default(),
                         // Enable delta compression when replicating the zones

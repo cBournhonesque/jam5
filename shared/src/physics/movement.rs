@@ -2,8 +2,8 @@ use crate::map::MAP_SIZE;
 use crate::network::inputs::PlayerMovement;
 use crate::physics::FixedSet;
 use crate::player::bike::{
-    BikeMarker, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED, FAST_SPEED_MAX_SPEED_DISTANCE,
-    MAX_ROTATION_SPEED, ZONE_SPEED_MULTIPLIER,
+    BikeMarker, ColorComponent, ACCEL, BASE_SPEED, DRAG, FAST_DRAG, FAST_SPEED,
+    FAST_SPEED_MAX_SPEED_DISTANCE, MAX_ROTATION_SPEED, ZONE_SPEED_MULTIPLIER,
 };
 use crate::player::zone::Zones;
 use avian2d::prelude::*;
@@ -39,26 +39,26 @@ impl Plugin for MovementPlugin {
 fn move_bike_system(
     tick_manager: Res<TickManager>,
     fixed_time: Res<Time<Fixed>>,
-    q_zones: Query<&Zones>,
-    mut q_bike: Query<
+    q_zones: Query<(&Parent, &Zones)>,
+    mut q_bikes: Query<
         (
-            // TODO: do we need this?
-            &mut BikeMarker,
+            Entity,
             &mut Position,
             &mut Rotation,
             &mut LinearVelocity,
-            &ActionState<PlayerMovement>,
+            Option<&ActionState<PlayerMovement>>,
         ),
-        // apply inputs either on predicted entities on the client, or replicating entities on the server
         Or<(With<Predicted>, With<Replicating>)>,
     >,
 ) {
-    let mut zones = q_zones.iter();
-    for (mut bike, mut position, mut rotation, mut linear, action_state) in q_bike.iter_mut() {
+    for (entity, mut position, mut rotation, mut linear, action_state) in q_bikes.iter_mut() {
+        let Some(action_state) = action_state else {
+            continue;
+        };
+
         let delta = fixed_time.delta_seconds();
         let tick = tick_manager.tick();
 
-        // speed we wish to move at is based on mouse distance
         if let Some(relative_mouse_pos) =
             action_state.axis_pair(&PlayerMovement::MousePositionRelative)
         {
@@ -67,12 +67,16 @@ fn move_bike_system(
                 (relative_mouse_pos.length() / FAST_SPEED_MAX_SPEED_DISTANCE).clamp(0.0, 1.0);
 
             // are we in our own zone?
-            let wish_speed_multiplier =
-                if zones.any(|z| z.owner_client_id == bike.client_id && z.contains(position.0)) {
-                    ZONE_SPEED_MULTIPLIER
-                } else {
-                    1.0
-                };
+            let wish_speed_multiplier = q_zones
+                .iter()
+                .find_map(|(parent, zone)| {
+                    if parent.get() == entity && zone.contains(position.0) {
+                        Some(ZONE_SPEED_MULTIPLIER)
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or(1.0);
 
             let wish_speed =
                 BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance) * wish_speed_multiplier;
