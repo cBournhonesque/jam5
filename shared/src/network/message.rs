@@ -1,12 +1,19 @@
 use crate::player::scores::Stats;
+use bevy::color::Color;
 use bevy::ecs::entity::MapEntities;
-use bevy::prelude::{Component, Entity, EntityMapper, Reflect};
+use bevy::prelude::{Component, Entity, EntityMapper, Reflect, Vec2};
 use lightyear::prelude::{Deserialize, Serialize};
 
 /// Message sent from the client to spawn the player with a given name
 #[derive(Reflect, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct SpawnPlayerMessage {
     pub name: String,
+}
+
+#[derive(Reflect, Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct BikeDeathMessage {
+    pub color: Color,
+    pub position: Vec2,
 }
 
 #[derive(Reflect, Serialize, Deserialize, PartialEq, Debug, Clone)]
