@@ -10,6 +10,8 @@ use shared::player::death::Dead;
 pub const FOLLOW_CAMERA_Z: f32 = 2.0;
 pub const CAMERA_FOLLOW_SPEED: f32 = 5.0;
 
+pub const CAMERA_SCALE: f32 = 1.0;
+
 pub struct CameraPlugin;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
@@ -41,7 +43,7 @@ fn init_camera(mut commands: Commands) {
             projection: OrthographicProjection {
                 near: -1000.,
                 far: 1000.,
-                scale: 1.5,
+                scale: CAMERA_SCALE,
                 ..default()
             },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
