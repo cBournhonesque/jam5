@@ -47,7 +47,7 @@ fn on_bike_spawned(
     image_key: Res<HandleMap<ImageKey>>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let layout = TextureAtlasLayout::from_grid(UVec2::splat(128), 6, 6, None, None);
+    let layout = TextureAtlasLayout::from_grid(UVec2::splat(256), 6, 6, None, None);
     let texture_atlas_handle = texture_atlas_layouts.add(layout);
     if let Some(texture) = image_key.get(&ImageKey::Moto) {
         commands.spawn((
@@ -57,6 +57,7 @@ fn on_bike_spawned(
             SpriteBundle {
                 sprite: Sprite {
                     color: trigger.event().color,
+                    custom_size: Some(Vec2::new(128.0, 128.0)),
                     ..default()
                 },
                 texture: texture.clone(),
@@ -100,10 +101,11 @@ fn on_bike_spawned(
 //     }
 // }
 
-const ROTATION_AMOUNT: f32 = 360.0 / 32.0;
+const SPRITE_FRAME_COUNT: f32 = 32.0;
+const ROTATION_AMOUNT: f32 = 360.0 / SPRITE_FRAME_COUNT;
 
 fn degrees_to_sprite_index(degrees: f32) -> usize {
-    ((degrees + 180.0) / ROTATION_AMOUNT).floor() as usize
+    ((degrees + 180.0 - (ROTATION_AMOUNT / 2.)) / ROTATION_AMOUNT).floor() as usize
 }
 
 fn update_bike_position(

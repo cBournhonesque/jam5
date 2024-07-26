@@ -10,6 +10,8 @@ use shared::player::death::Dead;
 pub const FOLLOW_CAMERA_Z: f32 = 2.0;
 pub const CAMERA_FOLLOW_SPEED: f32 = 5.0;
 
+pub const CAMERA_SCALE: f32 = 1.0;
+
 pub struct CameraPlugin;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
@@ -38,6 +40,12 @@ fn init_camera(mut commands: Commands) {
                 hdr: true, // 1. HDR is required for bloom
                 ..default()
             },
+            projection: OrthographicProjection {
+                near: -1000.,
+                far: 1000.,
+                scale: CAMERA_SCALE,
+                ..default()
+            },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
             ..default()
         },
@@ -61,7 +69,7 @@ fn update_camera(
             .map(|ray| ray.origin.truncate())
         {
             if let Some(player_pos) = q_player.iter().next() {
-                let target = (player_pos.0 + world_position) * 0.5;
+                let target = player_pos.0.lerp(world_position, 0.25);
                 let current_pos = cam_xform.translation.truncate();
                 let new_pos = current_pos.lerp(target, CAMERA_FOLLOW_SPEED * time.delta_seconds());
                 let new_pos_3d = Vec3::new(new_pos.x, new_pos.y, FOLLOW_CAMERA_Z);
