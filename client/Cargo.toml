@@ -45,3 +45,4 @@ bevy_egui = { version = "0.28", default-features = false, features = [
 ] }
 egui_extras = "0.28"
 rand = "0.8.5"
+bevy_particle_systems = "0.13.0"
