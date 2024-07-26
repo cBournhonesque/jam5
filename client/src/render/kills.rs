@@ -1,9 +1,12 @@
 use bevy::prelude::*;
 use bevy::tasks::futures_lite::StreamExt;
+use bevy_particle_systems::{
+    ColorOverTime, ParticleBurst, ParticleSystem, ParticleSystemBundle, Playing, VelocityModifier,
+};
 use lightyear::prelude::client::*;
 use rand::prelude::SliceRandom;
-use shared::network::message::{KillMessage, KilledByMessage};
-use shared::player::bike::BikeMarker;
+use shared::network::message::{BikeDeathMessage, KillMessage, KilledByMessage};
+use shared::player::bike::{BikeMarker, ColorComponent};
 use shared::player::death::DEATH_TIMER;
 use shared::player::scores::Stats;
 use std::time::Duration;
@@ -20,7 +23,14 @@ impl Plugin for KillPlugin {
             stats: Stats::default(),
             timer: None,
         });
-        app.add_systems(Update, (handle_kill_message, handle_killed_by_message));
+        app.add_systems(
+            Update,
+            (
+                handle_kill_message,
+                handle_killed_by_message,
+                handle_death_message,
+            ),
+        );
     }
 }
 
@@ -34,6 +44,41 @@ pub struct KilledByMessageRes {
     pub message: String,
     pub(crate) stats: Stats,
     pub(crate) timer: Option<Timer>,
+}
+
+fn handle_death_message(
+    mut commands: Commands,
+    mut messages: ResMut<Events<MessageEvent<BikeDeathMessage>>>,
+) {
+    for message in messages.drain() {
+        let color = message.message.color;
+        let position = message.message.position;
+        commands.spawn((
+            ParticleSystemBundle {
+                transform: Transform::from_translation(position.extend(100.)),
+                particle_system: ParticleSystem {
+                    lifetime: 0.8.into(),
+                    spawn_rate_per_second: 0.0.into(),
+                    max_particles: 1_000,
+                    initial_speed: (0.0..300.0).into(),
+                    scale: 2.0.into(),
+                    velocity_modifiers: vec![
+                        VelocityModifier::Drag(0.001.into()),
+                        // VelocityModifier::Vector(Vec3::new(0.0, -400.0, 0.0).into()),
+                    ],
+                    color: ColorOverTime::Constant(color),
+                    bursts: vec![ParticleBurst {
+                        time: 0.0,
+                        count: 1000,
+                    }],
+                    ..ParticleSystem::oneshot()
+                },
+                ..default()
+            },
+            Playing,
+            Name::from("KillParticles"),
+        ));
+    }
 }
 
 fn handle_killed_by_message(

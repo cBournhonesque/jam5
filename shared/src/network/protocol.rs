@@ -1,7 +1,7 @@
 //! Defines the shared network protocol between the client and server
 
 use crate::network::inputs::PlayerMovement;
-use crate::network::message::{KillMessage, KilledByMessage, SpawnPlayerMessage};
+use crate::network::message::{BikeDeathMessage, KillMessage, KilledByMessage, SpawnPlayerMessage};
 use crate::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use crate::player::death::Dead;
 use crate::player::scores::{Score, Stats};
@@ -36,6 +36,7 @@ impl Plugin for ProtocolPlugin {
         app.register_message::<KillMessage>(ChannelDirection::ServerToClient)
             .add_map_entities();
         app.register_message::<SpawnPlayerMessage>(ChannelDirection::ClientToServer);
+        app.register_message::<BikeDeathMessage>(ChannelDirection::ServerToClient);
 
         // Components
         app.register_component::<Score>(ChannelDirection::ServerToClient);
