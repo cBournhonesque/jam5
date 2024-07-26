@@ -1,3 +1,4 @@
+use crate::camera::CAMERA_SCALE;
 use avian2d::prelude::*;
 use bevy::input::keyboard;
 use bevy::prelude::*;
@@ -83,7 +84,9 @@ fn capture_input(
             action_state
                 .action_data_mut(&PlayerMovement::MousePositionRelative)
                 .unwrap()
-                .axis_pair = Some(DualAxisData::from_xy(mouse_position_relative));
+                .axis_pair = Some(DualAxisData::from_xy(
+                mouse_position_relative * CAMERA_SCALE,
+            ));
             trace!(tick = ?tick_manager.tick(), ?mouse_position_relative, "Relative mouse position");
         }
     }

@@ -57,6 +57,7 @@ fn on_bike_spawned(
             SpriteBundle {
                 sprite: Sprite {
                     color: trigger.event().color,
+                    custom_size: Some(Vec2::new(128.0, 128.0)),
                     ..default()
                 },
                 texture: texture.clone(),
