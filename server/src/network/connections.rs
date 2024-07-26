@@ -113,7 +113,7 @@ pub(crate) fn spawn_bike(
             .spawn((
                 ZonesBundle::new(client_id),
                 // Enable delta compression when replicating the zones
-                DeltaCompression::<Zones>::default(),
+                // DeltaCompression::<Zones>::default(),
                 Replicate {
                     // TODO: add network relevance
                     controlled_by: ControlledBy {
