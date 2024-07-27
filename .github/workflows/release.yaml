@@ -26,7 +26,7 @@ env:
   # The organization or author that owns the rights to the game.
   OWNER: jam5-team
   # The path to the assets directory.
-  ASSETS_DIR: assets
+  ASSETS_DIR: client/assets
   # Whether packages produced by this workflow should be uploaded to the Github release.
   UPLOAD_PACKAGES_TO_GITHUB_RELEASE: true
   # Before enabling LFS, please take a look at GitHub's documentation for costs and quota limits:
