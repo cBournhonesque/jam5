@@ -3,10 +3,8 @@
 use bevy::prelude::*;
 
 use super::Screen;
-use crate::{
-    ui::prelude::*,
-};
 use crate::audio::soundtrack::{PlaySoundtrack, SoundtrackKey};
+use crate::ui::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Credits), enter_credits);
@@ -31,13 +29,13 @@ fn enter_credits(mut commands: Commands) {
         .insert(StateScoped(Screen::Credits))
         .with_children(|children| {
             children.header("Made by");
-            children.label("Alice - Foo");
-            children.label("Bob - Bar");
+            children.label("@Periwink");
+            children.label("@BrianH");
+            children.label("@BokuBeam");
+            children.label("@Katnique");
 
             children.header("Assets");
-            children.label("Bevy logo - All rights reserved by the Bevy Foundation. Permission granted for splash screen use when unmodified.");
-            children.label("Ducky sprite - CC0 by Caz Creates Games");
-            children.label("Music - CC BY 3.0 by Kevin MacLeod");
+            children.label("Autobus font - Personal Use by NimaType");
 
             children.button("Back").insert(CreditsAction::Back);
         });
