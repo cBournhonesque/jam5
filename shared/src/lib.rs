@@ -44,7 +44,7 @@ impl Plugin for SharedPlugin {
                         // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
                         // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
                         // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=info,lightyear::shared::replication::delta=info,lightyear::protocol::component=info"
-                        filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=warn,lightyear::shared::replication::delta=warn,lightyear::protocol::component=warn"
+                        filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=warn,lightyear::shared::replication::delta=warn,lightyear::protocol::component=warn,lightyear::shared::replication::receive=warn"
                             .to_string(),
                         ..default()
                     })
