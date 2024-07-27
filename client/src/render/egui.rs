@@ -28,6 +28,23 @@ impl Plugin for MyEguiPlugin {
 }
 
 fn global_egui_visuals(mut egui_ctx: EguiContexts) {
+    // Start with the default fonts (we will be adding to them rather than replacing them).
+    let mut fonts = egui::FontDefinitions::default();
+
+    // Install my own font (maybe supporting non-latin characters).
+    // .ttf and .otf files supported.
+    fonts.font_data.insert(
+        "Autobus".to_owned(),
+        egui::FontData::from_static(include_bytes!("../../assets/fonts/Autobusbold-1ynL.ttf")),
+    );
+    // Put my font first (highest priority) for proportional text:
+    fonts
+        .families
+        .entry(Proportional)
+        .or_default()
+        .insert(0, "Autobus".to_owned());
+    egui_ctx.ctx_mut().set_fonts(fonts);
+
     let mut style = egui::Style::default();
 
     // container visuals
@@ -50,6 +67,8 @@ fn global_egui_visuals(mut egui_ctx: EguiContexts) {
     style.visuals.popup_shadow.color = bg_color;
     style.visuals.popup_shadow = egui::Shadow::NONE;
     style.visuals.clip_rect_margin = 0.0;
+
+    style.spacing.window_margin = egui::Margin::symmetric(20.0, 20.0);
 
     // widget visuals
     egui_ctx.ctx_mut().set_style(style);
@@ -92,14 +111,16 @@ fn leaderboard_ui(
     }
 
     // kill messages
-    egui::Window::new("Killed")
-        .title_bar(false)
-        .anchor(egui::Align2::CENTER_TOP, [0.0, 200.0])
-        .show(egui_contexts.ctx_mut(), |ui| {
-            for (message, _) in &kills.messages {
-                ui.label(RichText::new(message).font(FontId::proportional(16.0)));
-            }
-        });
+    if !kills.messages.is_empty() {
+        egui::Window::new("Killed")
+            .title_bar(false)
+            .anchor(egui::Align2::CENTER_TOP, [0.0, 200.0])
+            .show(egui_contexts.ctx_mut(), |ui| {
+                for (message, _) in &kills.messages {
+                    ui.label(RichText::new(message).font(FontId::proportional(16.0)));
+                }
+            });
+    }
 
     // leaderboard
     let scores = scores

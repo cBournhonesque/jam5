@@ -3,6 +3,7 @@
 use super::Screen;
 use crate::ui::prelude::*;
 use bevy::prelude::*;
+use bevy_egui::egui::Margin;
 use bevy_egui::{egui, EguiContexts};
 
 pub(super) fn plugin(app: &mut App) {
@@ -32,11 +33,16 @@ fn title(
         .min_height(500.0)
         .show(egui_contexts.ctx_mut(), |ui| {
             ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                // ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 10.0);
+                ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 30.0);
                 ui.add_sized(
                     [400.0, 40.0],
                     egui::TextEdit::singleline(&mut player_name_prompt.name)
                         .desired_rows(1)
+                        .margin(Margin {
+                            left: 5.0,
+                            top: 10.0,
+                            ..default()
+                        })
                         .char_limit(20)
                         .desired_width(200.0)
                         .font(egui::FontSelection::FontId(egui::FontId::proportional(
@@ -49,8 +55,8 @@ fn title(
                     next_screen.set(Screen::Playing);
                 }
 
-                ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 30.0);
-                ui.add_space(30.0);
+                // ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 30.0);
+                // ui.add_space(30.0);
                 ui.separator();
                 if ui.button("Credits").clicked() {
                     next_screen.set(Screen::Credits);
