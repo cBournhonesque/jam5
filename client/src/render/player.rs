@@ -81,11 +81,11 @@ fn on_bike_spawned(
                     parent.spawn((
                         ParticleSystemBundle {
                             particle_system: ParticleSystem {
-                                lifetime: JitteredValue::jittered(1.5, -0.50..0.05),
-                                spawn_rate_per_second: 20.0.into(),
-                                max_particles: 50,
-                                initial_speed: JitteredValue::jittered(700.0, -200.0..200.0),
-                                initial_scale: JitteredValue::jittered(4.0, -4.0..4.0),
+                                lifetime: JitteredValue::jittered(0.5, -0.20..0.2),
+                                spawn_rate_per_second: 50.0.into(),
+                                max_particles: 200,
+                                initial_speed: JitteredValue::jittered(500.0, -200.0..200.0),
+                                initial_scale: JitteredValue::jittered(3.0, -2.0..1.0),
                                 scale: (1.0..0.0).into(),
                                 velocity_modifiers: vec![VelocityModifier::Drag(0.005.into())],
                                 color: ColorOverTime::Gradient(Curve::new(vec![
@@ -147,21 +147,25 @@ fn update_bike_position(
         (&Parent, &mut GlobalTransform, &mut ParticleSystem),
         (With<Playing>, Without<BikeGraphics>),
     >,
-    q_parents: Query<(&Position, &Rotation), (With<BikeMarker>, Without<BikeGraphics>)>,
+    q_parents: Query<
+        (&Position, &Rotation, &LinearVelocity),
+        (With<BikeMarker>, Without<BikeGraphics>),
+    >,
     mut q_bike: Query<(&BikeGraphics, &mut GlobalTransform, &mut TextureAtlas)>,
 ) {
     for (parent, mut particle_transform, mut particles) in q_particles.iter_mut() {
         if let Ok((BikeGraphics { followed_entity }, mut transform, mut atlas)) =
             q_bike.get_mut(parent.get())
         {
-            if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
+            if let Ok((parent_pos, parent_rot, velocity)) = q_parents.get(*followed_entity) {
                 // let particle_angle_jitter = std::f32::consts::PI / 12.0;
                 let particle_angle = parent_rot.as_radians();
                 particles.emitter_shape = EmitterShape::CircleSegment(CircleSegment {
                     opening_angle: std::f32::consts::PI * 0.15,
-                    direction_angle: -particle_angle,
+                    direction_angle: particle_angle + std::f32::consts::PI,
                     ..default()
                 });
+                particles.spawn_rate_per_second = (velocity.0.length() * 0.1).into();
                 // particles.emitter_shape = EmitterShape::line::<std::ops::Range<f32>>(
                 //     10.0,
                 //     ((particle_angle - particle_angle_jitter)
