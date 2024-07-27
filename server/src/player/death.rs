@@ -1,9 +1,9 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use lightyear::prelude::ServerConnectionManager;
-use shared::network::message::{KillMessage, KilledByMessage};
+use lightyear::prelude::{NetworkTarget, ServerConnectionManager};
+use shared::network::message::{BikeDeathMessage, KillMessage, KilledByMessage};
 use shared::network::protocol::Channel1;
-use shared::player::bike::{BikeMarker, ClientIdMarker};
+use shared::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use shared::player::death::{Dead, DeathTimer, DEATH_TIMER};
 use shared::player::scores::{Score, Stats};
 use shared::player::trail::Trail;
@@ -58,6 +58,7 @@ fn kill_player(
         (
             &Children,
             &BikeMarker,
+            &ColorComponent,
             &ClientIdMarker,
             &mut Position,
             &mut Score,
@@ -75,12 +76,9 @@ fn kill_player(
             respawn_timer: Timer::new(DEATH_TIMER, TimerMode::Once),
         });
     }
-    if let Ok((children, bike, client_id, mut position, mut score, mut stats)) =
+    if let Ok((children, bike, color, client_id, mut position, mut score, mut stats)) =
         bikes.get_mut(killed)
     {
-        // we send dead bikes to narnia
-        *position = Position::new(Vec2::new(100000.0, 1000000.0));
-
         children.into_iter().for_each(|e| {
             // clear the trail
             if let Ok(mut trail) = trails.get_mut(*e) {
@@ -100,11 +98,23 @@ fn kill_player(
                 },
             )
             .expect("could not send message");
+        server
+            .send_message_to_target::<Channel1, _>(
+                &BikeDeathMessage {
+                    color: color.0,
+                    position: position.0,
+                },
+                NetworkTarget::All,
+            )
+            .expect("could not send message");
+
+        // we send dead bikes to narnia
+        *position = Position::new(Vec2::new(100000.0, 1000000.0));
 
         *score = Score::default();
         *stats = Stats::default();
     }
-    if let Ok((_, _, client_id, _, mut score, mut stats)) = bikes.get_mut(killer) {
+    if let Ok((_, _, _, client_id, _, mut score, mut stats)) = bikes.get_mut(killer) {
         score.kill_score += KILL_SCORE;
         stats.kills += 1;
         stats.max_score = stats.max_score.max(score.total());
