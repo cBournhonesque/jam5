@@ -147,32 +147,23 @@ fn update_bike_position(
         (&Parent, &mut GlobalTransform, &mut ParticleSystem),
         (With<Playing>, Without<BikeGraphics>),
     >,
-    q_parents: Query<
-        (&Position, &Rotation, &LinearVelocity),
-        (With<BikeMarker>, Without<BikeGraphics>),
-    >,
+    q_parents: Query<(&Position, &Rotation), With<BikeMarker>>,
     mut q_bike: Query<(&BikeGraphics, &mut GlobalTransform, &mut TextureAtlas)>,
 ) {
     for (parent, mut particle_transform, mut particles) in q_particles.iter_mut() {
         if let Ok((BikeGraphics { followed_entity }, mut transform, mut atlas)) =
             q_bike.get_mut(parent.get())
         {
-            if let Ok((parent_pos, parent_rot, velocity)) = q_parents.get(*followed_entity) {
-                // let particle_angle_jitter = std::f32::consts::PI / 12.0;
+            if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
                 let particle_angle = parent_rot.as_radians();
                 particles.emitter_shape = EmitterShape::CircleSegment(CircleSegment {
                     opening_angle: std::f32::consts::PI * 0.15,
                     direction_angle: particle_angle + std::f32::consts::PI,
                     ..default()
                 });
-                particles.spawn_rate_per_second = (velocity.0.length() * 0.1).into();
-                // particles.emitter_shape = EmitterShape::line::<std::ops::Range<f32>>(
-                //     10.0,
-                //     ((particle_angle - particle_angle_jitter)
-                //         ..(particle_angle + particle_angle_jitter))
-                //         .into(),
-                // );
-                // we put particles slightly in the back
+                // particles.spawn_rate_per_second = (velocity.0.length() * 0.1).into();
+
+                // we put particles slightly in the back of the bike
                 let particle_pos = parent_pos.0 - Vec2::new(parent_rot.cos, parent_rot.sin) * 30.0;
                 *particle_transform =
                     GlobalTransform::from_translation(Vec3::from((particle_pos, 100.0)));
