@@ -61,26 +61,26 @@ jobs:
             package_ext: .zip
             runner: ubuntu-latest
 
-    #          - platform: linux
-    #            targets: x86_64-unknown-linux-gnu
-    #            profile: release-native
-    #            features: bevy/wayland
-    #            package_ext: .zip
-    #            runner: ubuntu-latest
-    #
-    #          - platform: windows
-    #            targets: x86_64-pc-windows-msvc
-    #            profile: release-native
-    #            binary_ext: .exe
-    #            package_ext: .zip
-    #            runner: windows-latest
-    #
-    #          - platform: macos
-    #            targets: x86_64-apple-darwin aarch64-apple-darwin
-    #            profile: release-native
-    #            out_dir_suffix: .app/Contents/MacOS
-    #            package_ext: .dmg
-    #            runner: macos-latest
+          - platform: linux
+            targets: x86_64-unknown-linux-gnu
+            profile: release-native
+            features: bevy/wayland
+            package_ext: .zip
+            runner: ubuntu-latest
+
+          - platform: windows
+            targets: x86_64-pc-windows-msvc
+            profile: release-native
+            binary_ext: .exe
+            package_ext: .zip
+            runner: windows-latest
+
+          - platform: macos
+            targets: x86_64-apple-darwin aarch64-apple-darwin
+            profile: release-native
+            out_dir_suffix: .app/Contents/MacOS
+            package_ext: .dmg
+            runner: macos-latest
     runs-on: ${{ matrix.runner }}
     defaults:
       run:
@@ -130,77 +130,77 @@ jobs:
           mkdir -p ../tmp/package
           mv '${{ env.PACKAGE }}${{ matrix.package_ext }}' ../tmp/package
 
-      #      - name: Build binaries (non-Web)
-      #        if: ${{ matrix.platform != 'web' }}
-      #        run: |
-      #          for target in ${{ matrix.targets }}; do
-      #            cargo build --bin client --profile='${{ matrix.profile }}' --target="${target}" --no-default-features --features='${{ matrix.features }}'
-      #            mv target/"${target}"/'${{ matrix.profile }}/${{ env.BINARY }}${{ matrix.binary_ext }}' tmp/binary/"${target}"'${{ matrix.binary_ext }}'
-      #          done
+      - name: Build binaries (non-Web)
+        if: ${{ matrix.platform != 'web' }}
+        run: |
+          for target in ${{ matrix.targets }}; do
+            cargo build --bin client --profile='${{ matrix.profile }}' --target="${target}" --no-default-features --features='${{ matrix.features }}'
+            mv target/"${target}"/'${{ matrix.profile }}/${{ env.BINARY }}${{ matrix.binary_ext }}' tmp/binary/"${target}"'${{ matrix.binary_ext }}'
+          done
 
-      #      - name: Add binaries to package (non-Web)
-      #        if: ${{ matrix.platform != 'web' }}
-      #        run: |
-      #          if [ '${{ matrix.platform }}' == 'macos' ]; then
-      #            lipo tmp/binary/*'${{ matrix.binary_ext }}' -create -output '${{ env.OUT_DIR }}/${{ env.PACKAGE_NAME }}${{ matrix.binary_ext }}'
-      #          else
-      #            mv tmp/binary/*'${{ matrix.binary_ext }}' '${{ env.OUT_DIR }}/${{ env.PACKAGE_NAME }}${{ matrix.binary_ext }}'
-      #          fi
+      - name: Add binaries to package (non-Web)
+        if: ${{ matrix.platform != 'web' }}
+        run: |
+          if [ '${{ matrix.platform }}' == 'macos' ]; then
+            lipo tmp/binary/*'${{ matrix.binary_ext }}' -create -output '${{ env.OUT_DIR }}/${{ env.PACKAGE_NAME }}${{ matrix.binary_ext }}'
+          else
+            mv tmp/binary/*'${{ matrix.binary_ext }}' '${{ env.OUT_DIR }}/${{ env.PACKAGE_NAME }}${{ matrix.binary_ext }}'
+          fi
 
-      #      - name: Add assets to package (non-Web)
-      #        if: ${{ matrix.platform != 'web' }}
-      #        run: cp -r '${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true # Ignore error if assets folder does not exist
+      - name: Add assets to package (non-Web)
+        if: ${{ matrix.platform != 'web' }}
+        run: cp -r '${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true # Ignore error if assets folder does not exist
 
-      #      - name: Add app metadata to package (MacOS)
-      #        if: ${{ matrix.platform == 'macos' }}
-      #        run: |
-      #          cat > '${{ env.OUT_DIR }}/../Info.plist' << EOF
-      #            <?xml version="1.0" encoding="UTF-8"?>
-      #            <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-      #            <plist version="1.0">
-      #                <dict>
-      #                    <key>CFBundleDevelopmentRegion</key>
-      #                    <string>en</string>
-      #                    <key>CFBundleDisplayName</key>
-      #                    <string>${{ env.PACKAGE_NAME }}</string>
-      #                    <key>CFBundleExecutable</key>
-      #                    <string>${{ env.PACKAGE_NAME }}</string>
-      #                    <key>CFBundleIdentifier</key>
-      #                    <string>${{ env.OWNER }}.${{ env.PACKAGE_NAME }}</string>
-      #                    <key>CFBundleName</key>
-      #                    <string>${{ env.PACKAGE_NAME }}</string>
-      #                    <key>CFBundleShortVersionString</key>
-      #                    <string>${{ env.VERSION }}</string>
-      #                    <key>CFBundleVersion</key>
-      #                    <string>${{ env.VERSION }}</string>
-      #                    <key>CFBundleInfoDictionaryVersion</key>
-      #                    <string>6.0</string>
-      #                    <key>CFBundlePackageType</key>
-      #                    <string>APPL</string>
-      #                    <key>CFBundleSupportedPlatforms</key>
-      #                    <array>
-      #                        <string>MacOSX</string>
-      #                    </array>
-      #                </dict>
-      #            </plist>
-      #          EOF
+      - name: Add app metadata to package (MacOS)
+        if: ${{ matrix.platform == 'macos' }}
+        run: |
+          cat > '${{ env.OUT_DIR }}/../Info.plist' << EOF
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+            <plist version="1.0">
+                <dict>
+                    <key>CFBundleDevelopmentRegion</key>
+                    <string>en</string>
+                    <key>CFBundleDisplayName</key>
+                    <string>${{ env.PACKAGE_NAME }}</string>
+                    <key>CFBundleExecutable</key>
+                    <string>${{ env.PACKAGE_NAME }}</string>
+                    <key>CFBundleIdentifier</key>
+                    <string>${{ env.OWNER }}.${{ env.PACKAGE_NAME }}</string>
+                    <key>CFBundleName</key>
+                    <string>${{ env.PACKAGE_NAME }}</string>
+                    <key>CFBundleShortVersionString</key>
+                    <string>${{ env.VERSION }}</string>
+                    <key>CFBundleVersion</key>
+                    <string>${{ env.VERSION }}</string>
+                    <key>CFBundleInfoDictionaryVersion</key>
+                    <string>6.0</string>
+                    <key>CFBundlePackageType</key>
+                    <string>APPL</string>
+                    <key>CFBundleSupportedPlatforms</key>
+                    <array>
+                        <string>MacOSX</string>
+                    </array>
+                </dict>
+            </plist>
+          EOF
 
-      #      - name: Finish package (non-Windows)
-      #        if: ${{ matrix.platform != 'web' && matrix.platform != 'windows' }}
-      #        working-directory: tmp/package
-      #        run: |
-      #          if [ '${{ matrix.platform }}' == 'macos' ]; then
-      #            ln -s /Applications .
-      #            hdiutil create -fs HFS+ -volname '${{ env.PACKAGE_NAME }}' -srcfolder . '${{ env.PACKAGE }}${{ matrix.package_ext }}'
-      #          else
-      #            zip --recurse-paths '${{ env.PACKAGE }}${{ matrix.package_ext }}' '${{ env.PACKAGE_NAME }}'
-      #          fi
+      - name: Finish package (non-Windows)
+        if: ${{ matrix.platform != 'web' && matrix.platform != 'windows' }}
+        working-directory: tmp/package
+        run: |
+          if [ '${{ matrix.platform }}' == 'macos' ]; then
+            ln -s /Applications .
+            hdiutil create -fs HFS+ -volname '${{ env.PACKAGE_NAME }}' -srcfolder . '${{ env.PACKAGE }}${{ matrix.package_ext }}'
+          else
+            zip --recurse-paths '${{ env.PACKAGE }}${{ matrix.package_ext }}' '${{ env.PACKAGE_NAME }}'
+          fi
 
-      #      - name: Finish package (Windows)
-      #        if: ${{ matrix.platform == 'windows' }}
-      #        working-directory: tmp/package
-      #        shell: pwsh
-      #        run: Compress-Archive -Path '${{ env.PACKAGE_NAME }}' -DestinationPath '${{ env.PACKAGE }}${{ matrix.package_ext }}'
+      - name: Finish package (Windows)
+        if: ${{ matrix.platform == 'windows' }}
+        working-directory: tmp/package
+        shell: pwsh
+        run: Compress-Archive -Path '${{ env.PACKAGE_NAME }}' -DestinationPath '${{ env.PACKAGE }}${{ matrix.package_ext }}'
 
       - name: Upload package to artifacts
         uses: actions/upload-artifact@v4
