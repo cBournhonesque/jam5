@@ -82,14 +82,17 @@ fn title(
                 }
 
                 // exit doesn't work well in embedded applications
-                if cfg!(not(target_family = "wasm")) {
+                #[cfg(not(target_family = "wasm"))]
+                {
                     let exit = ui.button("Exit");
                     handle_button(&exit, title_data.as_mut(), &mut commands);
                     if exit.clicked() {
                         app_exit.send(AppExit::Success);
                     }
                     title_data.hovered = exit.hovered() || play.hovered() || credits.hovered();
-                } else {
+                }
+                #[cfg(target_family = "wasm")]
+                {
                     title_data.hovered = play.hovered() || credits.hovered();
                 }
             });
