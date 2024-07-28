@@ -128,8 +128,10 @@ fn leaderboard_ui(
     // leaderboard
     let scores = scores
         .iter()
-        .sort_by::<(&Score, &BikeMarker)>(|(a, _), (b, _)| b.cmp(a))
-        .map(|(score, bike)| (bike.name.clone(), score.total()))
+        .sort_by::<(&Score, &BikeMarker)>(|(a, _), (b, _)| {
+            (b.kill_score, b.zone_score).cmp(&(a.kill_score, a.zone_score))
+        })
+        .map(|(score, bike)| (bike.name.clone(), score.clone()))
         .take(6)
         .collect::<Vec<_>>();
     egui::Window::new("Leaderboard")
@@ -140,6 +142,7 @@ fn leaderboard_ui(
                 .resizable(false)
                 .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
                 .column(Column::auto())
+                .column(Column::auto())
                 .column(Column::auto());
             table
                 .header(30.0, |mut header| {
@@ -149,7 +152,12 @@ fn leaderboard_ui(
                         ui.strong(text);
                     });
                     header.col(|ui| {
-                        let mut text: RichText = "Score".into();
+                        let mut text: RichText = "Kills".into();
+                        text = text.color(TITLE_COLOR);
+                        ui.strong(text);
+                    });
+                    header.col(|ui| {
+                        let mut text: RichText = "Area".into();
                         text = text.color(TITLE_COLOR);
                         ui.strong(text);
                     });
@@ -161,7 +169,10 @@ fn leaderboard_ui(
                                 ui.label(name.to_string());
                             });
                             row.col(|ui| {
-                                ui.label(score.to_string());
+                                ui.label(score.kill_score.to_string());
+                            });
+                            row.col(|ui| {
+                                ui.label(score.zone_score.to_string());
                             });
                         });
                     }

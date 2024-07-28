@@ -8,7 +8,7 @@ use shared::player::death::{Dead, DeathTimer, DEATH_TIMER};
 use shared::player::scores::{Score, Stats};
 use shared::player::trail::Trail;
 
-const KILL_SCORE: u32 = 1000;
+const KILL_SCORE: u32 = 1;
 
 pub struct DeathPlugin;
 
