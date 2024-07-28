@@ -15,7 +15,7 @@ const TEXT_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(11, 170
 
 const TITLE_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(22, 255, 255, 50);
 
-const BG_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(0, 36, 42, 50);
+pub const BG_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(0, 36, 42, 50);
 
 impl Plugin for MyEguiPlugin {
     fn build(&self, app: &mut App) {
@@ -56,7 +56,6 @@ fn global_egui_visuals(mut egui_ctx: EguiContexts) {
     let text_color = egui::Color32::from_rgba_premultiplied(11, 170, 173, 50);
     // style.visuals.override_text_color = Some(text_color);
 
-    let bg_color = egui::Color32::from_rgba_premultiplied(0, 36, 42, 50);
     let button_bg_color = egui::Color32::from_rgba_premultiplied(113, 136, 173, 50);
     style.visuals.widgets.hovered.fg_stroke.color = egui::Color32::WHITE;
     style.visuals.widgets.inactive.fg_stroke.color = text_color;
@@ -66,9 +65,9 @@ fn global_egui_visuals(mut egui_ctx: EguiContexts) {
     style.visuals.widgets.hovered.bg_stroke = egui::Stroke::NONE;
 
     style.visuals.window_stroke = egui::Stroke::NONE;
-    style.visuals.window_fill = bg_color;
+    style.visuals.window_fill = BG_COLOR;
     style.visuals.window_shadow = egui::Shadow::NONE;
-    style.visuals.popup_shadow.color = bg_color;
+    style.visuals.popup_shadow.color = BG_COLOR;
     style.visuals.popup_shadow = egui::Shadow::NONE;
     style.visuals.clip_rect_margin = 0.0;
 
