@@ -52,9 +52,9 @@ pub struct KilledByMessageRes {
 fn handle_death_message(
     mut commands: Commands,
     sfx_handles: Res<HandleMap<SfxKey>>,
-    mut messages: EventReader<MessageEvent<BikeDeathMessage>>,
+    mut messages: ResMut<Events<MessageEvent<BikeDeathMessage>>>,
 ) {
-    for message in messages.read() {
+    for message in messages.drain() {
         let color = message.message.color;
         let position = message.message.position;
         commands.spawn((

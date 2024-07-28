@@ -46,11 +46,12 @@ fn add_input_map(
     for entity in predicted_players.iter() {
         commands
             .entity(entity)
-            // NOTE: uncomment this to be able to pause players during testing
-            .insert(InputMap::<PlayerMovement>::new([(
-                PlayerMovement::Pause,
-                KeyCode::Space,
-            )]));
+            .insert(InputMap::<PlayerMovement>::default());
+        // NOTE: uncomment this to be able to pause players during testing
+        // .insert(InputMap::<PlayerMovement>::new([(
+        //     PlayerMovement::Pause,
+        //     KeyCode::Space,
+        // )]));
     }
 }
 
