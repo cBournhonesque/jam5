@@ -1,29 +1,44 @@
 //! The title screen that appears when the game starts.
 
 use super::Screen;
+use crate::audio::sfx::{PlaySfx, SfxKey};
 use crate::ui::prelude::*;
 use bevy::prelude::*;
 use bevy_egui::egui::Margin;
 use bevy_egui::{egui, EguiContexts};
+use clap::Command;
 
 pub(super) fn plugin(app: &mut App) {
-    app.insert_resource(PlayerNamePrompt {
+    app.insert_resource(TitleScreenData {
         name: "".to_string(),
+        hovered: false,
     });
     app.add_systems(Update, title.run_if(in_state(Screen::Title)));
 }
 
 #[derive(Resource, Default)]
-pub struct PlayerNamePrompt {
+pub struct TitleScreenData {
     pub name: String,
+    hovered: bool,
 }
 
 fn title(
+    mut commands: Commands,
     mut egui_contexts: EguiContexts,
-    mut player_name_prompt: ResMut<PlayerNamePrompt>,
+    mut title_data: ResMut<TitleScreenData>,
     mut next_screen: ResMut<NextState<Screen>>,
     #[cfg(not(target_family = "wasm"))] mut app_exit: EventWriter<AppExit>,
 ) {
+    let handle_button =
+        |button: &egui::Response, title_data: &mut TitleScreenData, commands: &mut Commands| {
+            if button.hovered() && !title_data.hovered {
+                commands.trigger(PlaySfx::Key(SfxKey::ButtonHover));
+            }
+            if button.clicked() {
+                commands.trigger(PlaySfx::Key(SfxKey::ButtonPress));
+            }
+        };
+
     egui::Window::new("Title")
         .title_bar(false)
         .resizable(false)
@@ -36,7 +51,7 @@ fn title(
                 ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 30.0);
                 ui.add_sized(
                     [400.0, 40.0],
-                    egui::TextEdit::singleline(&mut player_name_prompt.name)
+                    egui::TextEdit::singleline(&mut title_data.name)
                         .desired_rows(1)
                         .margin(Margin {
                             left: 5.0,
@@ -51,20 +66,31 @@ fn title(
                         .hint_text("Enter your name"),
                 );
 
-                if ui.button("Play").clicked() {
+                let play = ui.button("Play");
+                handle_button(&play, title_data.as_mut(), &mut commands);
+                if play.clicked() {
                     next_screen.set(Screen::Playing);
                 }
 
                 // ui.style_mut().spacing.item_spacing = egui::Vec2::new(0.0, 30.0);
                 // ui.add_space(30.0);
                 ui.separator();
-                if ui.button("Credits").clicked() {
+                let credits = ui.button("Credits");
+                handle_button(&credits, title_data.as_mut(), &mut commands);
+                if credits.clicked() {
                     next_screen.set(Screen::Credits);
                 }
+
                 // exit doesn't work well in embedded applications
-                #[cfg(not(target_family = "wasm"))]
-                if ui.button("Exit").clicked() {
-                    app_exit.send(AppExit::Success);
+                if cfg!(not(target_family = "wasm")) {
+                    let exit = ui.button("Exit");
+                    handle_button(&exit, title_data.as_mut(), &mut commands);
+                    if exit.clicked() {
+                        app_exit.send(AppExit::Success);
+                    }
+                    title_data.hovered = exit.hovered() || play.hovered() || credits.hovered();
+                } else {
+                    title_data.hovered = play.hovered() || credits.hovered();
                 }
             });
         });

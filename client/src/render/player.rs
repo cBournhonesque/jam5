@@ -1,4 +1,5 @@
 use crate::assets::{AssetKey, HandleMap};
+use crate::audio::sfx::SfxKey;
 use crate::network::BikeSpawned;
 use avian2d::prelude::*;
 use bevy::prelude::TransformSystem::TransformPropagate;
@@ -49,58 +50,69 @@ pub struct BikeGraphics {
 fn on_bike_spawned(
     trigger: Trigger<BikeSpawned>,
     mut commands: Commands,
+    sfx_handles: Res<HandleMap<SfxKey>>,
     image_key: Res<HandleMap<ImageKey>>,
-    bike: Query<&ColorComponent, With<BikeMarker>>,
+    bike: Query<(&ColorComponent, Has<Predicted>), With<BikeMarker>>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(256), 6, 6, None, None);
     let texture_atlas_handle = texture_atlas_layouts.add(layout);
     if let Some(texture) = image_key.get(&ImageKey::Moto) {
-        if let Ok(color) = bike.get(trigger.event().entity) {
-            commands
-                .spawn((
-                    BikeGraphics {
-                        followed_entity: trigger.event().entity,
-                    },
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color: trigger.event().color,
-                            custom_size: Some(Vec2::new(128.0, 128.0)),
-                            ..default()
-                        },
-                        texture: texture.clone(),
+        if let Ok((color, is_predicted)) = bike.get(trigger.event().entity) {
+            let mut bike_graphics = commands.spawn((
+                BikeGraphics {
+                    followed_entity: trigger.event().entity,
+                },
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: trigger.event().color,
+                        custom_size: Some(Vec2::new(128.0, 128.0)),
                         ..default()
                     },
-                    TextureAtlas {
-                        layout: texture_atlas_handle,
-                        index: 0,
-                    },
-                    Name::from("BikeSprite"),
-                ))
-                .with_children(|parent| {
-                    parent.spawn((
-                        ParticleSystemBundle {
-                            particle_system: ParticleSystem {
-                                lifetime: JitteredValue::jittered(0.5, -0.20..0.2),
-                                spawn_rate_per_second: 50.0.into(),
-                                max_particles: 200,
-                                initial_speed: JitteredValue::jittered(500.0, -200.0..200.0),
-                                initial_scale: JitteredValue::jittered(3.0, -2.0..1.0),
-                                scale: (1.0..0.0).into(),
-                                velocity_modifiers: vec![VelocityModifier::Drag(0.005.into())],
-                                color: ColorOverTime::Gradient(Curve::new(vec![
-                                    CurvePoint::new(color.overbright(5.0), 0.0),
-                                    CurvePoint::new(color.overbright(1.0), 1.0),
-                                ])),
-                                looping: true,
-                                ..default()
-                            },
+                    texture: texture.clone(),
+                    ..default()
+                },
+                TextureAtlas {
+                    layout: texture_atlas_handle,
+                    index: 0,
+                },
+                Name::from("BikeSprite"),
+            ));
+            if is_predicted {
+                // we insert these on BikeGraphics because it has both Transform and GlobalTransform
+                bike_graphics.insert((
+                    // AudioBundle {
+                    //     source: sfx_handles[&SfxKey::BikeSound].clone_weak(),
+                    //     settings: PlaybackSettings::LOOP.with_spatial(true),
+                    // },
+                    SpatialListener::default(),
+                ));
+            }
+
+            bike_graphics.with_children(|parent| {
+                parent.spawn((
+                    ParticleSystemBundle {
+                        particle_system: ParticleSystem {
+                            lifetime: JitteredValue::jittered(0.5, -0.20..0.2),
+                            spawn_rate_per_second: 50.0.into(),
+                            max_particles: 200,
+                            initial_speed: JitteredValue::jittered(500.0, -200.0..200.0),
+                            initial_scale: JitteredValue::jittered(3.0, -2.0..1.0),
+                            scale: (1.0..0.0).into(),
+                            velocity_modifiers: vec![VelocityModifier::Drag(0.005.into())],
+                            color: ColorOverTime::Gradient(Curve::new(vec![
+                                CurvePoint::new(color.overbright(5.0), 0.0),
+                                CurvePoint::new(color.overbright(1.0), 1.0),
+                            ])),
+                            looping: true,
                             ..default()
                         },
-                        Playing,
-                        Name::from("TrailParticles"),
-                    ));
-                });
+                        ..default()
+                    },
+                    Playing,
+                    Name::from("TrailParticles"),
+                ));
+            });
         }
     }
 }
