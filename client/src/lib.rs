@@ -59,7 +59,7 @@ pub fn app(cli: Cli) -> App {
         server_addr: (Ipv4Addr::new(40, 160, 230, 108), cli.server_port).into(),
         transport: cli.transport,
     });
-    // app.add_plugins(audio::plugin);
+    app.add_plugins(audio::plugin);
     app.add_plugins(camera::CameraPlugin);
     app.add_plugins(inputs::InputPlugin);
     app.add_plugins(screen::plugin);
