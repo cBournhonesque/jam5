@@ -11,6 +11,7 @@ mod egui;
 mod kills;
 pub mod label;
 pub mod map;
+mod minimap;
 pub mod player;
 pub mod trail;
 pub mod zones;
@@ -32,6 +33,7 @@ impl Plugin for RenderPlugin {
             kills::KillPlugin,
             egui::MyEguiPlugin,
             label::EntityLabelPlugin,
+            minimap::MinimapPlugin,
             player::PlayerRenderPlugin,
             trail::TrailRenderPlugin,
             zones::ZoneRenderPlugin,
