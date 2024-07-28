@@ -56,10 +56,10 @@ impl FromWorld for HandleMap<SfxKey> {
                 asset_server.load("audio/sfx/Menu1.mp3"),
             ),
             (SfxKey::BikeDeath, asset_server.load("audio/sfx/Die1.mp3")),
-            (
-                SfxKey::BikeSound,
-                asset_server.load("audio/sfx/Engine4Bass.mp3"),
-            ),
+            // (
+            //     SfxKey::BikeSound,
+            //     asset_server.load("audio/sfx/Engine4Bass.mp3"),
+            // ),
         ]
         .into()
     }
