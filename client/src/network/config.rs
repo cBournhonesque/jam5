@@ -36,8 +36,8 @@ pub(crate) fn build_lightyear_client(
     if cfg!(feature = "dev") {
         let link_conditioner = LinkConditionerConfig {
             incoming_latency: Duration::from_millis(40),
-            incoming_jitter: Duration::from_millis(4),
-            incoming_loss: 0.01,
+            incoming_jitter: Duration::from_millis(10),
+            incoming_loss: 0.05,
         };
         io = io.with_conditioner(link_conditioner);
     }

@@ -1,5 +1,5 @@
-use bevy::{audio::PlaybackMode, prelude::*};
 use crate::assets::{AssetKey, HandleMap};
+use bevy::{audio::PlaybackMode, prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<HandleMap<SoundtrackKey>>();
@@ -62,15 +62,15 @@ impl FromWorld for HandleMap<SoundtrackKey> {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();
         [
-            (
-                SoundtrackKey::Credits,
-                asset_server.load("audio/soundtracks/Monkeys Spinning Monkeys.ogg"),
-            ),
-            (
-                SoundtrackKey::Gameplay,
-                asset_server.load("audio/soundtracks/Fluffing A Duck.ogg"),
-            ),
+            // (
+            //     SoundtrackKey::Credits,
+            //     asset_server.load("audio/soundtracks/Monkeys Spinning Monkeys.ogg"),
+            // ),
+            // (
+            //     SoundtrackKey::Gameplay,
+            //     asset_server.load("audio/soundtracks/Fluffing A Duck.ogg"),
+            // ),
         ]
-            .into()
+        .into()
     }
 }

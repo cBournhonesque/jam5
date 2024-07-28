@@ -1,7 +1,10 @@
+use crate::assets::HandleMap;
+use crate::audio::sfx::{PlaySfx, SfxKey};
 use bevy::prelude::*;
 use bevy::tasks::futures_lite::StreamExt;
 use bevy_particle_systems::{
-    ColorOverTime, ParticleBurst, ParticleSystem, ParticleSystemBundle, Playing, VelocityModifier,
+    CircleSegment, ColorOverTime, Curve, CurvePoint, EmitterShape, JitteredValue, ParticleBurst,
+    ParticleSystem, ParticleSystemBundle, Playing, VelocityModifier,
 };
 use lightyear::prelude::client::*;
 use rand::prelude::SliceRandom;
@@ -48,29 +51,59 @@ pub struct KilledByMessageRes {
 
 fn handle_death_message(
     mut commands: Commands,
+    sfx_handles: Res<HandleMap<SfxKey>>,
     mut messages: ResMut<Events<MessageEvent<BikeDeathMessage>>>,
 ) {
     for message in messages.drain() {
         let color = message.message.color;
         let position = message.message.position;
         commands.spawn((
+            GlobalTransform::from_translation(position.extend(0.).into()),
+            AudioBundle {
+                source: sfx_handles[&SfxKey::BikeDeath].clone_weak(),
+                settings: PlaybackSettings::DESPAWN.with_spatial(true),
+            },
+        ));
+        commands.spawn((
             ParticleSystemBundle {
                 transform: Transform::from_translation(position.extend(100.)),
                 particle_system: ParticleSystem {
-                    lifetime: 0.8.into(),
+                    lifetime: JitteredValue::jittered(0.85, -0.50..0.05),
                     spawn_rate_per_second: 0.0.into(),
-                    max_particles: 1_000,
-                    initial_speed: (0.0..300.0).into(),
-                    scale: 2.0.into(),
+                    max_particles: 3_00,
+                    initial_speed: JitteredValue::jittered(500.0, -400.0..400.0),
+                    initial_scale: JitteredValue::jittered(5.0, -4.0..4.0),
+                    scale: (1.0..0.0).into(),
+                    emitter_shape: EmitterShape::CircleSegment(CircleSegment {
+                        opening_angle: std::f32::consts::PI * 0.6,
+                        direction_angle: std::f32::consts::PI * 0.5,
+                        ..default()
+                    }),
                     velocity_modifiers: vec![
                         VelocityModifier::Drag(0.001.into()),
-                        // VelocityModifier::Vector(Vec3::new(0.0, -400.0, 0.0).into()),
+                        VelocityModifier::Vector(Vec3::new(0.0, -400.0, 0.0).into()),
                     ],
-                    color: ColorOverTime::Constant(color),
-                    bursts: vec![ParticleBurst {
-                        time: 0.0,
-                        count: 1000,
-                    }],
+                    color: ColorOverTime::Gradient(Curve::new(vec![
+                        CurvePoint::new((color.to_linear() * 5.0).into(), 0.0),
+                        CurvePoint::new((color.to_linear() * 1.0).into(), 1.0),
+                    ])),
+                    system_duration_seconds: 0.2,
+                    bursts: vec![
+                        ParticleBurst {
+                            time: 0.0,
+                            count: 100,
+                        },
+                        ParticleBurst {
+                            time: 0.1,
+                            count: 100,
+                        },
+                        ParticleBurst {
+                            time: 0.2,
+                            count: 100,
+                        },
+                    ],
+                    looping: false,
+                    despawn_on_finish: true,
                     ..ParticleSystem::oneshot()
                 },
                 ..default()

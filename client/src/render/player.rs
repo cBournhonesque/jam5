@@ -1,4 +1,5 @@
 use crate::assets::{AssetKey, HandleMap};
+use crate::audio::sfx::SfxKey;
 use crate::network::BikeSpawned;
 use avian2d::prelude::*;
 use bevy::prelude::TransformSystem::TransformPropagate;
@@ -8,6 +9,11 @@ use bevy::reflect::DynamicTypePath;
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::render::texture::{ImageLoaderSettings, ImageSampler};
 use bevy::sprite::Material2d;
+use bevy_particle_systems::EmitterShape::Line;
+use bevy_particle_systems::{
+    CircleSegment, ColorOverTime, Curve, CurvePoint, EmitterShape, JitteredValue, ParticleSystem,
+    ParticleSystemBundle, Playing, VelocityModifier,
+};
 use lightyear::prelude::client::*;
 use shared::player::bike::{BikeMarker, ColorComponent};
 use shared::player::death::Dead;
@@ -44,31 +50,70 @@ pub struct BikeGraphics {
 fn on_bike_spawned(
     trigger: Trigger<BikeSpawned>,
     mut commands: Commands,
+    sfx_handles: Res<HandleMap<SfxKey>>,
     image_key: Res<HandleMap<ImageKey>>,
+    bike: Query<(&ColorComponent, Has<Predicted>), With<BikeMarker>>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(256), 6, 6, None, None);
     let texture_atlas_handle = texture_atlas_layouts.add(layout);
     if let Some(texture) = image_key.get(&ImageKey::Moto) {
-        commands.spawn((
-            BikeGraphics {
-                followed_entity: trigger.event().entity,
-            },
-            SpriteBundle {
-                sprite: Sprite {
-                    color: trigger.event().color,
-                    custom_size: Some(Vec2::new(128.0, 128.0)),
+        if let Ok((color, is_predicted)) = bike.get(trigger.event().entity) {
+            let mut bike_graphics = commands.spawn((
+                BikeGraphics {
+                    followed_entity: trigger.event().entity,
+                },
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: trigger.event().color,
+                        custom_size: Some(Vec2::new(128.0, 128.0)),
+                        ..default()
+                    },
+                    texture: texture.clone(),
                     ..default()
                 },
-                texture: texture.clone(),
-                ..default()
-            },
-            TextureAtlas {
-                layout: texture_atlas_handle,
-                index: 0,
-            },
-            Name::from("BikeSprite"),
-        ));
+                TextureAtlas {
+                    layout: texture_atlas_handle,
+                    index: 0,
+                },
+                Name::from("BikeSprite"),
+            ));
+            if is_predicted {
+                // we insert these on BikeGraphics because it has both Transform and GlobalTransform
+                bike_graphics.insert((
+                    // AudioBundle {
+                    //     source: sfx_handles[&SfxKey::BikeSound].clone_weak(),
+                    //     settings: PlaybackSettings::LOOP.with_spatial(true),
+                    // },
+                    SpatialListener::default(),
+                ));
+            }
+
+            bike_graphics.with_children(|parent| {
+                parent.spawn((
+                    ParticleSystemBundle {
+                        particle_system: ParticleSystem {
+                            lifetime: JitteredValue::jittered(0.5, -0.20..0.2),
+                            spawn_rate_per_second: 50.0.into(),
+                            max_particles: 200,
+                            initial_speed: JitteredValue::jittered(500.0, -200.0..200.0),
+                            initial_scale: JitteredValue::jittered(3.0, -2.0..1.0),
+                            scale: (1.0..0.0).into(),
+                            velocity_modifiers: vec![VelocityModifier::Drag(0.005.into())],
+                            color: ColorOverTime::Gradient(Curve::new(vec![
+                                CurvePoint::new(color.overbright(5.0), 0.0),
+                                CurvePoint::new(color.overbright(1.0), 1.0),
+                            ])),
+                            looping: true,
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    Playing,
+                    Name::from("TrailParticles"),
+                ));
+            });
+        }
     }
 }
 
@@ -108,14 +153,35 @@ fn degrees_to_sprite_index(degrees: f32) -> usize {
     ((degrees + 180.0 - (ROTATION_AMOUNT / 2.)) / ROTATION_AMOUNT).floor() as usize
 }
 
+/// Update the bike sprite graphics and the trail particles when the bike moves
 fn update_bike_position(
-    q_parents: Query<(&Position, &Rotation), (With<BikeMarker>, Without<BikeGraphics>)>,
+    mut q_particles: Query<
+        (&Parent, &mut GlobalTransform, &mut ParticleSystem),
+        (With<Playing>, Without<BikeGraphics>),
+    >,
+    q_parents: Query<(&Position, &Rotation), With<BikeMarker>>,
     mut q_bike: Query<(&BikeGraphics, &mut GlobalTransform, &mut TextureAtlas)>,
 ) {
-    for (BikeGraphics { followed_entity }, mut transform, mut atlas) in q_bike.iter_mut() {
-        if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
-            *transform = GlobalTransform::from_translation(Vec3::from((parent_pos.0, 100.0)));
-            atlas.index = degrees_to_sprite_index(parent_rot.as_degrees());
+    for (parent, mut particle_transform, mut particles) in q_particles.iter_mut() {
+        if let Ok((BikeGraphics { followed_entity }, mut transform, mut atlas)) =
+            q_bike.get_mut(parent.get())
+        {
+            if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
+                let particle_angle = parent_rot.as_radians();
+                particles.emitter_shape = EmitterShape::CircleSegment(CircleSegment {
+                    opening_angle: std::f32::consts::PI * 0.15,
+                    direction_angle: particle_angle + std::f32::consts::PI,
+                    ..default()
+                });
+                // particles.spawn_rate_per_second = (velocity.0.length() * 0.1).into();
+
+                // we put particles slightly in the back of the bike
+                let particle_pos = parent_pos.0 - Vec2::new(parent_rot.cos, parent_rot.sin) * 30.0;
+                *particle_transform =
+                    GlobalTransform::from_translation(Vec3::from((particle_pos, 100.0)));
+                *transform = GlobalTransform::from_translation(Vec3::from((parent_pos.0, 100.0)));
+                atlas.index = degrees_to_sprite_index(parent_rot.as_degrees());
+            }
         }
     }
 }
