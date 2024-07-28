@@ -8,21 +8,27 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 use lightyear::shared::replication::delta::{DeltaComponentHistory, DeltaManager};
+use lightyear::shared::tick_manager::TickEvent;
 
 pub struct DebugPlugin;
 
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
-        // app.add_systems(FixedPostUpdate, post_fixed_update_bike_log);
-        // app.add_systems(Last, last_bike_log);
+        app.add_systems(FixedPostUpdate, post_fixed_update_bike_log);
+        app.add_systems(Last, last_bike_log);
         // app.add_systems(FixedUpdate, fixed_update_trail_log);
         // app.add_systems(FixedUpdate, delta_manager_log);
         // app.add_systems(FixedUpdate, log_parent_sync);
+        app.observe(tick_event_log);
 
         if app.is_plugin_added::<RenderPlugin>() {
             app.add_plugins(WorldInspectorPlugin::default());
         }
     }
+}
+
+fn tick_event_log(trigger: Trigger<TickEvent>) {
+    info!(event=?trigger.event(), "Tick Event");
 }
 
 fn delta_manager_log(manager: Option<Res<ServerConnectionManager>>) {

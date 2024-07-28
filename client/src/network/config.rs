@@ -43,6 +43,10 @@ pub(crate) fn build_lightyear_client(
     }
     let config = ClientConfig {
         shared: shared_config(),
+        sync: SyncConfig {
+            speedup_factor: 1.02,
+            ..default()
+        },
         net: NetConfig::Netcode {
             auth,
             config: NetcodeConfig::default(),
