@@ -6,6 +6,7 @@ use avian2d::prelude::*;
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::*;
 use bevy::utils::Duration;
+use bevy_inspector_egui::egui;
 use lightyear::prelude::*;
 
 pub const BASE_SPEED: f32 = 200.0;
@@ -20,6 +21,13 @@ pub const ENEMY_ZONE_SPEED_MULTIPLIER: f32 = 0.8;
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Default, Debug, Clone)]
 pub struct ColorComponent(pub Color);
+
+impl From<&ColorComponent> for egui::Color32 {
+    fn from(value: &ColorComponent) -> Self {
+        let col = value.0.to_srgba().to_u8_array();
+        egui::Color32::from_rgba_unmultiplied(col[0], col[1], col[2], col[3])
+    }
+}
 
 impl ColorComponent {
     pub fn overbright(&self, amount: f32) -> Color {
