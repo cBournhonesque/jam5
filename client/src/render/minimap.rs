@@ -56,7 +56,6 @@ fn draw_map_egui(
                 // The ui is flipped on the y axis
                 vec.y = -vec.y;
                 let vec_mapped = vec / MAP_SIZE * MINIMAP_SIZE + Vec2::new(100.0, 100.0);
-                error!("vec_mapped: {:?}", vec_mapped);
                 let rad = transform.rotation.to_euler(EulerRot::ZXY).0;
                 let rot = Rotation::radians(rad);
                 painter.arrow(
