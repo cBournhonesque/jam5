@@ -1,10 +1,9 @@
-use bevy::{audio::PlaybackMode, prelude::*};
 use crate::assets::{AssetKey, HandleMap};
+use bevy::{audio::PlaybackMode, prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<HandleMap<SfxKey>>();
     app.init_resource::<HandleMap<SfxKey>>();
-
 
     app.observe(play_sfx);
 }
@@ -16,7 +15,6 @@ fn play_sfx(
 ) {
     let sfx_key = match trigger.event() {
         PlaySfx::Key(key) => *key,
-        PlaySfx::RandomStep => random_step(),
     };
     commands.spawn(AudioSourceBundle {
         source: sfx_handles[&sfx_key].clone_weak(),
@@ -31,27 +29,14 @@ fn play_sfx(
 #[derive(Event)]
 pub enum PlaySfx {
     Key(SfxKey),
-    RandomStep,
 }
-
-fn random_step() -> SfxKey {
-    SfxKey::Step1
-    // [SfxKey::Step1, SfxKey::Step2, SfxKey::Step3, SfxKey::Step4]
-    //
-    //     .choose(0)
-    //     .copied()
-    //     .unwrap()
-}
-
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum SfxKey {
     ButtonHover,
     ButtonPress,
-    Step1,
-    Step2,
-    Step3,
-    Step4,
+    BikeDeath,
+    BikeSound,
 }
 
 impl AssetKey for SfxKey {
@@ -64,17 +49,18 @@ impl FromWorld for HandleMap<SfxKey> {
         [
             (
                 SfxKey::ButtonHover,
-                asset_server.load("audio/sfx/button_hover.ogg"),
+                asset_server.load("audio/sfx/Menu2.mp3"),
             ),
             (
                 SfxKey::ButtonPress,
-                asset_server.load("audio/sfx/button_press.ogg"),
+                asset_server.load("audio/sfx/Menu1.mp3"),
             ),
-            (SfxKey::Step1, asset_server.load("audio/sfx/step1.ogg")),
-            (SfxKey::Step2, asset_server.load("audio/sfx/step2.ogg")),
-            (SfxKey::Step3, asset_server.load("audio/sfx/step3.ogg")),
-            (SfxKey::Step4, asset_server.load("audio/sfx/step4.ogg")),
+            (SfxKey::BikeDeath, asset_server.load("audio/sfx/Die1.mp3")),
+            (
+                SfxKey::BikeSound,
+                asset_server.load("audio/sfx/Engine4Bass.mp3"),
+            ),
         ]
-            .into()
+        .into()
     }
 }

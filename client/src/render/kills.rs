@@ -1,3 +1,5 @@
+use crate::assets::HandleMap;
+use crate::audio::sfx::{PlaySfx, SfxKey};
 use bevy::prelude::*;
 use bevy::tasks::futures_lite::StreamExt;
 use bevy_particle_systems::{
@@ -49,11 +51,19 @@ pub struct KilledByMessageRes {
 
 fn handle_death_message(
     mut commands: Commands,
-    mut messages: ResMut<Events<MessageEvent<BikeDeathMessage>>>,
+    sfx_handles: Res<HandleMap<SfxKey>>,
+    mut messages: EventReader<MessageEvent<BikeDeathMessage>>,
 ) {
-    for message in messages.drain() {
+    for message in messages.read() {
         let color = message.message.color;
         let position = message.message.position;
+        commands.spawn((
+            GlobalTransform::from_translation(position.extend(0.).into()),
+            AudioBundle {
+                source: sfx_handles[&SfxKey::BikeDeath].clone_weak(),
+                settings: PlaybackSettings::DESPAWN.with_spatial(true),
+            },
+        ));
         commands.spawn((
             ParticleSystemBundle {
                 transform: Transform::from_translation(position.extend(100.)),
