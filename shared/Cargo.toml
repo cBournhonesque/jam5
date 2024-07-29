@@ -26,18 +26,6 @@ geo-types = "0.7.13"
 [features]
 default = [
     # Default to a native dev build.
-    "dev_native",
+    #    "dev_native",
 ]
-dev = [
-    # Improve compile times for dev builds by linking Bevy as a dynamic library.
-    #    "bevy/dynamic_linking",
-    "bevy/bevy_dev_tools",
-    "dep:bevy-inspector-egui",
-]
-dev_native = [
-    "dev",
-    # Enable asset hot reloading for native dev builds.
-    "bevy/file_watcher",
-    # Enable embedded asset hot reloading for native dev builds.
-    "bevy/embedded_watcher",
-]
+dev = []
