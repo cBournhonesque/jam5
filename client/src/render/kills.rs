@@ -1,5 +1,5 @@
 use crate::assets::HandleMap;
-use crate::audio::sfx::{PlaySfx, SfxKey};
+use crate::audio::sfx::SfxKey;
 use bevy::prelude::*;
 use bevy::tasks::futures_lite::StreamExt;
 use bevy_particle_systems::{
@@ -9,7 +9,7 @@ use bevy_particle_systems::{
 use lightyear::prelude::client::*;
 use rand::prelude::SliceRandom;
 use shared::network::message::{BikeDeathMessage, KillMessage, KilledByMessage};
-use shared::player::bike::{BikeMarker, ColorComponent};
+use shared::player::bike::BikeMarker;
 use shared::player::death::DEATH_TIMER;
 use shared::player::scores::Stats;
 use std::time::Duration;
