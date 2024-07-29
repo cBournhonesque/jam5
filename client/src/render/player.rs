@@ -2,6 +2,7 @@ use crate::assets::{AssetKey, HandleMap};
 use crate::audio::sfx::SfxKey;
 use crate::network::BikeSpawned;
 use avian2d::prelude::*;
+use bevy::audio::Volume;
 use bevy::prelude::TransformSystem::TransformPropagate;
 use bevy::prelude::*;
 use bevy::prelude::*;
@@ -15,7 +16,7 @@ use bevy_particle_systems::{
     ParticleSystemBundle, Playing, VelocityModifier,
 };
 use lightyear::prelude::client::*;
-use shared::player::bike::{BikeMarker, ColorComponent};
+use shared::player::bike::{BikeMarker, ColorComponent, BASE_SPEED};
 use shared::player::death::Dead;
 use shared::player::trail::Trail;
 use shared::player::zone::Zones;
@@ -76,17 +77,18 @@ fn on_bike_spawned(
                     layout: texture_atlas_handle,
                     index: 0,
                 },
+                // we insert these on BikeGraphics because it has both Transform and GlobalTransform
+                AudioBundle {
+                    source: sfx_handles[&SfxKey::BikeSound].clone_weak(),
+                    settings: PlaybackSettings::LOOP
+                        .with_spatial(true)
+                        .with_volume(Volume::new(0.5)),
+                },
                 Name::from("BikeSprite"),
             ));
             if is_predicted {
                 // we insert these on BikeGraphics because it has both Transform and GlobalTransform
-                bike_graphics.insert((
-                    // AudioBundle {
-                    //     source: sfx_handles[&SfxKey::BikeSound].clone_weak(),
-                    //     settings: PlaybackSettings::LOOP.with_spatial(true),
-                    // },
-                    SpatialListener::default(),
-                ));
+                bike_graphics.insert((SpatialListener::default(),));
             }
 
             bike_graphics.with_children(|parent| {
@@ -159,14 +161,23 @@ fn update_bike_position(
         (&Parent, &mut GlobalTransform, &mut ParticleSystem),
         (With<Playing>, Without<BikeGraphics>),
     >,
-    q_parents: Query<(&Position, &Rotation), With<BikeMarker>>,
-    mut q_bike: Query<(&BikeGraphics, &mut GlobalTransform, &mut TextureAtlas)>,
+    q_parents: Query<(&Position, &Rotation, &LinearVelocity), With<BikeMarker>>,
+    mut q_bike: Query<(
+        &BikeGraphics,
+        &mut GlobalTransform,
+        &mut TextureAtlas,
+        &mut SpatialAudioSink,
+    )>,
 ) {
     for (parent, mut particle_transform, mut particles) in q_particles.iter_mut() {
-        if let Ok((BikeGraphics { followed_entity }, mut transform, mut atlas)) =
+        if let Ok((BikeGraphics { followed_entity }, mut transform, mut atlas, mut audio)) =
             q_bike.get_mut(parent.get())
         {
-            if let Ok((parent_pos, parent_rot)) = q_parents.get(*followed_entity) {
+            if let Ok((parent_pos, parent_rot, parent_velocity)) = q_parents.get(*followed_entity) {
+                // speed up sound (increase pitch) with speed
+                let audio_speed = (parent_velocity.0.length() / BASE_SPEED).max(0.3);
+                audio.set_speed(audio_speed * 0.4);
+
                 let particle_angle = parent_rot.as_radians();
                 particles.emitter_shape = EmitterShape::CircleSegment(CircleSegment {
                     opening_angle: std::f32::consts::PI * 0.15,

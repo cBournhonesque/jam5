@@ -8,7 +8,7 @@ use bevy::prelude::*;
 pub const SPATIAL_SCALE: f32 = 1.0 / 150.0;
 
 pub fn plugin(app: &mut App) {
-    app.insert_resource(DefaultSpatialScale(SpatialScale::new(0.01)));
+    app.insert_resource(DefaultSpatialScale(SpatialScale::new(SPATIAL_SCALE)));
     app.add_plugins(sfx::plugin);
     // app.add_plugins((sfx::plugin, soundtrack::plugin));
 }
