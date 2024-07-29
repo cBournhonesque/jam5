@@ -66,6 +66,7 @@ fn move_bike_system(
             &mut Position,
             &mut Rotation,
             &mut LinearVelocity,
+            Has<Dead>,
             &ActionState<PlayerMovement>,
         ),
         // apply inputs either on predicted entities on the client, or replicating entities on the server
@@ -73,9 +74,13 @@ fn move_bike_system(
     >,
 ) {
     let mut zones = q_zones.iter();
-    for (client_id, marker, mut position, mut rotation, mut linear, action_state) in
+    for (client_id, marker, mut position, mut rotation, mut linear, dead, action_state) in
         q_bike.iter_mut()
     {
+        if dead {
+            *linear = LinearVelocity::default();
+            continue;
+        }
         #[cfg(feature = "dev")]
         if marker.paused {
             *linear = LinearVelocity::default();
