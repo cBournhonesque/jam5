@@ -1,18 +1,21 @@
 //! Display UI via egui. All windows displayed must be in a single system.
 
+use crate::render::chat::ChatMessages;
 use crate::render::kills::{KillMessages, KilledByMessageRes};
 use crate::screen::Screen::Playing;
 use avian2d::prelude::Position;
 use bevy::prelude::*;
 use bevy_egui::egui::FontFamily::Proportional;
-use bevy_egui::egui::{FontId, RichText};
-use bevy_egui::{egui, EguiContext, EguiContexts, EguiPlugin};
+use bevy_egui::egui::{FontId, Frame, Margin, RichText};
+use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use egui_extras::{Column, TableBuilder};
 use lightyear::client::prediction::Predicted;
+use lightyear::shared::replication::components::Controlled;
 use shared::map::MAP_SIZE;
-use shared::physics::movement::MAP_EDGE_SLOW_ZONE;
+use shared::physics::movement::{MAP_EDGE_SLOW_ZONE, TRAIL_SIZE_SLOW_START};
 use shared::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use shared::player::scores::Score;
+use shared::player::trail::Trail;
 
 pub struct MyEguiPlugin;
 
@@ -76,7 +79,7 @@ fn global_egui_visuals(mut egui_ctx: EguiContexts) {
     style.visuals.popup_shadow = egui::Shadow::NONE;
     style.visuals.clip_rect_margin = 0.0;
 
-    style.spacing.window_margin = egui::Margin::symmetric(20.0, 20.0);
+    style.spacing.window_margin = egui::Margin::same(20.0);
 
     // widget visuals
     egui_ctx.ctx_mut().set_style(style);
@@ -86,9 +89,40 @@ fn leaderboard_ui(
     mut egui_contexts: EguiContexts,
     killed_by: Res<KilledByMessageRes>,
     kills: Res<KillMessages>,
+    mut chat: ResMut<ChatMessages>,
     scores: Query<(&Score, &BikeMarker, &ColorComponent), With<BikeMarker>>,
     predicted_bike: Query<&Position, (With<Predicted>, With<BikeMarker>)>,
+    controlled_trail: Query<&Trail, With<Controlled>>,
 ) {
+    // Chat window
+    if !chat.messages.is_empty() {
+        egui::Window::new("Chat")
+            .title_bar(false)
+            .anchor(egui::Align2::LEFT_BOTTOM, [10.0, -200.0])
+            .min_width(100.0)
+            .max_width(300.0)
+            .show(egui_contexts.ctx_mut(), |ui| {
+                for (message, _) in &chat.messages {
+                    ui.label(
+                        RichText::new(format!("[{}]: {}", message.sender, message.message))
+                            .color(&ColorComponent(message.color))
+                            .font(FontId::proportional(16.0)),
+                    );
+                    // ui.label(message.message.to_string());
+                }
+            });
+    }
+    if chat.open {
+        egui::Window::new("ChatInput")
+            .title_bar(false)
+            .frame(egui::Frame::none())
+            .anchor(egui::Align2::LEFT_BOTTOM, [10.0, -150.0])
+            .show(egui_contexts.ctx_mut(), |ui| {
+                ui.text_edit_singleline(&mut chat.current_message)
+                    .request_focus();
+            });
+    }
+
     // Killed by window
     if let Some(timer) = &killed_by.timer {
         egui::Window::new("KilledBy")
@@ -131,7 +165,7 @@ fn leaderboard_ui(
             });
     }
 
-    // kill messages
+    // Slow reasons
     if let Ok(pos) = predicted_bike.get_single() {
         if pos.0.length() > MAP_SIZE - MAP_EDGE_SLOW_ZONE {
             egui::Window::new("SlowZone")
@@ -139,6 +173,16 @@ fn leaderboard_ui(
                 .anchor(egui::Align2::LEFT_BOTTOM, [10.0, -20.0])
                 .show(egui_contexts.ctx_mut(), |ui| {
                     ui.label("The edge of the map is a slow zone!");
+                });
+        }
+    }
+    if let Ok(trail) = controlled_trail.get_single() {
+        if trail.len() > TRAIL_SIZE_SLOW_START {
+            egui::Window::new("SlowTrail")
+                .title_bar(false)
+                .anchor(egui::Align2::LEFT_BOTTOM, [10.0, -80.0])
+                .show(egui_contexts.ctx_mut(), |ui| {
+                    ui.label("Your trail is too long! It is slowing you down!");
                 });
         }
     }

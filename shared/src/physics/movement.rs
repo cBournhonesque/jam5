@@ -6,6 +6,7 @@ use crate::player::bike::{
     FAST_SPEED_MAX_SPEED_DISTANCE, MAX_ROTATION_SPEED, OUR_ZONE_SPEED_MULTIPLIER,
 };
 use crate::player::death::Dead;
+use crate::player::trail::Trail;
 use crate::player::zone::Zones;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -16,6 +17,16 @@ use lightyear::prelude::*;
 pub const MAP_EDGE_SLOW_ZONE: f32 = 600.0;
 
 pub const MAP_EDGE_MAX_SLOW: f32 = 0.2;
+
+/// The size of the trail after which we start to slow down
+pub const TRAIL_SIZE_SLOW_START: f32 =
+    (MAP_SIZE - 2.5 * MAP_EDGE_SLOW_ZONE) * 2.0 * std::f32::consts::PI;
+
+pub const TRAIL_SLOW_INCREMENT_SIZE: f32 = 1500.0;
+pub const TRAIL_SLOW_INCREMENT: f32 = 0.2;
+
+/// The size of the trail after which we
+// pub const TRAIL_SIZE_SLOW_END
 
 pub struct MovementPlugin;
 impl Plugin for MovementPlugin {
@@ -72,6 +83,8 @@ fn move_bike_system(
         // apply inputs either on predicted entities on the client, or replicating entities on the server
         (Or<(With<Predicted>, With<Replicating>)>, Without<Dead>),
     >,
+    // We can't use Parent directly because on the client the Parent is confirmed..
+    trails: Query<(&ClientIdMarker, &Trail)>,
 ) {
     let mut zones = q_zones.iter();
     for (client_id, marker, mut position, mut rotation, mut linear, dead, action_state) in
@@ -104,6 +117,19 @@ fn move_bike_system(
                 } else {
                     1.0
                 };
+            // slow down if trail is too long
+            let mut trail_length_multiplier = 1.0;
+            if let Some((_, trail)) = trails
+                .iter()
+                .find(|(trail_client_id, _)| *trail_client_id == client_id)
+            {
+                let l = trail.len();
+                if l > TRAIL_SIZE_SLOW_START {
+                    trail_length_multiplier =
+                        1.0 / ((l - TRAIL_SIZE_SLOW_START) / TRAIL_SLOW_INCREMENT_SIZE).ceil();
+                    trace!(?trail_length_multiplier, ?l);
+                }
+            }
             // slow down near the edge
             let map_edge_multiplier = (1.0
                 - (position.0.length() - (MAP_SIZE - MAP_EDGE_SLOW_ZONE)).max(0.0)
@@ -113,7 +139,8 @@ fn move_bike_system(
 
             let wish_speed = BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance)
                 * wish_speed_multiplier
-                * map_edge_multiplier;
+                * map_edge_multiplier
+                * trail_length_multiplier;
             let wish_drag = DRAG.lerp(FAST_DRAG, normalized_mouse_distance);
 
             // limit the rotation

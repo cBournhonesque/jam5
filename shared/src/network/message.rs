@@ -22,6 +22,13 @@ pub struct KilledByMessage {
     pub stats: Stats,
 }
 
+#[derive(Reflect, Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct ChatMessage {
+    pub color: Color,
+    pub sender: String,
+    pub message: String,
+}
+
 impl MapEntities for KilledByMessage {
     fn map_entities<M: EntityMapper>(&mut self, entity_mapper: &mut M) {
         self.killer = entity_mapper.map_entity(self.killer);
