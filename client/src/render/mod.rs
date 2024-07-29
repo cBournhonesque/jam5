@@ -6,6 +6,7 @@ use bevy_particle_systems::ParticleSystemPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use lightyear::prelude::client::*;
 
+mod chat;
 mod diagnostics;
 mod egui;
 mod kills;
@@ -30,6 +31,7 @@ impl Plugin for RenderPlugin {
         ));
         app.add_plugins((
             diagnostics::DiagnosticsPlugin,
+            chat::ChatPlugin,
             kills::KillPlugin,
             egui::MyEguiPlugin,
             label::EntityLabelPlugin,
