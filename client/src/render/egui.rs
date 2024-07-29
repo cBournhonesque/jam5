@@ -1,12 +1,13 @@
 //! Display UI via egui. All windows displayed must be in a single system.
 
+use crate::render::chat::ChatMessages;
 use crate::render::kills::{KillMessages, KilledByMessageRes};
 use crate::screen::Screen::Playing;
 use avian2d::prelude::Position;
 use bevy::prelude::*;
 use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::{FontId, RichText};
-use bevy_egui::{egui, EguiContext, EguiContexts, EguiPlugin};
+use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use egui_extras::{Column, TableBuilder};
 use lightyear::client::prediction::Predicted;
 use shared::map::MAP_SIZE;
@@ -86,9 +87,39 @@ fn leaderboard_ui(
     mut egui_contexts: EguiContexts,
     killed_by: Res<KilledByMessageRes>,
     kills: Res<KillMessages>,
+    mut chat: ResMut<ChatMessages>,
     scores: Query<(&Score, &BikeMarker, &ColorComponent), With<BikeMarker>>,
     predicted_bike: Query<&Position, (With<Predicted>, With<BikeMarker>)>,
 ) {
+    // Chat window
+    if !chat.messages.is_empty() {
+        egui::Window::new("Chat")
+            .title_bar(false)
+            .anchor(egui::Align2::LEFT_BOTTOM, [10.0, -140.0])
+            .min_width(100.0)
+            .max_width(300.0)
+            .show(egui_contexts.ctx_mut(), |ui| {
+                for (message, _) in &chat.messages {
+                    ui.label(
+                        RichText::new(format!("[{}]: {}", message.sender, message.message))
+                            .color(&ColorComponent(message.color))
+                            .font(FontId::proportional(16.0)),
+                    );
+                    // ui.label(message.message.to_string());
+                }
+            });
+    }
+    if chat.open {
+        egui::Window::new("ChatInput")
+            .title_bar(false)
+            .frame(egui::Frame::none())
+            .anchor(egui::Align2::LEFT_BOTTOM, [10.0, -80.0])
+            .show(egui_contexts.ctx_mut(), |ui| {
+                ui.text_edit_singleline(&mut chat.current_message)
+                    .request_focus();
+            });
+    }
+
     // Killed by window
     if let Some(timer) = &killed_by.timer {
         egui::Window::new("KilledBy")
