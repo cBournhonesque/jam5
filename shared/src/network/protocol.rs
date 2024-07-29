@@ -77,7 +77,9 @@ impl Plugin for ProtocolPlugin {
         // NOTE: interpolation/correction is only needed for components that are visually displayed!
         // we still need prediction to be able to correctly predict the physics on the client
         app.register_component::<LinearVelocity>(ChannelDirection::Bidirectional)
-            .add_prediction(ComponentSyncMode::Full);
+            .add_prediction(ComponentSyncMode::Full)
+            // copy Speed for interpolation because we need for spatial audio
+            .add_interpolation(ComponentSyncMode::Simple);
 
         app.register_component::<Name>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)

@@ -1,12 +1,17 @@
 //! Display UI via egui. All windows displayed must be in a single system.
+
 use crate::render::kills::{KillMessages, KilledByMessageRes};
 use crate::screen::Screen::Playing;
+use avian2d::prelude::Position;
 use bevy::prelude::*;
 use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::{FontId, RichText};
 use bevy_egui::{egui, EguiContext, EguiContexts, EguiPlugin};
 use egui_extras::{Column, TableBuilder};
-use shared::player::bike::{BikeMarker, ClientIdMarker};
+use lightyear::client::prediction::Predicted;
+use shared::map::MAP_SIZE;
+use shared::physics::movement::MAP_EDGE_SLOW_ZONE;
+use shared::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use shared::player::scores::Score;
 
 pub struct MyEguiPlugin;
@@ -15,7 +20,7 @@ const TEXT_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(11, 170
 
 const TITLE_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(22, 255, 255, 50);
 
-const BG_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(0, 36, 42, 50);
+pub const BG_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(0, 36, 42, 50);
 
 impl Plugin for MyEguiPlugin {
     fn build(&self, app: &mut App) {
@@ -56,7 +61,6 @@ fn global_egui_visuals(mut egui_ctx: EguiContexts) {
     let text_color = egui::Color32::from_rgba_premultiplied(11, 170, 173, 50);
     // style.visuals.override_text_color = Some(text_color);
 
-    let bg_color = egui::Color32::from_rgba_premultiplied(0, 36, 42, 50);
     let button_bg_color = egui::Color32::from_rgba_premultiplied(113, 136, 173, 50);
     style.visuals.widgets.hovered.fg_stroke.color = egui::Color32::WHITE;
     style.visuals.widgets.inactive.fg_stroke.color = text_color;
@@ -66,9 +70,9 @@ fn global_egui_visuals(mut egui_ctx: EguiContexts) {
     style.visuals.widgets.hovered.bg_stroke = egui::Stroke::NONE;
 
     style.visuals.window_stroke = egui::Stroke::NONE;
-    style.visuals.window_fill = bg_color;
+    style.visuals.window_fill = BG_COLOR;
     style.visuals.window_shadow = egui::Shadow::NONE;
-    style.visuals.popup_shadow.color = bg_color;
+    style.visuals.popup_shadow.color = BG_COLOR;
     style.visuals.popup_shadow = egui::Shadow::NONE;
     style.visuals.clip_rect_margin = 0.0;
 
@@ -82,7 +86,8 @@ fn leaderboard_ui(
     mut egui_contexts: EguiContexts,
     killed_by: Res<KilledByMessageRes>,
     kills: Res<KillMessages>,
-    scores: Query<(&Score, &BikeMarker), With<BikeMarker>>,
+    scores: Query<(&Score, &BikeMarker, &ColorComponent), With<BikeMarker>>,
+    predicted_bike: Query<&Position, (With<Predicted>, With<BikeMarker>)>,
 ) {
     // Killed by window
     if let Some(timer) = &killed_by.timer {
@@ -126,11 +131,25 @@ fn leaderboard_ui(
             });
     }
 
+    // kill messages
+    if let Ok(pos) = predicted_bike.get_single() {
+        if pos.0.length() > MAP_SIZE - MAP_EDGE_SLOW_ZONE {
+            egui::Window::new("SlowZone")
+                .title_bar(false)
+                .anchor(egui::Align2::LEFT_BOTTOM, [10.0, -20.0])
+                .show(egui_contexts.ctx_mut(), |ui| {
+                    ui.label("The edge of the map is a slow zone!");
+                });
+        }
+    }
+
     // leaderboard
     let scores = scores
         .iter()
-        .sort_by::<(&Score, &BikeMarker)>(|(a, _), (b, _)| b.cmp(a))
-        .map(|(score, bike)| (bike.name.clone(), score.total()))
+        .sort_by::<(&Score, &BikeMarker, &ColorComponent)>(|(a, _, _), (b, _, _)| {
+            (b.kill_score, b.zone_score).cmp(&(a.kill_score, a.zone_score))
+        })
+        // .map(|(score, bike, color)| (bike.name.clone(), score.clone()))
         .take(6)
         .collect::<Vec<_>>();
     egui::Window::new("Leaderboard")
@@ -141,6 +160,7 @@ fn leaderboard_ui(
                 .resizable(false)
                 .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
                 .column(Column::auto())
+                .column(Column::auto())
                 .column(Column::auto());
             table
                 .header(30.0, |mut header| {
@@ -150,19 +170,28 @@ fn leaderboard_ui(
                         ui.strong(text);
                     });
                     header.col(|ui| {
-                        let mut text: RichText = "Score".into();
+                        let mut text: RichText = "Kills".into();
+                        text = text.color(TITLE_COLOR);
+                        ui.strong(text);
+                    });
+                    header.col(|ui| {
+                        let mut text: RichText = "Area".into();
                         text = text.color(TITLE_COLOR);
                         ui.strong(text);
                     });
                 })
                 .body(|mut body| {
-                    for (name, score) in scores.iter() {
+                    for (score, name, color) in scores.iter() {
                         body.row(30.0, |mut row| {
+                            let color = ColorComponent(color.0.with_alpha(0.9));
                             row.col(|ui| {
-                                ui.label(name.to_string());
+                                ui.label(RichText::new(name.name.to_string()).color(&color));
                             });
                             row.col(|ui| {
-                                ui.label(score.to_string());
+                                ui.label(RichText::new(score.kill_score.to_string()).color(&color));
+                            });
+                            row.col(|ui| {
+                                ui.label(RichText::new(score.zone_score.to_string()).color(&color));
                             });
                         });
                     }

@@ -1,4 +1,5 @@
 use crate::assets::{AssetKey, HandleMap};
+use bevy::audio::Volume;
 use bevy::{audio::PlaybackMode, prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
@@ -16,10 +17,16 @@ fn play_sfx(
     let sfx_key = match trigger.event() {
         PlaySfx::Key(key) => *key,
     };
+    let volume = if sfx_key == SfxKey::ButtonPress {
+        Volume::new(0.2)
+    } else {
+        Volume::new(1.0)
+    };
     commands.spawn(AudioSourceBundle {
         source: sfx_handles[&sfx_key].clone_weak(),
         settings: PlaybackSettings {
             mode: PlaybackMode::Despawn,
+            volume,
             ..default()
         },
     });
