@@ -11,7 +11,7 @@ use egui_extras::{Column, TableBuilder};
 use lightyear::client::prediction::Predicted;
 use shared::map::MAP_SIZE;
 use shared::physics::movement::MAP_EDGE_SLOW_ZONE;
-use shared::player::bike::{BikeMarker, ClientIdMarker};
+use shared::player::bike::{BikeMarker, ClientIdMarker, ColorComponent};
 use shared::player::scores::Score;
 
 pub struct MyEguiPlugin;
@@ -86,7 +86,7 @@ fn leaderboard_ui(
     mut egui_contexts: EguiContexts,
     killed_by: Res<KilledByMessageRes>,
     kills: Res<KillMessages>,
-    scores: Query<(&Score, &BikeMarker), With<BikeMarker>>,
+    scores: Query<(&Score, &BikeMarker, &ColorComponent), With<BikeMarker>>,
     predicted_bike: Query<&Position, (With<Predicted>, With<BikeMarker>)>,
 ) {
     // Killed by window
@@ -146,10 +146,10 @@ fn leaderboard_ui(
     // leaderboard
     let scores = scores
         .iter()
-        .sort_by::<(&Score, &BikeMarker)>(|(a, _), (b, _)| {
+        .sort_by::<(&Score, &BikeMarker, &ColorComponent)>(|(a, _, _), (b, _, _)| {
             (b.kill_score, b.zone_score).cmp(&(a.kill_score, a.zone_score))
         })
-        .map(|(score, bike)| (bike.name.clone(), score.clone()))
+        // .map(|(score, bike, color)| (bike.name.clone(), score.clone()))
         .take(6)
         .collect::<Vec<_>>();
     egui::Window::new("Leaderboard")
@@ -181,16 +181,17 @@ fn leaderboard_ui(
                     });
                 })
                 .body(|mut body| {
-                    for (name, score) in scores.iter() {
+                    for (score, name, color) in scores.iter() {
                         body.row(30.0, |mut row| {
+                            let color = ColorComponent(color.0.with_alpha(0.9));
                             row.col(|ui| {
-                                ui.label(name.to_string());
+                                ui.label(RichText::new(name.name.to_string()).color(&color));
                             });
                             row.col(|ui| {
-                                ui.label(score.kill_score.to_string());
+                                ui.label(RichText::new(score.kill_score.to_string()).color(&color));
                             });
                             row.col(|ui| {
-                                ui.label(score.zone_score.to_string());
+                                ui.label(RichText::new(score.zone_score.to_string()).color(&color));
                             });
                         });
                     }
