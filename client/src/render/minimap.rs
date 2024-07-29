@@ -1,6 +1,6 @@
 use crate::render::egui::BG_COLOR;
 use crate::screen::Screen::Playing;
-use avian2d::prelude::Rotation;
+use avian2d::prelude::{Position, Rotation};
 use bevy::prelude::*;
 use bevy_egui::egui::emath::RectTransform;
 use bevy_egui::egui::{Pos2, Sense};
@@ -24,7 +24,7 @@ impl Plugin for MinimapPlugin {
 fn draw_map_egui(
     mut egui_ctx: EguiContexts,
     players: Query<
-        (&ColorComponent, &Transform),
+        (&ColorComponent, &Position, &Rotation),
         (Or<(With<Interpolated>, With<Predicted>)>, With<BikeMarker>),
     >,
 ) {
@@ -50,18 +50,16 @@ fn draw_map_egui(
                 BG_COLOR,
             );
 
-            for (color, transform) in players.iter() {
+            for (color, position, rotation) in players.iter() {
                 // transform the position from world coordinates to the minimap size
-                let mut vec = transform.translation.truncate();
+                let mut vec = position.0;
                 // The ui is flipped on the y axis
                 vec.y = -vec.y;
                 let vec_mapped = vec / MAP_SIZE * MINIMAP_SIZE + Vec2::new(100.0, 100.0);
-                let rad = transform.rotation.to_euler(EulerRot::ZXY).0;
-                let rot = Rotation::radians(rad);
                 painter.arrow(
                     to_screen.transform_pos(Pos2::new(vec_mapped.x, vec_mapped.y)),
                     // the ui is flipped on the y axis
-                    egui::Vec2::new(rot.cos, -rot.sin) * 5.0,
+                    egui::Vec2::new(rotation.cos, -rotation.sin) * 5.0,
                     egui::Stroke::new(1.0, egui::Color32::from(color)),
                 );
             }

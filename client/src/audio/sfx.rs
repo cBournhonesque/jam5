@@ -1,4 +1,5 @@
 use crate::assets::{AssetKey, HandleMap};
+use bevy::audio::Volume;
 use bevy::{audio::PlaybackMode, prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
@@ -16,10 +17,16 @@ fn play_sfx(
     let sfx_key = match trigger.event() {
         PlaySfx::Key(key) => *key,
     };
+    let volume = if sfx_key == SfxKey::ButtonPress {
+        Volume::new(0.2)
+    } else {
+        Volume::new(1.0)
+    };
     commands.spawn(AudioSourceBundle {
         source: sfx_handles[&sfx_key].clone_weak(),
         settings: PlaybackSettings {
             mode: PlaybackMode::Despawn,
+            volume,
             ..default()
         },
     });
@@ -56,10 +63,10 @@ impl FromWorld for HandleMap<SfxKey> {
                 asset_server.load("audio/sfx/Menu1.mp3"),
             ),
             (SfxKey::BikeDeath, asset_server.load("audio/sfx/Die1.mp3")),
-            // (
-            //     SfxKey::BikeSound,
-            //     asset_server.load("audio/sfx/Engine4Bass.mp3"),
-            // ),
+            (
+                SfxKey::BikeSound,
+                asset_server.load("audio/sfx/Engine4Bass.mp3"),
+            ),
         ]
         .into()
     }
