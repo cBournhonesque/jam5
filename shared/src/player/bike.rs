@@ -6,7 +6,6 @@ use avian2d::prelude::*;
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::*;
 use bevy::utils::Duration;
-use bevy_inspector_egui::egui;
 use lightyear::prelude::*;
 
 pub const BASE_SPEED: f32 = 200.0;
