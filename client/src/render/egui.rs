@@ -1,11 +1,16 @@
 //! Display UI via egui. All windows displayed must be in a single system.
+
 use crate::render::kills::{KillMessages, KilledByMessageRes};
 use crate::screen::Screen::Playing;
+use avian2d::prelude::Position;
 use bevy::prelude::*;
 use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::{FontId, RichText};
 use bevy_egui::{egui, EguiContext, EguiContexts, EguiPlugin};
 use egui_extras::{Column, TableBuilder};
+use lightyear::client::prediction::Predicted;
+use shared::map::MAP_SIZE;
+use shared::physics::movement::MAP_EDGE_SLOW_ZONE;
 use shared::player::bike::{BikeMarker, ClientIdMarker};
 use shared::player::scores::Score;
 
@@ -82,6 +87,7 @@ fn leaderboard_ui(
     killed_by: Res<KilledByMessageRes>,
     kills: Res<KillMessages>,
     scores: Query<(&Score, &BikeMarker), With<BikeMarker>>,
+    predicted_bike: Query<&Position, (With<Predicted>, With<BikeMarker>)>,
 ) {
     // Killed by window
     if let Some(timer) = &killed_by.timer {
@@ -123,6 +129,18 @@ fn leaderboard_ui(
                     ui.label(RichText::new(message).font(FontId::proportional(16.0)));
                 }
             });
+    }
+
+    // kill messages
+    if let Ok(pos) = predicted_bike.get_single() {
+        if pos.0.length() > MAP_SIZE - MAP_EDGE_SLOW_ZONE {
+            egui::Window::new("SlowZone")
+                .title_bar(false)
+                .anchor(egui::Align2::LEFT_BOTTOM, [10.0, -20.0])
+                .show(egui_contexts.ctx_mut(), |ui| {
+                    ui.label("The edge of the map is a slow zone!");
+                });
+        }
     }
 
     // leaderboard

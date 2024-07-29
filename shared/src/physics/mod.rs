@@ -1,4 +1,4 @@
-mod movement;
+pub mod movement;
 pub mod util;
 
 use crate::network::config::FIXED_TIMESTEP_HZ;
