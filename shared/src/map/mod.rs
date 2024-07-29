@@ -3,7 +3,7 @@ use bevy_turborand::{GlobalRng, RngComponent};
 
 pub struct MapPlugin;
 
-pub const MAP_SIZE: f32 = 4000.0;
+pub const MAP_SIZE: f32 = 3000.0;
 
 #[derive(Component)]
 pub struct MapMarker;

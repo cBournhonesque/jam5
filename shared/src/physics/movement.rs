@@ -13,6 +13,10 @@ use leafwing_input_manager::prelude::ActionState;
 use lightyear::client::prediction::Predicted;
 use lightyear::prelude::*;
 
+pub const MAP_EDGE_SLOW_ZONE: f32 = 600.0;
+
+pub const MAP_EDGE_MAX_SLOW: f32 = 0.2;
+
 pub struct MovementPlugin;
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
@@ -95,9 +99,16 @@ fn move_bike_system(
                 } else {
                     1.0
                 };
+            // slow down near the edge
+            let map_edge_multiplier = (1.0
+                - (position.0.length() - (MAP_SIZE - MAP_EDGE_SLOW_ZONE)).max(0.0)
+                    / MAP_EDGE_SLOW_ZONE)
+                .max(MAP_EDGE_MAX_SLOW);
+            trace!(?map_edge_multiplier, pos = ?position.0.length(), "map_edge_multiplier");
 
-            let wish_speed =
-                BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance) * wish_speed_multiplier;
+            let wish_speed = BASE_SPEED.lerp(FAST_SPEED, normalized_mouse_distance)
+                * wish_speed_multiplier
+                * map_edge_multiplier;
             let wish_drag = DRAG.lerp(FAST_DRAG, normalized_mouse_distance);
 
             // limit the rotation
