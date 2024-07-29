@@ -131,7 +131,7 @@ fn handle_new_trail(
     for (parent, entity) in new_trails.iter() {
         if let Ok((client_id, color)) = bike.get(parent.get()) {
             let trail_color: Color = color.overbright(10.0);
-            let trail_z_order = ((client_id.to_bits() as f32) % 10.0) * 10.0 + 100.0;
+            let trail_z_order = ((client_id.to_bits() as f32) % 1000.0) / 10.0 + 100.0;
             commands
                 .entity(entity)
                 .insert((
