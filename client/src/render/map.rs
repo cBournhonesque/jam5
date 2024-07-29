@@ -77,6 +77,7 @@ fn setup_map(
         Path::from(GeometryBuilder::build_as(&shape)),
         MaterialMesh2dBundle {
             material: materials.add(MapMaterial::new(map_color, None)),
+            transform: Transform::from_xyz(0.0, 0.0, -1.0),
             ..default()
         },
         NoFrustumCulling,
