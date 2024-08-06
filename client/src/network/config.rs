@@ -27,7 +27,7 @@ pub(crate) fn build_lightyear_client(
             client_addr,
             server_addr,
             #[cfg(target_family = "wasm")]
-            certificate_digest: "d9:b3:06:2d:31:b1:21:6d:c9:8b:24:e6:9f:12:59:23:4d:e2:35:84:4e:b0:cf:2e:ac:4e:b6:ea:ce:56:03:3b".to_string().replace(":", ""),
+            certificate_digest: "47:44:75:38:88:8b:4c:3f:5f:f7:09:75:dc:58:5e:7f:29:0b:1f:79:64:6e:c8:a9:94:b2:93:56:8f:96:b4:ea".to_string().replace(":", ""),
         },
         Transports::WebSocket => ClientTransport::WebSocketClient { server_addr },
     };
