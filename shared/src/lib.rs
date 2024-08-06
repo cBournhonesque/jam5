@@ -39,15 +39,8 @@ impl Plugin for SharedPlugin {
         } else {
             app.add_plugins(
                 DefaultPlugins
-                    .set(LogPlugin {
-                        level: Level::INFO,
-                        // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
-                        // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::client::prediction::rollback=debug".to_string(),
-                        // filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=info,lightyear::shared::replication::delta=info,lightyear::protocol::component=info"
-                        filter: "wgpu=error,bevy_render=info,bevy_ecs=warn,lightyear::shared::replication::send=warn,lightyear::shared::replication::delta=warn,lightyear::protocol::component=warn,lightyear::shared::replication::receive=warn"
-                            .to_string(),
-                        ..default()
-                    })
+                    .build()
+                    .disable::<LogPlugin>()
                     .set(AssetPlugin {
                         file_path: "assets".to_string(),
                         // Wasm builds will check for meta files (that don't exist) if this isn't set.

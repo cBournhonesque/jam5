@@ -12,3 +12,8 @@
 .envrc
 rust-toolchain.toml
 .direnv
+
+# For deploying to itch.io
+/client/butler
+/client/release.sh
+/client/cycles_io-web.zip
